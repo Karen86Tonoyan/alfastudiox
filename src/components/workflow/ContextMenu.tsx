@@ -4,6 +4,7 @@ interface ContextMenuProps {
   x: number;
   y: number;
   onClose: () => void;
+  onDelete?: () => void;
 }
 
 interface MenuItem {
@@ -11,32 +12,33 @@ interface MenuItem {
   shortcut?: string;
   danger?: boolean;
   hasSubmenu?: boolean;
+  action?: () => void;
 }
 
-const menuSections: (MenuItem | "divider")[][] = [
-  [{ label: "Przemianować" }],
-  [{ label: "Kopia", shortcut: "Ctrl+C" }, { label: "Duplikat", shortcut: "Ctrl+D" }],
-  [{ label: "Szpilka" }, { label: "Objazd", shortcut: "Ctrl+B" }],
-  [
-    { label: "Konwertuj na podgraf" },
-    { label: "Minimalizuj węzeł" },
-    { label: "Zawalić się" },
-    { label: "Zmień rozmiar" },
-    { label: "Klon" },
-    { label: "Informacje o węźle" },
-  ],
-  [{ label: "Kolor", hasSubmenu: true }, { label: "Kształt", hasSubmenu: true }],
-  [
-    { label: "Rozszerzenia" },
-    { label: "Dodaj GetNode" },
-    { label: "Dodaj SetNode" },
-    { label: "Dodaj PreviewAsTextNode" },
-    { label: "Konwertuj na węzeł grupy (przestarzałe)" },
-  ],
-  [{ label: "Usunąć", danger: true }],
-];
+export function WorkflowContextMenu({ x, y, onClose, onDelete }: ContextMenuProps) {
+  const menuSections: (MenuItem | "divider")[][] = [
+    [{ label: "Przemianować" }],
+    [{ label: "Kopia", shortcut: "Ctrl+C" }, { label: "Duplikat", shortcut: "Ctrl+D" }],
+    [{ label: "Szpilka" }, { label: "Objazd", shortcut: "Ctrl+B" }],
+    [
+      { label: "Konwertuj na podgraf" },
+      { label: "Minimalizuj węzeł" },
+      { label: "Zawalić się" },
+      { label: "Zmień rozmiar" },
+      { label: "Klon" },
+      { label: "Informacje o węźle" },
+    ],
+    [{ label: "Kolor", hasSubmenu: true }, { label: "Kształt", hasSubmenu: true }],
+    [
+      { label: "Rozszerzenia" },
+      { label: "Dodaj GetNode" },
+      { label: "Dodaj SetNode" },
+      { label: "Dodaj PreviewAsTextNode" },
+      { label: "Konwertuj na węzeł grupy (przestarzałe)" },
+    ],
+    [{ label: "Usunąć", danger: true, shortcut: "Delete", action: onDelete }],
+  ];
 
-export function WorkflowContextMenu({ x, y, onClose }: ContextMenuProps) {
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
@@ -52,7 +54,10 @@ export function WorkflowContextMenu({ x, y, onClose }: ContextMenuProps) {
               return (
                 <button
                   key={i}
-                  onClick={onClose}
+                  onClick={() => {
+                    item.action?.();
+                    onClose();
+                  }}
                   className={cn(
                     "flex w-full items-center gap-2 px-3 py-1.5 text-xs hover:bg-secondary",
                     item.danger ? "text-destructive" : "text-foreground"

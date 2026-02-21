@@ -4,6 +4,9 @@ import { RenderHistoryPanel, type RenderHistoryItem } from "@/components/render/
 import { RenderQueuePanel } from "@/components/render/RenderQueuePanel";
 import { ComfyConnectionBar } from "@/components/render/ComfyConnectionBar";
 import { AIAssistPanel } from "@/components/render/AIAssistPanel";
+import { VFXEffectsPanel, type VFXEffect } from "@/components/render/VFXEffectsPanel";
+import { ExportSettingsPanel } from "@/components/render/ExportSettingsPanel";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -106,6 +109,7 @@ export default function RenderPage() {
   const comfy = useComfyUI();
   const ollama = useOllama();
   const [currentSettings, setCurrentSettings] = useState<RenderSettings | null>(null);
+  const [vfxEffects, setVfxEffects] = useState<VFXEffect[]>([]);
   const [localProgress, setLocalProgress] = useState(0);
   const [localRendering, setLocalRendering] = useState(false);
   const [renderHistory, setRenderHistory] = useState<RenderHistoryItem[]>([]);
@@ -240,7 +244,29 @@ export default function RenderPage() {
         <ResizableHandle withHandle />
 
         <ResizablePanel defaultSize={35} minSize={15} maxSize={55}>
-          <RenderQueuePanel className="h-full" />
+          <Tabs defaultValue="queue" className="h-full flex flex-col">
+            <TabsList className="mx-3 mt-2 bg-secondary h-8 w-auto self-start">
+              <TabsTrigger value="queue" className="text-[10px] gap-1 h-6">Queue</TabsTrigger>
+              <TabsTrigger value="vfx" className="text-[10px] gap-1 h-6">
+                VFX
+                {vfxEffects.filter(e => e.enabled).length > 0 && (
+                  <Badge variant="outline" className="ml-1 text-[7px] px-1 py-0 h-3 border-primary/30 text-primary">
+                    {vfxEffects.filter(e => e.enabled).length}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="export" className="text-[10px] gap-1 h-6">Export</TabsTrigger>
+            </TabsList>
+            <TabsContent value="queue" className="flex-1 overflow-hidden mt-0">
+              <RenderQueuePanel className="h-full" />
+            </TabsContent>
+            <TabsContent value="vfx" className="flex-1 overflow-hidden mt-0">
+              <VFXEffectsPanel className="h-full" effects={vfxEffects} onEffectsChange={setVfxEffects} />
+            </TabsContent>
+            <TabsContent value="export" className="flex-1 overflow-hidden mt-0">
+              <ExportSettingsPanel className="h-full" />
+            </TabsContent>
+          </Tabs>
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>

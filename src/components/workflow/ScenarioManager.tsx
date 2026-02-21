@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { HardwareMonitor } from "./HardwareMonitor";
 
 type TaskStatus = "done" | "running" | "queued" | "warning" | "paused";
 
@@ -80,6 +81,9 @@ export function ScenarioManager({ className }: ScenarioManagerProps) {
         <Brain className="h-4 w-4 text-purple-400" />
         <span className="text-sm font-semibold text-foreground">AI Scenario Manager</span>
       </div>
+
+      {/* Hardware Monitor */}
+      <HardwareMonitor />
 
       <ScrollArea className="flex-1">
         <div className="p-3 space-y-4">

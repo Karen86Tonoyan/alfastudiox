@@ -1,60 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 228 12% 10%;
-    --foreground: 210 20% 90%;
+    --background: 0 0% 4%;
+    --foreground: 40 20% 90%;
 
-    --card: 228 12% 13%;
-    --card-foreground: 210 20% 90%;
+    --card: 0 0% 7%;
+    --card-foreground: 40 20% 90%;
 
-    --popover: 228 12% 15%;
-    --popover-foreground: 210 20% 90%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 40 20% 90%;
 
-    --primary: 142 60% 50%;
-    --primary-foreground: 228 12% 6%;
+    --primary: 43 90% 55%;
+    --primary-foreground: 0 0% 4%;
 
-    --secondary: 228 12% 18%;
-    --secondary-foreground: 210 20% 85%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 40 15% 75%;
 
-    --muted: 228 10% 16%;
-    --muted-foreground: 215 15% 55%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 40 5% 45%;
 
-    --accent: 265 60% 55%;
-    --accent-foreground: 210 20% 95%;
+    --accent: 43 70% 45%;
+    --accent-foreground: 0 0% 4%;
 
     --destructive: 0 72% 50%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 228 10% 20%;
-    --input: 228 10% 20%;
-    --ring: 142 60% 50%;
+    --border: 40 8% 15%;
+    --input: 40 8% 15%;
+    --ring: 43 90% 55%;
 
     --radius: 0.375rem;
 
-    --sidebar-background: 228 14% 8%;
-    --sidebar-foreground: 210 15% 70%;
-    --sidebar-primary: 142 60% 50%;
-    --sidebar-primary-foreground: 228 12% 6%;
-    --sidebar-accent: 228 12% 14%;
-    --sidebar-accent-foreground: 210 20% 90%;
-    --sidebar-border: 228 10% 15%;
-    --sidebar-ring: 142 60% 50%;
+    --sidebar-background: 0 0% 3%;
+    --sidebar-foreground: 40 10% 55%;
+    --sidebar-primary: 43 90% 55%;
+    --sidebar-primary-foreground: 0 0% 4%;
+    --sidebar-accent: 40 10% 10%;
+    --sidebar-accent-foreground: 40 20% 90%;
+    --sidebar-border: 40 8% 12%;
+    --sidebar-ring: 43 90% 55%;
 
-    /* ComfyUI node colors */
+    /* Gold palette */
+    --gold: 43 90% 55%;
+    --gold-light: 43 85% 70%;
+    --gold-dark: 43 80% 35%;
+    --gold-muted: 43 30% 25%;
+
+    /* Status colors */
+    --status-ok: 142 60% 45%;
+    --status-warn: 40 90% 55%;
+    --status-danger: 0 72% 50%;
+    --status-info: 210 60% 50%;
+
+    /* Node colors (preserved) */
     --node-model: 220 70% 55%;
     --node-sampler: 265 60% 55%;
-    --node-prompt: 142 60% 50%;
+    --node-prompt: 43 90% 55%;
     --node-output: 30 80% 55%;
     --node-vae: 340 65% 55%;
     --node-controlnet: 190 70% 50%;
-
-    /* Status colors */
-    --status-ok: 142 60% 50%;
-    --status-warn: 40 90% 55%;
-    --status-danger: 0 72% 50%;
   }
 }
 
@@ -65,22 +74,51 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Segoe UI', 'Consolas', 'Courier New', monospace;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+  }
+}
+
+/* Gold gradient utilities */
+@layer utilities {
+  .gold-gradient {
+    background: linear-gradient(135deg, hsl(43 90% 55%), hsl(30 80% 45%));
+  }
+  .gold-text {
+    background: linear-gradient(135deg, hsl(43 90% 60%), hsl(43 85% 75%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .gold-border {
+    border-color: hsl(43 90% 55% / 0.3);
+  }
+  .gold-glow {
+    box-shadow: 0 0 20px hsl(43 90% 55% / 0.15), 0 0 60px hsl(43 90% 55% / 0.05);
   }
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: hsl(228 12% 10%);
+  background: hsl(0 0% 4%);
 }
 ::-webkit-scrollbar-thumb {
-  background: hsl(228 10% 25%);
+  background: hsl(40 8% 20%);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(228 10% 35%);
+  background: hsl(43 90% 55% / 0.4);
+}
+
+/* Custom select and input focus */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 1px hsl(43 90% 55% / 0.5);
 }

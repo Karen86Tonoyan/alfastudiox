@@ -132,7 +132,14 @@ const mockNodes: WorkflowNode[] = [
   },
 ];
 
-const connections = [
+interface Connection {
+  from: string;
+  fromPort: string;
+  to: string;
+  toPort: string;
+}
+
+const initialConnections: Connection[] = [
   { from: "1", fromPort: "MODEL", to: "4", toPort: "model" },
   { from: "1", fromPort: "CLIP", to: "2", toPort: "clip" },
   { from: "1", fromPort: "CLIP", to: "3", toPort: "clip" },
@@ -174,27 +181,63 @@ export default function WorkflowPage() {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
+  const [conns, setConns] = useState<Connection[]>(initialConnections);
+  const [connecting, setConnecting] = useState<{
+    fromNodeId: string;
+    fromPort: string;
+    fromType: string;
+    mouseX: number;
+    mouseY: number;
+  } | null>(null);
+
+  const getSvgCoords = useCallback((e: React.MouseEvent) => {
+    const svg = (e.target as SVGElement).closest("svg");
+    if (!svg) return { x: 0, y: 0 };
+    const rect = svg.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }, []);
+
+  const handlePortMouseDown = useCallback((e: React.MouseEvent, nodeId: string, portName: string, portType: string) => {
+    e.stopPropagation();
+    const coords = getSvgCoords(e);
+    setConnecting({ fromNodeId: nodeId, fromPort: portName, fromType: portType, mouseX: coords.x, mouseY: coords.y });
+  }, [getSvgCoords]);
+
+  const handlePortMouseUp = useCallback((e: React.MouseEvent, nodeId: string, portName: string) => {
+    e.stopPropagation();
+    if (connecting && connecting.fromNodeId !== nodeId) {
+      setConns((prev) => [...prev, { from: connecting.fromNodeId, fromPort: connecting.fromPort, to: nodeId, toPort: portName }]);
+    }
+    setConnecting(null);
+  }, [connecting]);
 
   const handleNodeMouseDown = useCallback((e: React.MouseEvent, nodeId: string, nodeX: number, nodeY: number) => {
     e.stopPropagation();
+    if (connecting) return;
     setActiveNode(nodeId);
     const svg = (e.target as SVGElement).closest("svg");
     if (!svg) return;
     const pt = svg.getBoundingClientRect();
     setDragging({ id: nodeId, offsetX: e.clientX - pt.left - nodeX, offsetY: e.clientY - pt.top - nodeY });
-  }, []);
+  }, [connecting]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (connecting) {
+      const coords = getSvgCoords(e);
+      setConnecting((prev) => prev ? { ...prev, mouseX: coords.x, mouseY: coords.y } : null);
+      return;
+    }
     if (!dragging) return;
     const svg = (e.currentTarget as SVGElement);
     const pt = svg.getBoundingClientRect();
     const newX = e.clientX - pt.left - dragging.offsetX;
     const newY = e.clientY - pt.top - dragging.offsetY;
     setNodes((prev) => prev.map((n) => n.id === dragging.id ? { ...n, x: Math.max(0, newX), y: Math.max(0, newY) } : n));
-  }, [dragging]);
+  }, [dragging, connecting, getSvgCoords]);
 
   const handleMouseUp = useCallback(() => {
     setDragging(null);
+    setConnecting(null);
   }, []);
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
@@ -296,7 +339,7 @@ export default function WorkflowPage() {
           </defs>
 
           {/* Connections */}
-          {connections.map((c, i) => {
+          {conns.map((c, i) => {
             const fromNode = nodeMap[c.from];
             const toNode = nodeMap[c.to];
             if (!fromNode || !toNode) return null;
@@ -356,7 +399,11 @@ export default function WorkflowPage() {
                   const py = node.y + TITLE_H + 14 + i * PORT_SPACING;
                   const pc = portColor[port.type] || "hsl(210,20%,50%)";
                   return (
-                    <g key={`in-${i}`}>
+                    <g key={`in-${i}`}
+                      onMouseUp={(e) => handlePortMouseUp(e, node.id, port.name)}
+                      style={{ cursor: connecting ? "crosshair" : "default" }}
+                    >
+                      <circle cx={node.x} cy={py} r={PORT_R + 3} fill="transparent" />
                       <circle cx={node.x} cy={py} r={PORT_R} fill="hsl(228,12%,13%)" stroke={pc} strokeWidth={1.5} />
                       <text x={node.x + 10} y={py + 3} fill="hsl(210,15%,55%)" fontSize={9}>
                         {port.name}
@@ -370,7 +417,11 @@ export default function WorkflowPage() {
                   const py = node.y + TITLE_H + 14 + i * PORT_SPACING;
                   const pc = portColor[port.type] || "hsl(210,20%,50%)";
                   return (
-                    <g key={`out-${i}`}>
+                    <g key={`out-${i}`}
+                      onMouseDown={(e) => handlePortMouseDown(e, node.id, port.name, port.type)}
+                      style={{ cursor: "crosshair" }}
+                    >
+                      <circle cx={node.x + w} cy={py} r={PORT_R + 3} fill="transparent" />
                       <circle cx={node.x + w} cy={py} r={PORT_R} fill={pc} />
                       <text x={node.x + w - 10} y={py + 3} fill="hsl(210,15%,55%)" fontSize={9} textAnchor="end">
                         {port.name}
@@ -421,6 +472,19 @@ export default function WorkflowPage() {
               </g>
             );
           })}
+
+          {/* Connection being drawn */}
+          {connecting && (() => {
+            const fromNode = nodeMap[connecting.fromNodeId];
+            if (!fromNode) return null;
+            const p1 = getPortPos(fromNode, connecting.fromPort, true);
+            const dx = Math.abs(connecting.mouseX - p1.x) * 0.5;
+            const d = `M${p1.x},${p1.y} C${p1.x + dx},${p1.y} ${connecting.mouseX - dx},${connecting.mouseY} ${connecting.mouseX},${connecting.mouseY}`;
+            const pc = portColor[connecting.fromType] || "hsl(210,20%,50%)";
+            return (
+              <path d={d} fill="none" stroke={pc} strokeWidth={2} opacity={0.7} strokeDasharray="6 4" />
+            );
+          })()}
         </svg>
 
         {/* Minimap */}

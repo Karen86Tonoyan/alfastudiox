@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Square, MessageSquare } from "lucide-react";
 import { NodeLibrary } from "@/components/workflow/NodeLibrary";
@@ -164,14 +164,45 @@ function getPortPos(node: WorkflowNode, portName: string, isOutput: boolean) {
 }
 
 export default function WorkflowPage() {
-  const nodeMap = Object.fromEntries(mockNodes.map((n) => [n.id, n]));
+  const [nodes, setNodes] = useState<WorkflowNode[]>(mockNodes);
+  const nodeMap = Object.fromEntries(nodes.map((n) => [n.id, n]));
   const [activeNode, setActiveNode] = useState<string>("4");
   const [running, setRunning] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setContextMenu({ x: e.clientX, y: e.clientY });
+  }, []);
+
+  const addNodeToCanvas = useCallback((name: string, x?: number, y?: number) => {
+    const id = String(Date.now());
+    const newNode: WorkflowNode = {
+      id,
+      title: name,
+      type: "prompt",
+      x: x ?? 100 + Math.random() * 400,
+      y: y ?? 100 + Math.random() * 300,
+      inputs: [{ name: "input", type: "MODEL" }],
+      outputs: [{ name: "output", type: "IMAGE" }],
+      width: 220,
+    };
+    setNodes((prev) => [...prev, newNode]);
+    setActiveNode(id);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const name = e.dataTransfer.getData("workflow/node");
+    if (!name || !canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    addNodeToCanvas(name, e.clientX - rect.left, e.clientY - rect.top);
+  }, [addNodeToCanvas]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
   }, []);
 
   const svgW = 1200;
@@ -180,10 +211,16 @@ export default function WorkflowPage() {
   return (
     <div className="flex h-full">
       {/* Node Library */}
-      <NodeLibrary className="w-64 shrink-0" />
+      <NodeLibrary className="w-64 shrink-0" onAddNode={addNodeToCanvas} />
 
       {/* Canvas */}
-      <div className="flex-1 overflow-auto relative" onContextMenu={handleContextMenu}>
+      <div
+        ref={canvasRef}
+        className="flex-1 overflow-auto relative"
+        onContextMenu={handleContextMenu}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+      >
         {/* Top bar */}
         <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
           <button className="flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground">
@@ -253,7 +290,7 @@ export default function WorkflowPage() {
           })}
 
           {/* Nodes */}
-          {mockNodes.map((node) => {
+          {nodes.map((node) => {
             const isActive = activeNode === node.id;
             const w = node.width || 200;
             const h = getNodeHeight(node);
@@ -336,7 +373,7 @@ export default function WorkflowPage() {
         {/* Minimap */}
         <div className="absolute bottom-3 right-3 z-10 rounded-lg border border-border bg-card/80 p-2 backdrop-blur-sm">
           <svg width={120} height={60} viewBox={`0 0 ${svgW} ${svgH}`}>
-            {mockNodes.map((n) => (
+            {nodes.map((n) => (
               <rect
                 key={n.id}
                 x={n.x}

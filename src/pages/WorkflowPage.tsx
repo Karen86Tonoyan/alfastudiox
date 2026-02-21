@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Square, MessageSquare } from "lucide-react";
 import { NodeLibrary } from "@/components/workflow/NodeLibrary";
@@ -274,6 +274,26 @@ export default function WorkflowPage() {
     e.dataTransfer.dropEffect = "copy";
   }, []);
 
+  const deleteActiveNode = useCallback(() => {
+    if (!activeNode) return;
+    setNodes((prev) => prev.filter((n) => n.id !== activeNode));
+    setConns((prev) => prev.filter((c) => c.from !== activeNode && c.to !== activeNode));
+    setActiveNode("");
+  }, [activeNode]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.key === "Delete" || e.key === "Backspace") && activeNode) {
+        const tag = (e.target as HTMLElement).tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA") return;
+        e.preventDefault();
+        deleteActiveNode();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [activeNode, deleteActiveNode]);
+
   const svgW = 1200;
   const svgH = 650;
 
@@ -509,7 +529,7 @@ export default function WorkflowPage() {
         </div>
 
         {contextMenu && (
-          <WorkflowContextMenu x={contextMenu.x} y={contextMenu.y} onClose={() => setContextMenu(null)} />
+          <WorkflowContextMenu x={contextMenu.x} y={contextMenu.y} onClose={() => setContextMenu(null)} onDelete={deleteActiveNode} />
         )}
       </div>
     </div>

@@ -170,6 +170,29 @@ export default function WorkflowPage() {
   const [running, setRunning] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
+
+  const handleNodeMouseDown = useCallback((e: React.MouseEvent, nodeId: string, nodeX: number, nodeY: number) => {
+    e.stopPropagation();
+    setActiveNode(nodeId);
+    const svg = (e.target as SVGElement).closest("svg");
+    if (!svg) return;
+    const pt = svg.getBoundingClientRect();
+    setDragging({ id: nodeId, offsetX: e.clientX - pt.left - nodeX, offsetY: e.clientY - pt.top - nodeY });
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!dragging) return;
+    const svg = (e.currentTarget as SVGElement);
+    const pt = svg.getBoundingClientRect();
+    const newX = e.clientX - pt.left - dragging.offsetX;
+    const newY = e.clientY - pt.top - dragging.offsetY;
+    setNodes((prev) => prev.map((n) => n.id === dragging.id ? { ...n, x: Math.max(0, newX), y: Math.max(0, newY) } : n));
+  }, [dragging]);
+
+  const handleMouseUp = useCallback(() => {
+    setDragging(null);
+  }, []);
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -251,6 +274,9 @@ export default function WorkflowPage() {
           width={svgW}
           height={svgH}
           className="min-w-full min-h-full"
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
           style={{
             background: "radial-gradient(circle, hsl(228 10% 14%) 1px, transparent 1px)",
             backgroundSize: "20px 20px",
@@ -297,7 +323,7 @@ export default function WorkflowPage() {
             const color = typeColor[node.type];
 
             return (
-              <g key={node.id} onClick={() => setActiveNode(node.id)} style={{ cursor: "pointer" }}>
+              <g key={node.id} onMouseDown={(e) => handleNodeMouseDown(e, node.id, node.x, node.y)} style={{ cursor: dragging?.id === node.id ? "grabbing" : "grab" }}>
                 {/* Active glow */}
                 {isActive && (
                   <rect x={node.x - 3} y={node.y - 3} width={w + 6} height={h + 6} rx={8} fill="none" stroke={color} strokeWidth={2} opacity={0.5}>

@@ -12,6 +12,7 @@ import HistoryPage from "./pages/HistoryPage";
 import GalleryPage from "./pages/GalleryPage";
 import OrchestratorPage from "./pages/OrchestratorPage";
 import ErrorsPage from "./pages/ErrorsPage";
+import ProvidersPage from "./pages/ProvidersPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/errors" element={<ErrorsPage />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/providers" element={<ProvidersPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -16,6 +16,7 @@ interface WorkflowNode {
   fields?: { label: string; value: string }[];
   subtitle?: string;
   width?: number;
+  previewImage?: string;
 }
 
 const typeColor: Record<string, string> = {
@@ -98,7 +99,8 @@ const mockNodes: WorkflowNode[] = [
     inputs: [{ name: "images", type: "IMAGE" }],
     outputs: [],
     fields: [{ label: "filename_prefix", value: "ComfyUI" }],
-    width: 180,
+    previewImage: "https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=400&h=400&fit=crop",
+    width: 220,
   },
   {
     id: "7", title: "Empty Latent Image", type: "latent", x: 320, y: 480,
@@ -151,7 +153,8 @@ const PORT_R = 5;
 function getNodeHeight(node: WorkflowNode) {
   const ports = Math.max(node.inputs.length, node.outputs.length);
   const fields = node.fields?.length || 0;
-  return TITLE_H + Math.max(ports * PORT_SPACING, 20) + fields * FIELD_H + 12;
+  const previewH = node.previewImage ? (node.width || 200) - 12 + 8 : 0;
+  return TITLE_H + Math.max(ports * PORT_SPACING, 20) + fields * FIELD_H + 12 + previewH;
 }
 
 function getPortPos(node: WorkflowNode, portName: string, isOutput: boolean) {
@@ -391,6 +394,30 @@ export default function WorkflowPage() {
                     </g>
                   );
                 })}
+
+                {/* Preview image */}
+                {node.previewImage && (() => {
+                  const imgSize = w - 12;
+                  const fy = node.y + TITLE_H + Math.max(node.inputs.length, node.outputs.length) * PORT_SPACING + 8 + (node.fields?.length || 0) * FIELD_H;
+                  return (
+                    <g>
+                      <rect x={node.x + 6} y={fy} width={imgSize} height={imgSize} rx={4} fill="hsl(228,10%,10%)" />
+                      <clipPath id={`clip-preview-${node.id}`}>
+                        <rect x={node.x + 6} y={fy} width={imgSize} height={imgSize} rx={4} />
+                      </clipPath>
+                      <image
+                        href={node.previewImage}
+                        x={node.x + 6}
+                        y={fy}
+                        width={imgSize}
+                        height={imgSize}
+                        clipPath={`url(#clip-preview-${node.id})`}
+                        preserveAspectRatio="xMidYMid slice"
+                      />
+                      <rect x={node.x + 6} y={fy} width={imgSize} height={imgSize} rx={4} fill="none" stroke={color} strokeWidth={0.5} opacity={0.3} />
+                    </g>
+                  );
+                })()}
               </g>
             );
           })}

@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { RenderControlPanel, type RenderSettings } from "@/components/render/RenderControlPanel";
 import { RenderHistoryPanel } from "@/components/render/RenderHistoryPanel";
+import { RenderQueuePanel } from "@/components/render/RenderQueuePanel";
 import { Badge } from "@/components/ui/badge";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { Monitor, Cpu, Thermometer, HardDrive, Zap } from "lucide-react";
@@ -85,20 +87,30 @@ export default function RenderPage() {
   return (
     <div className="flex flex-col h-full -m-4">
       <StatusBar />
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left: Controls */}
-        <div className="w-[380px] border-r border-border flex flex-col overflow-hidden">
-          <RenderControlPanel className="flex-1 overflow-hidden" onRender={handleRender} />
-        </div>
+      <ResizablePanelGroup direction="vertical" className="flex-1">
+        <ResizablePanel defaultSize={65} minSize={30}>
+          <div className="flex h-full overflow-hidden">
+            {/* Left: Controls */}
+            <div className="w-[380px] border-r border-border flex flex-col overflow-hidden">
+              <RenderControlPanel className="flex-1 overflow-hidden" onRender={handleRender} />
+            </div>
 
-        {/* Center: Preview */}
-        <RenderPreview isRendering={isRendering} progress={progress} />
+            {/* Center: Preview */}
+            <RenderPreview isRendering={isRendering} progress={progress} />
 
-        {/* Right: History */}
-        <div className="w-[340px] border-l border-border flex flex-col overflow-hidden">
-          <RenderHistoryPanel className="flex-1 overflow-hidden" />
-        </div>
-      </div>
+            {/* Right: History */}
+            <div className="w-[340px] border-l border-border flex flex-col overflow-hidden">
+              <RenderHistoryPanel className="flex-1 overflow-hidden" />
+            </div>
+          </div>
+        </ResizablePanel>
+
+        <ResizableHandle withHandle />
+
+        <ResizablePanel defaultSize={35} minSize={15} maxSize={55}>
+          <RenderQueuePanel className="h-full" />
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 }

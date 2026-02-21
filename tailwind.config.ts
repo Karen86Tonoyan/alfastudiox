@@ -57,6 +57,18 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          light: "hsl(var(--gold-light))",
+          dark: "hsl(var(--gold-dark))",
+          muted: "hsl(var(--gold-muted))",
+        },
+        status: {
+          ok: "hsl(var(--status-ok))",
+          warn: "hsl(var(--status-warn))",
+          danger: "hsl(var(--status-danger))",
+          info: "hsl(var(--status-info))",
+        },
         node: {
           model: "hsl(var(--node-model))",
           sampler: "hsl(var(--node-sampler))",
@@ -64,11 +76,6 @@ export default {
           output: "hsl(var(--node-output))",
           vae: "hsl(var(--node-vae))",
           controlnet: "hsl(var(--node-controlnet))",
-        },
-        status: {
-          ok: "hsl(var(--status-ok))",
-          warn: "hsl(var(--status-warn))",
-          danger: "hsl(var(--status-danger))",
         },
       },
       borderRadius: {
@@ -89,11 +96,16 @@ export default {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.5" },
         },
+        "gold-shimmer": {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
+        "gold-shimmer": "gold-shimmer 3s linear infinite",
       },
     },
   },

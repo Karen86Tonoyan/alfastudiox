@@ -1,4 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Play, Square } from "lucide-react";
 
 interface WorkflowNode {
   id: string;
@@ -58,17 +61,42 @@ function getPortPos(node: WorkflowNode, isOutput: boolean, index: number, total:
 
 export default function WorkflowPage() {
   const nodeMap = Object.fromEntries(mockNodes.map((n) => [n.id, n]));
+  const [activeNode, setActiveNode] = useState<string>("4");
+  const [running, setRunning] = useState(false);
 
   return (
     <div className="flex h-full gap-4">
       {/* Canvas */}
-      <div className="flex-1 overflow-auto rounded-lg border border-border bg-background">
+      <div className="flex-1 overflow-auto rounded-lg border border-border bg-background relative">
+        {/* Run controls */}
+        <div className="absolute top-2 right-2 z-10 flex gap-2">
+          <Button
+            size="sm"
+            variant={running ? "destructive" : "default"}
+            onClick={() => setRunning(!running)}
+            className="gap-1.5 text-xs"
+          >
+            {running ? <Square className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+            {running ? "Stop" : "Run"}
+          </Button>
+        </div>
         <svg
           width="1300"
           height="340"
           className="min-w-full"
           style={{ background: "radial-gradient(circle, hsl(228 10% 14%) 1px, transparent 1px)", backgroundSize: "20px 20px" }}
         >
+          <defs>
+            {/* Animated dash for running connections */}
+            <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
           {/* Connections */}
           {connections.map((c, i) => {
             const from = nodeMap[c.from];
@@ -77,75 +105,111 @@ export default function WorkflowPage() {
             const p2 = getPortPos(to, false, c.toIn, to.inputs.length);
             const cx1 = p1.x + 60;
             const cx2 = p2.x - 60;
+            const d = `M${p1.x},${p1.y} C${cx1},${p1.y} ${cx2},${p2.y} ${p2.x},${p2.y}`;
             return (
-              <path
-                key={i}
-                d={`M${p1.x},${p1.y} C${cx1},${p1.y} ${cx2},${p2.y} ${p2.x},${p2.y}`}
-                fill="none"
-                stroke={typeColor[from.type]}
-                strokeWidth={2}
-                opacity={0.6}
-              />
+              <g key={i}>
+                <path
+                  d={d}
+                  fill="none"
+                  stroke={typeColor[from.type]}
+                  strokeWidth={2}
+                  opacity={running ? 0.8 : 0.5}
+                  filter={running ? "url(#glow)" : undefined}
+                />
+                {running && (
+                  <path
+                    d={d}
+                    fill="none"
+                    stroke="white"
+                    strokeWidth={2}
+                    opacity={0.6}
+                    strokeDasharray="6 10"
+                  >
+                    <animate attributeName="stroke-dashoffset" from="0" to="-48" dur="1s" repeatCount="indefinite" />
+                  </path>
+                )}
+              </g>
             );
           })}
 
           {/* Nodes */}
-          {mockNodes.map((node) => (
-            <g key={node.id}>
-              <rect
-                x={node.x}
-                y={node.y}
-                width={nodeW}
-                height={nodeH}
-                rx={6}
-                fill="hsl(228, 12%, 15%)"
-                stroke={typeColor[node.type]}
-                strokeWidth={1.5}
-              />
-              {/* Title bar */}
-              <rect
-                x={node.x}
-                y={node.y}
-                width={nodeW}
-                height={24}
-                rx={6}
-                fill={typeColor[node.type]}
-                opacity={0.2}
-              />
-              <text x={node.x + 10} y={node.y + 16} fill={typeColor[node.type]} fontSize={11} fontWeight={600}>
-                {node.title}
-              </text>
+          {mockNodes.map((node) => {
+            const isActive = activeNode === node.id;
+            return (
+              <g key={node.id} onClick={() => setActiveNode(node.id)} style={{ cursor: "pointer" }}>
+                {/* Active glow */}
+                {isActive && (
+                  <rect
+                    x={node.x - 4}
+                    y={node.y - 4}
+                    width={nodeW + 8}
+                    height={nodeH + 8}
+                    rx={10}
+                    fill="none"
+                    stroke={typeColor[node.type]}
+                    strokeWidth={2}
+                    opacity={0.6}
+                  >
+                    <animate attributeName="opacity" values="0.6;0.2;0.6" dur="2s" repeatCount="indefinite" />
+                  </rect>
+                )}
+                <rect
+                  x={node.x}
+                  y={node.y}
+                  width={nodeW}
+                  height={nodeH}
+                  rx={6}
+                  fill="hsl(228, 12%, 15%)"
+                  stroke={typeColor[node.type]}
+                  strokeWidth={isActive ? 2 : 1.5}
+                />
+                {/* Title bar */}
+                <rect
+                  x={node.x}
+                  y={node.y}
+                  width={nodeW}
+                  height={24}
+                  rx={6}
+                  fill={typeColor[node.type]}
+                  opacity={isActive ? 0.35 : 0.2}
+                />
+                <text x={node.x + 10} y={node.y + 16} fill={typeColor[node.type]} fontSize={11} fontWeight={600}>
+                  {node.title}
+                </text>
 
-              {/* Input ports */}
-              {node.inputs.map((label, i) => {
-                const pos = getPortPos(node, false, i, node.inputs.length);
-                return (
-                  <g key={`in-${i}`}>
-                    <circle cx={pos.x} cy={pos.y} r={4} fill="hsl(228,12%,15%)" stroke="hsl(210,20%,50%)" strokeWidth={1.5} />
-                    <text x={pos.x + 10} y={pos.y + 3} fill="hsl(210,15%,55%)" fontSize={9}>{label}</text>
-                  </g>
-                );
-              })}
+                {/* Input ports */}
+                {node.inputs.map((label, i) => {
+                  const pos = getPortPos(node, false, i, node.inputs.length);
+                  return (
+                    <g key={`in-${i}`}>
+                      <circle cx={pos.x} cy={pos.y} r={4} fill="hsl(228,12%,15%)" stroke="hsl(210,20%,50%)" strokeWidth={1.5} />
+                      <text x={pos.x + 10} y={pos.y + 3} fill="hsl(210,15%,55%)" fontSize={9}>{label}</text>
+                    </g>
+                  );
+                })}
 
-              {/* Output ports */}
-              {node.outputs.map((label, i) => {
-                const pos = getPortPos(node, true, i, node.outputs.length);
-                return (
-                  <g key={`out-${i}`}>
-                    <circle cx={pos.x} cy={pos.y} r={4} fill={typeColor[node.type]} />
-                    <text x={pos.x - 10} y={pos.y + 3} fill="hsl(210,15%,55%)" fontSize={9} textAnchor="end">{label}</text>
-                  </g>
-                );
-              })}
-            </g>
-          ))}
+                {/* Output ports */}
+                {node.outputs.map((label, i) => {
+                  const pos = getPortPos(node, true, i, node.outputs.length);
+                  return (
+                    <g key={`out-${i}`}>
+                      <circle cx={pos.x} cy={pos.y} r={4} fill={typeColor[node.type]} />
+                      <text x={pos.x - 10} y={pos.y + 3} fill="hsl(210,15%,55%)" fontSize={9} textAnchor="end">{label}</text>
+                    </g>
+                  );
+                })}
+              </g>
+            );
+          })}
         </svg>
       </div>
 
       {/* Properties panel */}
-      <Card className={`w-72 shrink-0 border-t-2 ${typeBorder.sampler}`}>
+      <Card className={`w-72 shrink-0 border-t-2 ${typeBorder[nodeMap[activeNode]?.type || "sampler"]}`}>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm text-node-sampler">KSampler — Właściwości</CardTitle>
+          <CardTitle className="text-sm" style={{ color: typeColor[nodeMap[activeNode]?.type || "sampler"] }}>
+            {nodeMap[activeNode]?.title || "KSampler"} — Właściwości
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-xs">
           {[

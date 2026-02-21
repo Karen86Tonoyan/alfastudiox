@@ -100,21 +100,27 @@ interface RenderControlPanelProps {
   className?: string;
   onRender?: (settings: RenderSettings) => void;
   onSaveWorkflow?: (settings: RenderSettings) => void;
+  isComfyConnected?: boolean;
+  isComfyRendering?: boolean;
+  onCancelRender?: () => void;
 }
 
-export function RenderControlPanel({ className, onRender, onSaveWorkflow }: RenderControlPanelProps) {
+export function RenderControlPanel({ className, onRender, onSaveWorkflow, isComfyConnected, isComfyRendering, onCancelRender }: RenderControlPanelProps) {
   const [settings, setSettings] = useState<RenderSettings>(defaultSettings);
-  const [isRendering, setIsRendering] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(true);
+
+  const activeRendering = isComfyRendering ?? false;
 
   const update = useCallback(<K extends keyof RenderSettings>(key: K, value: RenderSettings[K]) => {
     setSettings((prev) => ({ ...prev, [key]: value }));
   }, []);
 
   const handleRender = () => {
-    setIsRendering(true);
     onRender?.(settings);
-    setTimeout(() => setIsRendering(false), 3000);
+  };
+
+  const handleCancel = () => {
+    onCancelRender?.();
   };
 
   const handleRandomSeed = () => {
@@ -471,19 +477,19 @@ export function RenderControlPanel({ className, onRender, onSaveWorkflow }: Rend
       {/* Render button */}
       <div className="border-t border-border p-4">
         <Button
-          onClick={handleRender}
-          disabled={isRendering || !settings.prompt.trim()}
+          onClick={activeRendering ? handleCancel : handleRender}
+          disabled={!activeRendering && !settings.prompt.trim()}
           className={cn(
             "w-full h-11 gap-2 text-sm font-bold uppercase tracking-wider transition-all",
-            isRendering
+            activeRendering
               ? "bg-destructive text-destructive-foreground"
               : "gold-gradient text-primary-foreground hover:opacity-90 gold-glow"
           )}
         >
-          {isRendering ? (
-            <><Square className="h-4 w-4" /> Rendering...</>
+          {activeRendering ? (
+            <><Square className="h-4 w-4" /> Cancel Render</>
           ) : (
-            <><Play className="h-4 w-4" /> Generate {settings.modelType === "video" ? "Video" : "Image"}</>
+            <><Play className="h-4 w-4" /> {isComfyConnected ? "Send to ComfyUI" : `Generate ${settings.modelType === "video" ? "Video" : "Image"}`}</>
           )}
         </Button>
       </div>

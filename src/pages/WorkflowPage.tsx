@@ -182,6 +182,9 @@ export default function WorkflowPage() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState<{ id: string; offsetX: number; offsetY: number } | null>(null);
   const [conns, setConns] = useState<Connection[]>(initialConnections);
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [panning, setPanning] = useState<{ startX: number; startY: number; panX: number; panY: number } | null>(null);
   const [connecting, setConnecting] = useState<{
     fromNodeId: string;
     fromPort: string;
@@ -238,7 +241,31 @@ export default function WorkflowPage() {
   const handleMouseUp = useCallback(() => {
     setDragging(null);
     setConnecting(null);
+    setPanning(null);
   }, []);
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    setZoom((prev) => Math.min(3, Math.max(0.2, prev * delta)));
+  }, []);
+
+  const handleCanvasMouseDown = useCallback((e: React.MouseEvent) => {
+    // Middle mouse button or left click on empty canvas for panning
+    if (e.button === 1 || (e.button === 0 && e.target === e.currentTarget)) {
+      e.preventDefault();
+      setPanning({ startX: e.clientX, startY: e.clientY, panX: pan.x, panY: pan.y });
+    }
+  }, [pan]);
+
+  const handleCanvasMouseMove = useCallback((e: React.MouseEvent) => {
+    if (panning) {
+      setPan({
+        x: panning.panX + (e.clientX - panning.startX),
+        y: panning.panY + (e.clientY - panning.startY),
+      });
+    }
+  }, [panning]);
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -305,10 +332,13 @@ export default function WorkflowPage() {
       {/* Canvas */}
       <div
         ref={canvasRef}
-        className="flex-1 overflow-auto relative"
+        className="flex-1 overflow-hidden relative"
         onContextMenu={handleContextMenu}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
+        onMouseDown={handleCanvasMouseDown}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseUp={handleMouseUp}
       >
         {/* Top bar */}
         <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
@@ -337,17 +367,20 @@ export default function WorkflowPage() {
         <WorkflowToolbar />
 
         <svg
-          width={svgW}
-          height={svgH}
-          className="min-w-full min-h-full"
+          width="100%"
+          height="100%"
+          className="absolute inset-0"
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onWheel={handleWheel}
           style={{
             background: "radial-gradient(circle, hsl(228 10% 14%) 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
+            backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
+            backgroundPosition: `${pan.x}px ${pan.y}px`,
           }}
         >
+          <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
           <defs>
             <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="3" result="blur" />
@@ -505,6 +538,7 @@ export default function WorkflowPage() {
               <path d={d} fill="none" stroke={pc} strokeWidth={2} opacity={0.7} strokeDasharray="6 4" />
             );
           })()}
+          </g>
         </svg>
 
         {/* Minimap */}
@@ -524,7 +558,7 @@ export default function WorkflowPage() {
             ))}
           </svg>
           <div className="mt-1 flex items-center justify-between text-[10px] text-muted-foreground">
-            <span>44%</span>
+            <span>{Math.round(zoom * 100)}%</span>
           </div>
         </div>
 

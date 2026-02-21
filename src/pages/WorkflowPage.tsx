@@ -4,6 +4,7 @@ import { Play, Square, MessageSquare } from "lucide-react";
 import { NodeLibrary } from "@/components/workflow/NodeLibrary";
 import { WorkflowContextMenu } from "@/components/workflow/ContextMenu";
 import { WorkflowToolbar } from "@/components/workflow/WorkflowToolbar";
+import { ScenarioManager } from "@/components/workflow/ScenarioManager";
 
 interface WorkflowNode {
   id: string;
@@ -566,6 +567,9 @@ export default function WorkflowPage() {
           <WorkflowContextMenu x={contextMenu.x} y={contextMenu.y} onClose={() => setContextMenu(null)} onDelete={deleteActiveNode} />
         )}
       </div>
+
+      {/* AI Scenario Manager */}
+      <ScenarioManager className="w-72 shrink-0" />
     </div>
   );
 }

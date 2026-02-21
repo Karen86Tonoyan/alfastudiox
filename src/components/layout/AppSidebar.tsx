@@ -7,13 +7,17 @@ import {
   Image,
   ChevronLeft,
   ChevronRight,
+  Layers,
+  AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { title: "Workflow", path: "/", icon: GitBranch },
+  { title: "Orchestrator", path: "/orchestrator", icon: Layers },
   { title: "Modele", path: "/models", icon: Box },
   { title: "Monitor", path: "/monitor", icon: Activity },
+  { title: "Error Log", path: "/errors", icon: AlertTriangle },
   { title: "Historia", path: "/history", icon: Clock },
   { title: "Galeria", path: "/gallery", icon: Image },
 ];

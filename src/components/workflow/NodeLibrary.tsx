@@ -53,9 +53,10 @@ const nodeCategories: NodeCategory[] = [
 
 interface NodeLibraryProps {
   className?: string;
+  onAddNode?: (name: string) => void;
 }
 
-export function NodeLibrary({ className }: NodeLibraryProps) {
+export function NodeLibrary({ className, onAddNode }: NodeLibraryProps) {
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({ "Subgraph Blueprints": true });
 
@@ -124,7 +125,10 @@ export function NodeLibrary({ className }: NodeLibraryProps) {
                     .map((child) => (
                       <button
                         key={child.name}
-                        className="flex w-full items-center gap-1.5 rounded px-2 py-1 text-[11px] text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        draggable
+                        onDragStart={(e) => e.dataTransfer.setData("workflow/node", child.name)}
+                        onClick={() => onAddNode?.(child.name)}
+                        className="flex w-full items-center gap-1.5 rounded px-2 py-1 text-[11px] text-muted-foreground hover:bg-secondary hover:text-foreground cursor-grab active:cursor-grabbing"
                       >
                         <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/50" />
                         <span className="truncate">{child.name}</span>

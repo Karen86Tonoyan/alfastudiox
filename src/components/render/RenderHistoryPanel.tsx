@@ -100,14 +100,17 @@ const mockHistory: RenderHistoryItem[] = [
 interface RenderHistoryPanelProps {
   className?: string;
   onLoadSettings?: (settings: RenderSettings) => void;
+  externalHistory?: RenderHistoryItem[];
 }
 
-export function RenderHistoryPanel({ className, onLoadSettings }: RenderHistoryPanelProps) {
-  const [history] = useState<RenderHistoryItem[]>(mockHistory);
+export function RenderHistoryPanel({ className, onLoadSettings, externalHistory }: RenderHistoryPanelProps) {
+  const allHistory = externalHistory && externalHistory.length > 0
+    ? [...externalHistory, ...mockHistory]
+    : mockHistory;
   const [expanded, setExpanded] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "success" | "failed">("all");
 
-  const filtered = filter === "all" ? history : history.filter((h) => h.status === filter);
+  const filtered = filter === "all" ? allHistory : allHistory.filter((h) => h.status === filter);
 
   const formatTime = (ts: number) =>
     new Date(ts).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
@@ -128,7 +131,7 @@ export function RenderHistoryPanel({ className, onLoadSettings }: RenderHistoryP
         <Clock className="h-5 w-5 text-primary" />
         <h2 className="text-sm font-bold tracking-wide text-primary uppercase">Render History</h2>
         <Badge variant="outline" className="ml-auto text-[10px] border-primary/30 text-primary">
-          {history.length} renders
+          {allHistory.length} renders
         </Badge>
       </div>
 
@@ -291,7 +294,7 @@ export function RenderHistoryPanel({ className, onLoadSettings }: RenderHistoryP
       {/* Footer */}
       <div className="flex items-center justify-between border-t border-border px-4 py-2">
         <span className="text-[10px] text-muted-foreground">
-          {filtered.length} of {history.length} renders
+          {filtered.length} of {allHistory.length} renders
         </span>
         <Button size="sm" variant="ghost" className="h-6 gap-1 px-2 text-[10px] text-muted-foreground">
           <Trash2 className="h-2.5 w-2.5" /> Clear All

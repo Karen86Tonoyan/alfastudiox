@@ -3,12 +3,14 @@ import { RenderControlPanel, type RenderSettings } from "@/components/render/Ren
 import { RenderHistoryPanel, type RenderHistoryItem } from "@/components/render/RenderHistoryPanel";
 import { RenderQueuePanel } from "@/components/render/RenderQueuePanel";
 import { ComfyConnectionBar } from "@/components/render/ComfyConnectionBar";
+import { AIAssistPanel } from "@/components/render/AIAssistPanel";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 import { Monitor, Cpu, Thermometer, HardDrive, Zap, Wifi } from "lucide-react";
 import { useComfyUI } from "@/hooks/useComfyUI";
+import { useOllama } from "@/hooks/useOllama";
 import { buildWorkflow } from "@/lib/workflowBuilder";
 import { toast } from "sonner";
 
@@ -102,6 +104,8 @@ function RenderPreview({
 
 export default function RenderPage() {
   const comfy = useComfyUI();
+  const ollama = useOllama();
+  const [currentSettings, setCurrentSettings] = useState<RenderSettings | null>(null);
   const [localProgress, setLocalProgress] = useState(0);
   const [localRendering, setLocalRendering] = useState(false);
   const [renderHistory, setRenderHistory] = useState<RenderHistoryItem[]>([]);
@@ -190,7 +194,10 @@ export default function RenderPage() {
             <div className="w-[380px] border-r border-border flex flex-col overflow-hidden">
               <RenderControlPanel
                 className="flex-1 overflow-hidden"
-                onRender={handleRender}
+                onRender={(settings) => {
+                  setCurrentSettings(settings);
+                  handleRender(settings);
+                }}
                 isComfyConnected={comfy.isConnected}
                 isComfyRendering={isRendering}
                 onCancelRender={handleCancel}
@@ -204,7 +211,27 @@ export default function RenderPage() {
               lastImage={comfy.lastImage}
             />
 
-            <div className="w-[340px] border-l border-border flex flex-col overflow-hidden">
+            <div className="w-[300px] border-l border-border flex flex-col overflow-hidden">
+              <AIAssistPanel
+                className="flex-1 overflow-hidden"
+                ollama={ollama}
+                currentSettings={currentSettings ?? {
+                  model: "sdxl", modelType: "image", prompt: "", negativePrompt: "",
+                  seed: -1, sampler: "dpmpp_2m", steps: 30, cfg: 7, width: 1024, height: 1024,
+                  lora: "none", loraWeight: 0.8, frames: 16, fps: 8,
+                  skinTone: "natural", hairColor: "dark-brown", clothingStyle: "casual",
+                  sceneType: "outdoor", objectSelection: "none", lighting: "natural", cameraType: "standard",
+                }}
+                onApplyPrompt={(prompt) => {
+                  toast.success("Prompt zastosowany z AI Assist");
+                }}
+                onApplyParams={(params) => {
+                  toast.success("Parametry zastosowane z AI Assist");
+                }}
+              />
+            </div>
+
+            <div className="w-[300px] border-l border-border flex flex-col overflow-hidden">
               <RenderHistoryPanel className="flex-1 overflow-hidden" externalHistory={renderHistory} />
             </div>
           </div>

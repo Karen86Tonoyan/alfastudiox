@@ -12,6 +12,7 @@ import {
   Sparkles, ImageIcon, Film, Cpu, Zap
 } from "lucide-react";
 import { AdvancedParameters } from "./AdvancedParameters";
+import { PresetManager } from "./PresetManager";
 
 export interface RenderSettings {
   model: string;
@@ -194,6 +195,13 @@ export function RenderControlPanel({ className, onRender, onSaveWorkflow, isComf
 
       <ScrollArea className="flex-1">
         <div className="space-y-5 p-4">
+          {/* Presets */}
+          <PresetManager
+            currentSettings={settings}
+            onApply={(partial) => setSettings((prev) => ({ ...prev, ...partial }))}
+          />
+
+          <div className="h-px bg-border" />
           {/* Model Type Toggle */}
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

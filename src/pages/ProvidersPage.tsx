@@ -283,17 +283,6 @@ export default function ProvidersPage() {
                         </div>
                       </div>
 
-                      {provider.id === "comfyui-cloud" && (
-                        <div className="space-y-1">
-                          <label className="text-[10px] text-muted-foreground uppercase">URL instancji</label>
-                          <Input
-                            value={provider.baseUrl}
-                            onChange={(e) => handleUpdateProvider(provider.id, { baseUrl: e.target.value })}
-                            className="h-7 text-xs bg-background border-border font-mono"
-                            placeholder="https://your-comfyui-cloud.com"
-                          />
-                        </div>
-                      )}
 
                       {/* Features */}
                       <div className="flex flex-wrap gap-1">

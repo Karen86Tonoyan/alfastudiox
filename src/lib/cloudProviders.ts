@@ -5,7 +5,7 @@
 
 const STORAGE_KEY = "ai-director-cloud-providers";
 
-export type ProviderType = "runpod" | "replicate" | "huggingface" | "comfyui-cloud";
+export type ProviderType = "runpod" | "replicate" | "huggingface";
 
 export interface ProviderConfig {
   id: ProviderType;
@@ -65,17 +65,6 @@ const DEFAULT_PROVIDERS: ProviderConfig[] = [
     icon: "🤗",
     features: ["Inference API", "10k+ Models", "SDXL", "Free Tier", "Spaces"],
   },
-  {
-    id: "comfyui-cloud",
-    name: "ComfyUI Cloud",
-    description: "Hosted ComfyUI — run workflows in the cloud",
-    apiKey: "",
-    baseUrl: "",
-    enabled: false,
-    status: "disconnected",
-    icon: "☁️",
-    features: ["ComfyUI Hosted", "Custom Workflows", "Shared GPUs", "Auto-scale"],
-  },
 ];
 
 export function loadProviders(): ProviderConfig[] {
@@ -106,7 +95,7 @@ export function updateProvider(id: ProviderType, update: Partial<ProviderConfig>
 
 /** Test provider connection */
 export async function testProviderConnection(provider: ProviderConfig): Promise<boolean> {
-  if (!provider.apiKey && provider.id !== "comfyui-cloud") return false;
+  if (!provider.apiKey) return false;
 
   try {
     switch (provider.id) {
@@ -131,13 +120,6 @@ export async function testProviderConnection(provider: ProviderConfig): Promise<
         });
         // RunPod returns 404 for base URL but we check auth
         return res.status !== 401;
-      }
-      case "comfyui-cloud": {
-        if (!provider.baseUrl) return false;
-        const res = await fetch(provider.baseUrl, {
-          signal: AbortSignal.timeout(5000),
-        });
-        return res.ok;
       }
       default:
         return false;
@@ -184,10 +166,6 @@ export function getProviderModels(provider: ProviderType): { id: string; name: s
         { id: "sdxl", name: "SDXL (Custom Endpoint)" },
         { id: "flux", name: "Flux (Custom Endpoint)" },
         { id: "comfyui", name: "ComfyUI (Serverless)" },
-      ];
-    case "comfyui-cloud":
-      return [
-        { id: "default", name: "Cloud ComfyUI Instance" },
       ];
     default:
       return [];

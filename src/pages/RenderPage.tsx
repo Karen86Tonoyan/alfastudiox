@@ -3,6 +3,7 @@ import { RenderControlPanel, type RenderSettings } from "@/components/render/Ren
 import { RenderHistoryPanel, type RenderHistoryItem } from "@/components/render/RenderHistoryPanel";
 import { RenderQueuePanel } from "@/components/render/RenderQueuePanel";
 import { ComfyConnectionBar } from "@/components/render/ComfyConnectionBar";
+import { RenderBackendSwitcher, type RenderBackend } from "@/components/render/RenderBackendSwitcher";
 import { AIAssistPanel } from "@/components/render/AIAssistPanel";
 import { VFXEffectsPanel, type VFXEffect } from "@/components/render/VFXEffectsPanel";
 import { ExportSettingsPanel } from "@/components/render/ExportSettingsPanel";
@@ -26,7 +27,7 @@ function StatusBar({ gpu, isConnected }: { gpu: any; isConnected: boolean }) {
   return (
     <div className="flex items-center gap-4 border-b border-border bg-card px-4 py-2">
       <div className="flex items-center gap-2">
-        <div className={cn("h-2 w-2 rounded-full animate-pulse", isConnected ? "bg-emerald-400" : "bg-status-ok")} />
+        <div className={cn("h-2 w-2 rounded-full animate-pulse", isConnected ? "bg-status-ok" : "bg-muted-foreground/40")} />
         <span className="text-[11px] text-foreground font-medium">
           {isConnected ? "ComfyUI Live" : "System Online"}
         </span>
@@ -113,6 +114,7 @@ export default function RenderPage() {
   const [localProgress, setLocalProgress] = useState(0);
   const [localRendering, setLocalRendering] = useState(false);
   const [renderHistory, setRenderHistory] = useState<RenderHistoryItem[]>([]);
+  const [renderBackend, setRenderBackend] = useState<RenderBackend>({ type: "local" });
   const renderStartRef = useRef<{ time: number; settings: RenderSettings } | null>(null);
 
   const isRendering = comfy.isRendering || localRendering;
@@ -142,7 +144,8 @@ export default function RenderPage() {
   const handleRender = useCallback(async (settings: RenderSettings) => {
     renderStartRef.current = { time: Date.now(), settings };
 
-    if (comfy.isConnected) {
+    if (renderBackend.type === "local" && comfy.isConnected) {
+      // Local ComfyUI via WebSocket
       const workflow = buildWorkflow(settings);
       toast.info("Sending workflow to ComfyUI...");
       const promptId = await comfy.queuePrompt(workflow);
@@ -153,8 +156,28 @@ export default function RenderPage() {
         addToHistory(settings, "failed", Date.now() - renderStartRef.current.time);
         renderStartRef.current = null;
       }
+    } else if (renderBackend.type === "cloud") {
+      // Cloud provider render (simulation — real API calls need Cloud backend)
+      toast.info(`Sending to ${renderBackend.provider} (${renderBackend.model})...`);
+      setLocalRendering(true);
+      setLocalProgress(0);
+      const interval = setInterval(() => {
+        setLocalProgress((p) => {
+          if (p >= 100) {
+            clearInterval(interval);
+            setLocalRendering(false);
+            if (renderStartRef.current) {
+              addToHistory(renderStartRef.current.settings, "success", Date.now() - renderStartRef.current.time);
+              renderStartRef.current = null;
+            }
+            toast.success(`Render z ${renderBackend.provider} zakończony`);
+            return 0;
+          }
+          return p + 1.5;
+        });
+      }, 120);
     } else {
-      // Local simulation
+      // Local simulation (no ComfyUI connected)
       setLocalRendering(true);
       setLocalProgress(0);
       const interval = setInterval(() => {
@@ -172,7 +195,7 @@ export default function RenderPage() {
         });
       }, 100);
     }
-  }, [comfy.isConnected, comfy.queuePrompt, addToHistory]);
+  }, [renderBackend, comfy.isConnected, comfy.queuePrompt, addToHistory]);
 
   const handleCancel = useCallback(async () => {
     if (comfy.isConnected) {
@@ -189,6 +212,11 @@ export default function RenderPage() {
         currentNode={comfy.currentNode}
         onConnect={(url) => comfy.connect(url)}
         onDisconnect={() => comfy.disconnect()}
+      />
+      <RenderBackendSwitcher
+        backend={renderBackend}
+        onBackendChange={setRenderBackend}
+        isComfyConnected={comfy.isConnected}
       />
       <StatusBar gpu={comfy.gpu} isConnected={comfy.isConnected} />
 

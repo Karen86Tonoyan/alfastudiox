@@ -8,8 +8,10 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Bot, Cloud, Loader2, RefreshCw, Check, X,
-  Cpu, Globe, Zap, Shield, ExternalLink, Settings
+  Cpu, Globe, Zap, Shield, ExternalLink, Settings,
+  Wifi, WifiOff, Server, Activity
 } from "lucide-react";
+import { useComfyUI } from "@/hooks/useComfyUI";
 import {
   loadProviders,
   saveProviders,
@@ -33,6 +35,9 @@ export default function ProvidersPage() {
   const [ollamaConnected, setOllamaConnected] = useState(false);
   const [ollamaModels, setOllamaModels] = useState<OllamaModel[]>([]);
   const [checking, setChecking] = useState<string | null>(null);
+  const [comfyUrl, setComfyUrl] = useState("localhost:8188");
+
+  const comfy = useComfyUI();
 
   useEffect(() => {
     pingOllama().then((ok) => {
@@ -203,6 +208,143 @@ export default function ProvidersPage() {
                 <p>2. Zainstaluj i uruchom <span className="font-mono text-primary">ollama serve</span></p>
                 <p>3. Pobierz model: <span className="font-mono text-primary">ollama pull llama3.2</span></p>
                 <p>4. Dla analizy obrazów: <span className="font-mono text-primary">ollama pull llava</span></p>
+              </div>
+            </div>
+          </section>
+
+          {/* COMFYUI SECTION */}
+          <section className="rounded-lg border border-primary/20 bg-card overflow-hidden">
+            <div className="flex items-center gap-3 px-4 py-3 bg-primary/5 border-b border-primary/10">
+              <Server className="h-5 w-5 text-primary" />
+              <div className="flex-1">
+                <h2 className="text-sm font-bold text-foreground">ComfyUI</h2>
+                <p className="text-[10px] text-muted-foreground">Lokalny silnik renderowania — WebSocket API</p>
+              </div>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-[9px] px-2",
+                  comfy.isConnected
+                    ? "border-status-ok/30 text-status-ok"
+                    : comfy.status === "connecting"
+                    ? "border-status-warn/30 text-status-warn"
+                    : comfy.status === "error"
+                    ? "border-destructive/30 text-destructive"
+                    : "border-border text-muted-foreground"
+                )}
+              >
+                {comfy.isConnected ? "Połączony" : comfy.status === "connecting" ? "Łączenie..." : comfy.status === "error" ? "Błąd" : "Rozłączony"}
+              </Badge>
+            </div>
+
+            <div className="p-4 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-muted-foreground uppercase">Adres serwera</label>
+                  <Input
+                    value={comfyUrl}
+                    onChange={(e) => setComfyUrl(e.target.value)}
+                    className="h-8 text-xs bg-background border-border font-mono"
+                    placeholder="localhost:8188"
+                    disabled={comfy.isConnected}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] text-muted-foreground uppercase">Protokół</label>
+                  <Input
+                    value="WebSocket (ws://)"
+                    className="h-8 text-xs bg-background border-border font-mono text-muted-foreground"
+                    disabled
+                  />
+                </div>
+              </div>
+
+              {/* GPU Info */}
+              {comfy.isConnected && comfy.gpu && (
+                <div className="rounded bg-secondary/50 p-2.5 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <Activity className="h-3 w-3 text-primary" />
+                    <span className="text-[10px] font-semibold text-foreground">{comfy.gpu.name}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-[10px]">
+                    <div>
+                      <span className="text-muted-foreground">VRAM: </span>
+                      <span className="font-mono text-foreground">
+                        {comfy.gpu.vramUsed.toFixed(1)}/{comfy.gpu.vramTotal.toFixed(1)} GB
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Temp: </span>
+                      <span className={cn("font-mono", comfy.gpu.temp > 80 ? "text-destructive" : "text-foreground")}>
+                        {Math.round(comfy.gpu.temp)}°C
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">CUDA: </span>
+                      <span className={cn("font-mono", comfy.gpu.cudaAvailable ? "text-status-ok" : "text-destructive")}>
+                        {comfy.gpu.cudaAvailable ? "Tak" : "Nie"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Queue info */}
+              {comfy.isConnected && comfy.queueSize > 0 && (
+                <div className="flex items-center gap-2 text-[10px]">
+                  <Badge variant="outline" className="border-primary/30 text-primary font-mono">
+                    Kolejka: {comfy.queueSize}
+                  </Badge>
+                  {comfy.currentNode && (
+                    <span className="text-muted-foreground font-mono truncate">▸ {comfy.currentNode}</span>
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center gap-2">
+                {comfy.isConnected ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 gap-1.5 text-[10px] border-destructive/30 text-destructive hover:bg-destructive/10"
+                    onClick={comfy.disconnect}
+                  >
+                    <WifiOff className="h-3 w-3" />
+                    Rozłącz
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7 gap-1.5 text-[10px] border-primary/30 text-primary hover:bg-primary/10"
+                    onClick={() => comfy.connect(comfyUrl)}
+                    disabled={comfy.status === "connecting"}
+                  >
+                    {comfy.status === "connecting" ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Wifi className="h-3 w-3" />
+                    )}
+                    Połącz
+                  </Button>
+                )}
+              </div>
+
+              {/* Features */}
+              <div className="flex flex-wrap gap-1">
+                {["WebSocket Live", "GPU Monitor", "Queue Manager", "Workflow API", "Auto-reconnect", "CUDA"].map((f) => (
+                  <Badge key={f} variant="outline" className="text-[8px] px-1.5 py-0 border-border text-muted-foreground">
+                    {f}
+                  </Badge>
+                ))}
+              </div>
+
+              <div className="rounded bg-secondary/30 p-2.5 text-[10px] text-muted-foreground space-y-1">
+                <p className="font-semibold text-foreground">💡 Jak uruchomić ComfyUI:</p>
+                <p>1. Zainstaluj z <span className="text-primary font-mono">github.com/comfyanonymous/ComfyUI</span></p>
+                <p>2. Uruchom: <span className="font-mono text-primary">python main.py --listen 0.0.0.0</span></p>
+                <p>3. Domyślny port: <span className="font-mono text-primary">8188</span> (WebSocket + REST)</p>
+                <p>4. Sprawdź w przeglądarce: <span className="font-mono text-primary">http://localhost:8188</span></p>
               </div>
             </div>
           </section>

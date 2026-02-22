@@ -12,6 +12,7 @@ import {
   Wifi, WifiOff, Server, Activity
 } from "lucide-react";
 import { useComfyUI } from "@/hooks/useComfyUI";
+import { ComfyModelManager } from "@/components/providers/ComfyModelManager";
 import {
   loadProviders,
   saveProviders,
@@ -346,6 +347,9 @@ export default function ProvidersPage() {
                 <p>3. Domyślny port: <span className="font-mono text-primary">8188</span> (WebSocket + REST)</p>
                 <p>4. Sprawdź w przeglądarce: <span className="font-mono text-primary">http://localhost:8188</span></p>
               </div>
+
+              {/* Model Manager */}
+              <ComfyModelManager isConnected={comfy.isConnected} />
             </div>
           </section>
 

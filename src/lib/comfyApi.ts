@@ -60,6 +60,15 @@ export interface ModelStrategy {
   priority: number;
 }
 
+export type ComfyModelType = "checkpoints" | "loras" | "vae" | "embeddings" | "controlnet" | "upscale_models" | "hypernetworks";
+
+export interface ComfyModelInfo {
+  name: string;
+  type: ComfyModelType;
+  path: string;
+  size?: number;
+}
+
 // --- Event system ---
 
 type EventHandler = (...args: any[]) => void;
@@ -310,6 +319,61 @@ export class ComfyApiClient extends EventEmitter {
   clearErrors() {
     this._errors = [];
     this.emit("errors_cleared");
+  }
+
+  // --- Model management ---
+
+  async getInstalledModels(type: ComfyModelType): Promise<ComfyModelInfo[]> {
+    try {
+      // ComfyUI object_info endpoint provides model lists through node definitions
+      const nodeMap: Record<ComfyModelType, string> = {
+        checkpoints: "CheckpointLoaderSimple",
+        loras: "LoraLoader",
+        vae: "VAELoader",
+        embeddings: "CLIPTextEncode",
+        controlnet: "ControlNetLoader",
+        upscale_models: "UpscaleModelLoader",
+        hypernetworks: "HypernetworkLoader",
+      };
+
+      const nodeName = nodeMap[type];
+      const res = await fetch(`http://${this.baseUrl}/object_info/${nodeName}`, {
+        signal: AbortSignal.timeout(5000),
+      });
+      const data = await res.json();
+      const nodeInfo = data[nodeName];
+      if (!nodeInfo) return [];
+
+      // Extract model names from node input definition
+      const inputKey = type === "checkpoints" ? "ckpt_name"
+        : type === "loras" ? "lora_name"
+        : type === "vae" ? "vae_name"
+        : type === "controlnet" ? "control_net_name"
+        : type === "upscale_models" ? "model_name"
+        : type === "hypernetworks" ? "hypernetwork_name"
+        : null;
+
+      if (!inputKey) return [];
+
+      const required = nodeInfo.input?.required || {};
+      const modelList: string[] = required[inputKey]?.[0] || [];
+
+      return modelList.map((name) => ({
+        name: name.replace(/\\/g, "/").split("/").pop() || name,
+        type,
+        path: name,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  async getAllModels(): Promise<Record<ComfyModelType, ComfyModelInfo[]>> {
+    const types: ComfyModelType[] = ["checkpoints", "loras", "vae", "controlnet", "upscale_models"];
+    const results = await Promise.all(types.map((t) => this.getInstalledModels(t)));
+    const map: Record<string, ComfyModelInfo[]> = {};
+    types.forEach((t, i) => { map[t] = results[i]; });
+    return map as Record<ComfyModelType, ComfyModelInfo[]>;
   }
 }
 

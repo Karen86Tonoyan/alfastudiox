@@ -249,6 +249,19 @@ const nodeCategories: NodeCategory[] = [
 
   // ── Multimodal / Vision ──
   {
+    name: "Janus-Pro (DeepSeek)",
+    count: 4,
+    icon: "🧿",
+    tag: "Vision",
+    description: "DeepSeek Janus-Pro 1B/7B — unified VLM + image generation. Image understanding (2 obrazy naraz), auto-prompting, image-to-prompt, outpainting. Lepszy od Florence2 w opisach twarzy, ubrań i emocji.",
+    children: [
+      { name: "JanusModelLoader" },
+      { name: "JanusImageUnderstanding" },
+      { name: "JanusImageGeneration" },
+      { name: "JanusVisionChat" },
+    ],
+  },
+  {
     name: "Florence2",
     count: 4,
     icon: "👁️",

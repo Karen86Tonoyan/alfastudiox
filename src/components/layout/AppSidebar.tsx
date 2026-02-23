@@ -1,7 +1,7 @@
 import { useLocation, Link } from "react-router-dom";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
-  Layers, AlertTriangle, Sparkles, Settings, Crown, Cloud
+  Layers, AlertTriangle, Sparkles, Settings, Crown, Cloud, ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +15,7 @@ const navItems = [
   { title: "History", path: "/history", icon: Clock },
   { title: "Gallery", path: "/gallery", icon: Image },
   { title: "Providers", path: "/providers", icon: Cloud },
+  { title: "TIP Auditor", path: "/tip-auditor", icon: ShieldCheck },
 ];
 
 interface AppSidebarProps {

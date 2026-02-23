@@ -14,6 +14,7 @@ import OrchestratorPage from "./pages/OrchestratorPage";
 import ErrorsPage from "./pages/ErrorsPage";
 import ProvidersPage from "./pages/ProvidersPage";
 import TIPAuditorPage from "./pages/TIPAuditorPage";
+import StudioPage from "./pages/StudioPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,7 +27,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route element={<AppLayout />}>
-            <Route path="/" element={<RenderPage />} />
+            <Route path="/" element={<StudioPage />} />
+            <Route path="/render" element={<RenderPage />} />
             <Route path="/workflow" element={<WorkflowPage />} />
             <Route path="/orchestrator" element={<OrchestratorPage />} />
             <Route path="/models" element={<ModelsPage />} />

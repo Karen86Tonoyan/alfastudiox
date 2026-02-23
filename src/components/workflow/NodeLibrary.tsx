@@ -43,6 +43,7 @@ const nodeCategories: NodeCategory[] = [
       { name: "Pose to Image" },
       { name: "Image Edit (Flux.2 Dev)" },
       { name: "Depth to Image (Z-Image-Turbo)" },
+      { name: "Pro Photoshoot (Flux.2 Dev + PuLID)" },
     ],
   },
 
@@ -247,6 +248,75 @@ const nodeCategories: NodeCategory[] = [
     ],
   },
 
+  // ── Photo Session / Prompt Building ──
+  {
+    name: "IPAdapter-Flux",
+    count: 8,
+    icon: "🎭",
+    tag: "Photo",
+    description: "IP-Adapter zoptymalizowany pod Flux — kontrola twarzy modelki, czapki, przedmiotu. Shakker-Labs / XLabs. Face + regional prompting.",
+    children: [
+      { name: "IPAdapterFlux_Apply" },
+      { name: "IPAdapterFlux_FaceSwap" },
+      { name: "IPAdapterFlux_Regional" },
+      { name: "IPAdapterFlux_StyleRef" },
+      { name: "IPAdapterFlux_Loader" },
+    ],
+  },
+  {
+    name: "PuLID Flux",
+    count: 3,
+    icon: "👤",
+    tag: "Photo",
+    description: "PuLID (Pure and Lightning ID) — najlepsza spójność twarzy w Flux. Zero fine-tuning, 1 zdjęcie wystarczy do zachowania identity.",
+    children: [
+      { name: "PuLID_FluxLoader" },
+      { name: "PuLID_FluxApply" },
+      { name: "PuLID_FluxFaceEmbed" },
+    ],
+  },
+  {
+    name: "Merlin (Magic Photo Prompter)",
+    count: 5,
+    icon: "🪄",
+    tag: "Photo",
+    description: "Magic Photo Prompter — dropdowny do wszystkiego: aparat (Sony A7R V, Canon R5, Leica Q3), obiektyw, światło, klimat, styl, pora dnia. Generuje perfekcyjny prompt fotograficzny.",
+    children: [
+      { name: "Merlin_MagicPhotoPrompter" },
+      { name: "Merlin_CameraSelector" },
+      { name: "Merlin_LightingMood" },
+      { name: "Merlin_StyleFilter" },
+      { name: "Merlin_PromptBuilder" },
+    ],
+  },
+  {
+    name: "AdvancedCameraPrompts",
+    count: 3,
+    icon: "📷",
+    tag: "Photo",
+    description: "Profesjonalne opisy obiektywu + aparatu — focal length, aperture, bokeh, lens flare, film stock. Łączy się z Merlin i Flux.",
+    children: [
+      { name: "AdvCamera_LensPrompt" },
+      { name: "AdvCamera_FilmStock" },
+      { name: "AdvCamera_DOFSettings" },
+    ],
+  },
+  {
+    name: "LayerStyle",
+    count: 12,
+    icon: "🎨",
+    tag: "Photo",
+    description: "Filtry post-processingowe jak Photoshop — Film Grain, Vignette, Color Grade, LUT (Kodak Portra, Fuji Superia), Color Balance, Curves.",
+    children: [
+      { name: "LayerStyle_FilmGrain" },
+      { name: "LayerStyle_Vignette" },
+      { name: "LayerStyle_ColorGrade" },
+      { name: "LayerStyle_LUT" },
+      { name: "LayerStyle_ColorBalance" },
+      { name: "LayerStyle_Curves" },
+    ],
+  },
+
   // ── Multimodal / Vision ──
   {
     name: "Janus-Pro (DeepSeek)",
@@ -301,6 +371,7 @@ const tagColors: Record<string, string> = {
   Control: "bg-amber-500/20 text-amber-400",
   Vision: "bg-violet-500/20 text-violet-400",
   Audio: "bg-pink-500/20 text-pink-400",
+  Photo: "bg-rose-500/20 text-rose-400",
 };
 
 interface NodeLibraryProps {

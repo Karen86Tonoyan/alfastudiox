@@ -12,7 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
-import { Monitor, Cpu, Thermometer, HardDrive, Zap, Wifi } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Monitor, Cpu, Thermometer, HardDrive, Zap, Wifi, AlertTriangle } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useComfyUI } from "@/hooks/useComfyUI";
 import { useOllama } from "@/hooks/useOllama";
 import { buildWorkflow } from "@/lib/workflowBuilder";
@@ -118,6 +120,14 @@ export default function RenderPage() {
   const [renderHistory, setRenderHistory] = useState<RenderHistoryItem[]>([]);
   const [renderBackend, setRenderBackend] = useState<RenderBackend>({ type: "local" });
   const [cloudImage, setCloudImage] = useState<string | null>(null);
+
+  const missingApiKey = renderBackend.type === "cloud"
+    ? (() => {
+        const providers = loadProviders();
+        const p = providers.find((pr) => pr.id === renderBackend.provider);
+        return !p?.apiKey;
+      })()
+    : false;
   const renderStartRef = useRef<{ time: number; settings: RenderSettings } | null>(null);
 
   const isRendering = comfy.isRendering || localRendering;
@@ -286,6 +296,18 @@ export default function RenderPage() {
         isComfyConnected={comfy.isConnected}
       />
       <StatusBar gpu={comfy.gpu} isConnected={comfy.isConnected} />
+
+      {missingApiKey && (
+        <Alert variant="destructive" className="mx-3 mt-2 border-destructive/40 bg-destructive/5">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="text-xs flex items-center gap-2 flex-wrap">
+            Klucz API dla <strong>{renderBackend.type === "cloud" ? renderBackend.provider : ""}</strong> nie jest skonfigurowany.
+            <Link to="/providers" className="text-primary underline underline-offset-2 font-semibold hover:text-primary/80">
+              Przejdź do Providers →
+            </Link>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <ResizablePanelGroup direction="vertical" className="flex-1">
         <ResizablePanel defaultSize={65} minSize={30}>

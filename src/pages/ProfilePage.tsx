@@ -7,13 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { User, Trash2, Save, Loader2, Camera, KeyRound } from "lucide-react";
+import { User, Trash2, Save, Loader2, Camera, KeyRound, Shield, Mail } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 
 const ProfilePage = () => {
+  const { isAdmin, role } = useUserRole();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -143,10 +146,15 @@ const ProfilePage = () => {
 
   return (
     <div className="flex-1 overflow-auto p-6 space-y-6 max-w-2xl">
-      <div>
+      <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold text-foreground">Profil</h1>
-        <p className="text-sm text-muted-foreground">Zarządzaj swoim kontem</p>
+        {isAdmin && (
+          <Badge variant="outline" className="border-primary/50 text-primary gap-1">
+            <Shield className="h-3 w-3" /> Admin
+          </Badge>
+        )}
       </div>
+      <p className="text-sm text-muted-foreground">Zarządzaj swoim kontem</p>
 
       <Card>
         <CardHeader>
@@ -247,6 +255,26 @@ const ProfilePage = () => {
             {changingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
             Zmień hasło
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* B2B Contact */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Mail className="h-4 w-4" /> Kontakt B2B / Enterprise
+          </CardTitle>
+          <CardDescription>
+            W sprawie współpracy biznesowej i ofert enterprise skontaktuj się z nami.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <a
+            href="mailto:kontakt@karentonoyan.pl"
+            className="text-primary hover:underline underline-offset-2 font-medium text-sm"
+          >
+            kontakt@karentonoyan.pl
+          </a>
         </CardContent>
       </Card>
 

@@ -1,12 +1,13 @@
 import { useLocation, Link } from "react-router-dom";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
-  Layers, AlertTriangle, Sparkles, Settings, Crown, Cloud, ShieldCheck, Camera
+  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import alfaLogo from "@/assets/alfa-logo.png";
 
 const navItems = [
+  { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard, highlight: true },
   { title: "Photo Studio", path: "/", icon: Camera, highlight: true },
   { title: "Render Studio", path: "/render", icon: Sparkles },
   { title: "Workflow", path: "/workflow", icon: GitBranch },

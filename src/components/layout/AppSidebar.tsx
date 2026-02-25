@@ -1,9 +1,15 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
-  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard
+  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 import alfaLogo from "@/assets/alfa-logo.png";
 
 const navItems = [
@@ -28,6 +34,13 @@ interface AppSidebarProps {
 
 export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [logoutOpen, setLogoutOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth");
+  };
 
   return (
     <aside
@@ -80,11 +93,38 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
       </nav>
 
       {/* Footer */}
-      {!collapsed && (
-        <div className="border-t border-border p-3">
+      <div className="border-t border-border p-3 space-y-2">
+        <AlertDialog open={logoutOpen} onOpenChange={setLogoutOpen}>
+          <AlertDialogTrigger asChild>
+            <button
+              className={cn(
+                "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-all",
+                collapsed && "justify-center px-0"
+              )}
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              {!collapsed && <span>Wyloguj</span>}
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Wylogować się?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Czy na pewno chcesz się wylogować z ALFA Studio?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Anuluj</AlertDialogCancel>
+              <AlertDialogAction onClick={handleLogout} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Wyloguj
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        {!collapsed && (
           <p className="text-[10px] text-muted-foreground font-mono">ALFA Studio v1.0</p>
-        </div>
-      )}
+        )}
+      </div>
     </aside>
   );
 }

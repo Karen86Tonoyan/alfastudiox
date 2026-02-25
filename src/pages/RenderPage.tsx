@@ -16,6 +16,8 @@ import { Monitor, Cpu, Thermometer, HardDrive, Zap, Wifi } from "lucide-react";
 import { useComfyUI } from "@/hooks/useComfyUI";
 import { useOllama } from "@/hooks/useOllama";
 import { buildWorkflow } from "@/lib/workflowBuilder";
+import { loadProviders } from "@/lib/cloudProviders";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 function StatusBar({ gpu, isConnected }: { gpu: any; isConnected: boolean }) {
@@ -115,6 +117,7 @@ export default function RenderPage() {
   const [localRendering, setLocalRendering] = useState(false);
   const [renderHistory, setRenderHistory] = useState<RenderHistoryItem[]>([]);
   const [renderBackend, setRenderBackend] = useState<RenderBackend>({ type: "local" });
+  const [cloudImage, setCloudImage] = useState<string | null>(null);
   const renderStartRef = useRef<{ time: number; settings: RenderSettings } | null>(null);
 
   const isRendering = comfy.isRendering || localRendering;
@@ -157,25 +160,89 @@ export default function RenderPage() {
         renderStartRef.current = null;
       }
     } else if (renderBackend.type === "cloud") {
-      // Cloud provider render (simulation — real API calls need Cloud backend)
-      toast.info(`Sending to ${renderBackend.provider} (${renderBackend.model})...`);
-      setLocalRendering(true);
-      setLocalProgress(0);
-      const interval = setInterval(() => {
-        setLocalProgress((p) => {
-          if (p >= 100) {
-            clearInterval(interval);
-            setLocalRendering(false);
-            if (renderStartRef.current) {
-              addToHistory(renderStartRef.current.settings, "success", Date.now() - renderStartRef.current.time);
-              renderStartRef.current = null;
-            }
-            toast.success(`Render z ${renderBackend.provider} zakończony`);
-            return 0;
+      const provider = renderBackend.provider;
+      const supportedForCloudRender = ["openai", "google"];
+
+      if (supportedForCloudRender.includes(provider)) {
+        // Real API call via edge function
+        toast.info(`Wysyłanie do ${renderBackend.provider} (${renderBackend.model})...`);
+        setLocalRendering(true);
+        setLocalProgress(10);
+
+        try {
+          const providers = loadProviders();
+          const providerConfig = providers.find((p) => p.id === provider);
+          if (!providerConfig?.apiKey) {
+            throw new Error("Klucz API nie jest skonfigurowany. Przejdź do Providers i dodaj klucz.");
           }
-          return p + 1.5;
-        });
-      }, 120);
+
+          setLocalProgress(30);
+
+          const { data, error } = await supabase.functions.invoke("cloud-render", {
+            body: {
+              provider,
+              model: renderBackend.model,
+              prompt: settings.prompt,
+              negativePrompt: settings.negativePrompt,
+              width: settings.width,
+              height: settings.height,
+              steps: settings.steps,
+              cfg: settings.cfg,
+              seed: settings.seed === -1 ? undefined : settings.seed,
+              apiKey: providerConfig.apiKey,
+            },
+          });
+
+          setLocalProgress(90);
+
+          if (error) throw new Error(error.message);
+          if (data?.error) throw new Error(data.error);
+
+          if (data?.imageUrl) {
+            // Store the image URL for preview
+            setCloudImage(data.imageUrl);
+            toast.success(
+              `Render z ${renderBackend.provider}/${renderBackend.model} zakończony!` +
+                (data.revisedPrompt ? ` Zmodyfikowany prompt: "${data.revisedPrompt.substring(0, 80)}..."` : "")
+            );
+          }
+
+          setLocalProgress(100);
+          if (renderStartRef.current) {
+            addToHistory(renderStartRef.current.settings, "success", Date.now() - renderStartRef.current.time);
+            renderStartRef.current = null;
+          }
+        } catch (err: any) {
+          toast.error(`Błąd renderowania: ${err.message}`);
+          if (renderStartRef.current) {
+            addToHistory(renderStartRef.current.settings, "failed", Date.now() - renderStartRef.current.time);
+            renderStartRef.current = null;
+          }
+        } finally {
+          setLocalRendering(false);
+          setLocalProgress(0);
+        }
+      } else {
+        // Other cloud providers — simulation
+        toast.info(`Sending to ${renderBackend.provider} (${renderBackend.model})...`);
+        setLocalRendering(true);
+        setLocalProgress(0);
+        const interval = setInterval(() => {
+          setLocalProgress((p) => {
+            if (p >= 100) {
+              clearInterval(interval);
+              setLocalRendering(false);
+              if (renderStartRef.current) {
+                addToHistory(renderStartRef.current.settings, "success", Date.now() - renderStartRef.current.time);
+                renderStartRef.current = null;
+              }
+              toast.success(`Render z ${renderBackend.provider} zakończony`);
+              return 0;
+            }
+            return p + 1.5;
+          });
+        }, 120);
+      }
     } else {
       // Local simulation (no ComfyUI connected)
       setLocalRendering(true);
@@ -240,7 +307,7 @@ export default function RenderPage() {
               isRendering={isRendering}
               progress={progress}
               currentNode={comfy.currentNode}
-              lastImage={comfy.lastImage}
+              lastImage={cloudImage || comfy.lastImage}
             />
 
             <div className="w-[300px] border-l border-border flex flex-col overflow-hidden">

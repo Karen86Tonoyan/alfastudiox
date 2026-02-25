@@ -101,9 +101,17 @@ export class ComfyApiClient extends EventEmitter {
   private _errors: ErrorLogEntry[] = [];
   private _progress: RenderProgress | null = null;
   private _gpu: GpuInfo | null = null;
+  private _baseUrl: string;
 
-  constructor(private baseUrl: string = "localhost:8188") {
+  constructor(baseUrl?: string) {
     super();
+    this._baseUrl = baseUrl || localStorage.getItem("comfy_server_url") || "localhost:8188";
+  }
+
+  get baseUrl() { return this._baseUrl; }
+  set baseUrl(url: string) {
+    this._baseUrl = url;
+    localStorage.setItem("comfy_server_url", url);
   }
 
   get status() { return this._status; }
@@ -118,7 +126,7 @@ export class ComfyApiClient extends EventEmitter {
     this.emit("status", this._status);
 
     try {
-      this.ws = new WebSocket(`ws://${this.baseUrl}/ws`);
+      this.ws = new WebSocket(`ws://${this._baseUrl}/ws`);
 
       this.ws.onopen = () => {
         this._status = "connected";
@@ -211,7 +219,7 @@ export class ComfyApiClient extends EventEmitter {
 
   async queuePrompt(workflow: object, clientId?: string): Promise<string | null> {
     try {
-      const res = await fetch(`http://${this.baseUrl}/prompt`, {
+      const res = await fetch(`http://${this._baseUrl}/prompt`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: workflow, client_id: clientId }),
@@ -231,7 +239,7 @@ export class ComfyApiClient extends EventEmitter {
 
   async getQueue(): Promise<any> {
     try {
-      const res = await fetch(`http://${this.baseUrl}/queue`);
+      const res = await fetch(`http://${this._baseUrl}/queue`);
       return await res.json();
     } catch {
       return null;
@@ -240,13 +248,13 @@ export class ComfyApiClient extends EventEmitter {
 
   async cancelCurrent(): Promise<void> {
     try {
-      await fetch(`http://${this.baseUrl}/interrupt`, { method: "POST" });
+      await fetch(`http://${this._baseUrl}/interrupt`, { method: "POST" });
     } catch {}
   }
 
   async clearQueue(): Promise<void> {
     try {
-      await fetch(`http://${this.baseUrl}/queue`, {
+      await fetch(`http://${this._baseUrl}/queue`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ clear: true }),
@@ -256,7 +264,7 @@ export class ComfyApiClient extends EventEmitter {
 
   async getSystemStats(): Promise<GpuInfo | null> {
     try {
-      const res = await fetch(`http://${this.baseUrl}/system_stats`);
+      const res = await fetch(`http://${this._baseUrl}/system_stats`);
       const data = await res.json();
       const device = data.devices?.[0];
       if (device) {
@@ -337,7 +345,7 @@ export class ComfyApiClient extends EventEmitter {
       };
 
       const nodeName = nodeMap[type];
-      const res = await fetch(`http://${this.baseUrl}/object_info/${nodeName}`, {
+      const res = await fetch(`http://${this._baseUrl}/object_info/${nodeName}`, {
         signal: AbortSignal.timeout(5000),
       });
       const data = await res.json();

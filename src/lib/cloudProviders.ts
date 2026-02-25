@@ -1,11 +1,19 @@
 /**
  * Cloud Provider abstractions for GPU rendering
- * RunPod, Replicate, Hugging Face, ComfyUI Cloud
+ * RunPod, Replicate, Hugging Face, OpenAI, Google Gemini, Anthropic Claude, Kimi, Qwen
  */
 
 const STORAGE_KEY = "ai-director-cloud-providers";
 
-export type ProviderType = "runpod" | "replicate" | "huggingface";
+export type ProviderType =
+  | "runpod"
+  | "replicate"
+  | "huggingface"
+  | "openai"
+  | "google"
+  | "anthropic"
+  | "kimi"
+  | "qwen";
 
 export interface ProviderConfig {
   id: ProviderType;
@@ -65,6 +73,61 @@ const DEFAULT_PROVIDERS: ProviderConfig[] = [
     icon: "🤗",
     features: ["Inference API", "10k+ Models", "SDXL", "Free Tier", "Spaces"],
   },
+  {
+    id: "openai",
+    name: "OpenAI",
+    description: "DALL-E 3, GPT-4o Vision — generowanie i edycja obrazów",
+    apiKey: "",
+    baseUrl: "https://api.openai.com/v1",
+    enabled: false,
+    status: "disconnected",
+    icon: "🧠",
+    features: ["DALL-E 3", "GPT-4o Vision", "Image Edit", "Variations", "HD Quality"],
+  },
+  {
+    id: "google",
+    name: "Google Gemini",
+    description: "Imagen 3, Gemini Pro Vision — multimodalne generowanie",
+    apiKey: "",
+    baseUrl: "https://generativelanguage.googleapis.com/v1beta",
+    enabled: false,
+    status: "disconnected",
+    icon: "💎",
+    features: ["Imagen 3", "Gemini Vision", "Video Gen", "Multimodal", "Veo 2"],
+  },
+  {
+    id: "anthropic",
+    name: "Claude",
+    description: "Anthropic Claude — analiza wizualna i prompt engineering",
+    apiKey: "",
+    baseUrl: "https://api.anthropic.com/v1",
+    enabled: false,
+    status: "disconnected",
+    icon: "🎭",
+    features: ["Claude 3.5", "Vision Analysis", "Prompt Expert", "200k Context"],
+  },
+  {
+    id: "kimi",
+    name: "Kimi (Moonshot)",
+    description: "Moonshot AI — generowanie obrazów i wideo z długim kontekstem",
+    apiKey: "",
+    baseUrl: "https://api.moonshot.cn/v1",
+    enabled: false,
+    status: "disconnected",
+    icon: "🌙",
+    features: ["Kimi Vision", "Long Context", "Image Gen", "Video Gen", "128k Window"],
+  },
+  {
+    id: "qwen",
+    name: "Qwen (Alibaba)",
+    description: "Qwen-VL, Wanx — multimodalny model z generacją obrazów",
+    apiKey: "",
+    baseUrl: "https://dashscope.aliyuncs.com/api/v1",
+    enabled: false,
+    status: "disconnected",
+    icon: "🐲",
+    features: ["Qwen-VL", "Wanx Image", "Video Gen", "Multimodal", "Flux Support"],
+  },
 ];
 
 export function loadProviders(): ProviderConfig[] {
@@ -118,8 +181,45 @@ export async function testProviderConnection(provider: ProviderConfig): Promise<
           headers: { Authorization: `Bearer ${provider.apiKey}` },
           signal: AbortSignal.timeout(5000),
         });
-        // RunPod returns 404 for base URL but we check auth
         return res.status !== 401;
+      }
+      case "openai": {
+        const res = await fetch("https://api.openai.com/v1/models", {
+          headers: { Authorization: `Bearer ${provider.apiKey}` },
+          signal: AbortSignal.timeout(5000),
+        });
+        return res.ok;
+      }
+      case "google": {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models?key=${provider.apiKey}`,
+          { signal: AbortSignal.timeout(5000) }
+        );
+        return res.ok;
+      }
+      case "anthropic": {
+        const res = await fetch("https://api.anthropic.com/v1/models", {
+          headers: {
+            "x-api-key": provider.apiKey,
+            "anthropic-version": "2023-06-01",
+          },
+          signal: AbortSignal.timeout(5000),
+        });
+        return res.ok;
+      }
+      case "kimi": {
+        const res = await fetch("https://api.moonshot.cn/v1/models", {
+          headers: { Authorization: `Bearer ${provider.apiKey}` },
+          signal: AbortSignal.timeout(5000),
+        });
+        return res.ok;
+      }
+      case "qwen": {
+        const res = await fetch("https://dashscope.aliyuncs.com/api/v1/models", {
+          headers: { Authorization: `Bearer ${provider.apiKey}` },
+          signal: AbortSignal.timeout(5000),
+        });
+        return res.ok || res.status !== 401;
       }
       default:
         return false;
@@ -129,7 +229,7 @@ export async function testProviderConnection(provider: ProviderConfig): Promise<
   }
 }
 
-/** Provider-specific render interfaces (stubs — will be implemented with Cloud backend) */
+/** Provider-specific render interfaces */
 export interface RenderRequest {
   provider: ProviderType;
   model: string;
@@ -166,6 +266,41 @@ export function getProviderModels(provider: ProviderType): { id: string; name: s
         { id: "sdxl", name: "SDXL (Custom Endpoint)" },
         { id: "flux", name: "Flux (Custom Endpoint)" },
         { id: "comfyui", name: "ComfyUI (Serverless)" },
+      ];
+    case "openai":
+      return [
+        { id: "dall-e-3", name: "DALL-E 3" },
+        { id: "dall-e-3-hd", name: "DALL-E 3 HD" },
+        { id: "dall-e-2", name: "DALL-E 2" },
+        { id: "gpt-4o-image", name: "GPT-4o (Image Understanding)" },
+      ];
+    case "google":
+      return [
+        { id: "imagen-3", name: "Imagen 3" },
+        { id: "imagen-3-fast", name: "Imagen 3 Fast" },
+        { id: "gemini-2.0-flash", name: "Gemini 2.0 Flash (Vision)" },
+        { id: "veo-2", name: "Veo 2 (Video)" },
+      ];
+    case "anthropic":
+      return [
+        { id: "claude-3.5-sonnet", name: "Claude 3.5 Sonnet (Vision)" },
+        { id: "claude-3-opus", name: "Claude 3 Opus (Vision)" },
+        { id: "claude-3-haiku", name: "Claude 3 Haiku (Vision)" },
+      ];
+    case "kimi":
+      return [
+        { id: "moonshot-v1-128k", name: "Kimi 128k (Vision)" },
+        { id: "moonshot-v1-32k", name: "Kimi 32k" },
+        { id: "kimi-image", name: "Kimi Image Gen" },
+        { id: "kimi-video", name: "Kimi Video Gen" },
+      ];
+    case "qwen":
+      return [
+        { id: "wanx-v1", name: "Wanx (Image Gen)" },
+        { id: "qwen-vl-max", name: "Qwen-VL Max (Vision)" },
+        { id: "qwen-vl-plus", name: "Qwen-VL Plus" },
+        { id: "wanx-video", name: "Wanx Video" },
+        { id: "flux-schnell", name: "Flux Schnell (via DashScope)" },
       ];
     default:
       return [];

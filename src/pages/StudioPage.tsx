@@ -141,7 +141,7 @@ export default function StudioPage() {
           <div className="h-px bg-border" />
 
           {/* ── Presets ── */}
-          <SessionPresets activePreset={activePreset} gpu={comfy.gpu} onSelect={handlePresetSelect} />
+          <SessionPresets activePreset={activePreset} gpu={comfy.gpu} currentConfig={config} onSelect={handlePresetSelect} />
 
           <div className="h-px bg-border" />
 

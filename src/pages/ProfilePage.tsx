@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { User, Trash2, Save, Loader2, Camera } from "lucide-react";
+import { User, Trash2, Save, Loader2, Camera, KeyRound } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
@@ -17,6 +17,9 @@ const ProfilePage = () => {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -92,6 +95,27 @@ const ProfilePage = () => {
       toast.error("Nie udało się zapisać profilu");
     } else {
       toast.success("Profil zaktualizowany");
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      toast.error("Hasło musi mieć co najmniej 6 znaków");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Hasła nie są takie same");
+      return;
+    }
+    setChangingPassword(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setChangingPassword(false);
+    if (error) {
+      toast.error(`Nie udało się zmienić hasła: ${error.message}`);
+    } else {
+      toast.success("Hasło zostało zmienione");
+      setNewPassword("");
+      setConfirmPassword("");
     }
   };
 
@@ -187,6 +211,41 @@ const ProfilePage = () => {
           <Button onClick={handleSave} disabled={saving}>
             {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
             Zapisz
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Password Change */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <KeyRound className="h-4 w-4" /> Zmiana hasła
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="newPassword">Nowe hasło</Label>
+            <Input
+              id="newPassword"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Min. 6 znaków"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Powtórz hasło</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Powtórz nowe hasło"
+            />
+          </div>
+          <Button onClick={handleChangePassword} disabled={changingPassword || !newPassword}>
+            {changingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
+            Zmień hasło
           </Button>
         </CardContent>
       </Card>

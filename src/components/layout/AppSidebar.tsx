@@ -4,6 +4,7 @@ import {
   Layers, AlertTriangle, Sparkles, Settings, Crown, Cloud, ShieldCheck, Camera
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import alfaLogo from "@/assets/alfa-logo.png";
 
 const navItems = [
   { title: "Photo Studio", path: "/", icon: Camera, highlight: true },
@@ -35,14 +36,13 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
       )}
     >
       {/* Logo */}
-      <div className="flex h-12 items-center border-b border-border px-3">
+      <div className="flex h-14 items-center border-b border-border px-2">
         {!collapsed && (
-          <span className="text-sm font-bold tracking-wider gold-text flex items-center gap-1.5">
-            <Crown className="h-4 w-4 text-primary" />
-            AI DIRECTOR
-          </span>
+          <img src={alfaLogo} alt="ALFA by K.Tonoyan" className="h-10 w-auto object-contain" />
         )}
-        {collapsed && <Crown className="h-4 w-4 text-primary mx-auto" />}
+        {collapsed && (
+          <img src={alfaLogo} alt="ALFA" className="h-8 w-8 object-contain mx-auto" />
+        )}
         <button
           onClick={onToggle}
           className={cn(
@@ -81,7 +81,7 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
       {/* Footer */}
       {!collapsed && (
         <div className="border-t border-border p-3">
-          <p className="text-[10px] text-muted-foreground font-mono">AI Director v1.0</p>
+          <p className="text-[10px] text-muted-foreground font-mono">ALFA Studio v1.0</p>
         </div>
       )}
     </aside>

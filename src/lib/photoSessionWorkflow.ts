@@ -23,6 +23,13 @@ export interface PhotoSessionConfig {
     supir: boolean;
   };
 
+  // Model selections (paths from ComfyUI)
+  checkpoint?: string;
+  vae?: string;
+  lora?: string;
+  controlnet?: string;
+  upscaler?: string;
+
   // Generation params
   width: number;
   height: number;
@@ -59,11 +66,28 @@ export function buildPhotoSessionWorkflow(config: PhotoSessionConfig): ComfyWork
   const ckptId = id();
   workflow[ckptId] = {
     class_type: "CheckpointLoaderSimple",
-    inputs: { ckpt_name: "flux1-dev.safetensors" },
+    inputs: { ckpt_name: config.checkpoint || "flux1-dev.safetensors" },
   };
 
   let modelOut: [string, number] = [ckptId, 0];
   let clipOut: [string, number] = [ckptId, 1];
+
+  // ── LoRA (optional) ──
+  if (config.lora && config.lora !== "__none__") {
+    const loraId = id();
+    workflow[loraId] = {
+      class_type: "LoraLoader",
+      inputs: {
+        model: modelOut,
+        clip: clipOut,
+        lora_name: config.lora,
+        strength_model: 0.8,
+        strength_clip: 0.8,
+      },
+    };
+    modelOut = [loraId, 0];
+    clipOut = [loraId, 1];
+  }
 
   // ── 2. Load input images ──
   let locationLoadId: string | null = null;
@@ -207,7 +231,7 @@ export function buildPhotoSessionWorkflow(config: PhotoSessionConfig): ComfyWork
     const cnLoadId = id();
     workflow[cnLoadId] = {
       class_type: "ControlNetLoader",
-      inputs: { control_net_name: "control_v11f1p_sd15_depth.safetensors" },
+      inputs: { control_net_name: config.controlnet || "control_v11f1p_sd15_depth.safetensors" },
     };
 
     const cnApplyId = id();
@@ -258,10 +282,19 @@ export function buildPhotoSessionWorkflow(config: PhotoSessionConfig): ComfyWork
   };
 
   // ── 10. VAE Decode ──
+  let vaeSource: [string, number] = [ckptId, 2];
+  if (config.vae) {
+    const vaeLoadId = id();
+    workflow[vaeLoadId] = {
+      class_type: "VAELoader",
+      inputs: { vae_name: config.vae },
+    };
+    vaeSource = [vaeLoadId, 0];
+  }
   const vaeDecId = id();
   workflow[vaeDecId] = {
     class_type: "VAEDecode",
-    inputs: { samples: [samplerId, 0], vae: [ckptId, 2] },
+    inputs: { samples: [samplerId, 0], vae: vaeSource },
   };
 
   let finalImageOut: [string, number] = [vaeDecId, 0];

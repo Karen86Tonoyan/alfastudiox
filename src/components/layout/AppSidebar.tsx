@@ -2,7 +2,7 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
-  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog
+  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog, Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,22 +12,24 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import alfaLogo from "@/assets/alfa-logo.png";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const navItems = [
-  { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard, highlight: true },
-  { title: "Kup Kredyty", path: "/buy-credits", icon: CreditCard, highlight: true },
-  { title: "Photo Studio", path: "/", icon: Camera, highlight: true },
-  { title: "Render Studio", path: "/render", icon: Sparkles },
-  { title: "Workflow", path: "/workflow", icon: GitBranch },
-  { title: "Orchestrator", path: "/orchestrator", icon: Layers },
-  { title: "Models", path: "/models", icon: Box },
-  { title: "Monitor", path: "/monitor", icon: Activity },
-  { title: "Error Log", path: "/errors", icon: AlertTriangle },
-  { title: "History", path: "/history", icon: Clock },
-  { title: "Gallery", path: "/gallery", icon: Image },
-  { title: "Providers", path: "/providers", icon: Cloud },
-  { title: "TIP Auditor", path: "/tip-auditor", icon: ShieldCheck },
-  { title: "Profil", path: "/profile", icon: UserCog, highlight: true },
+  { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard, highlight: true, adminOnly: false },
+  { title: "Kup Kredyty", path: "/buy-credits", icon: CreditCard, highlight: true, adminOnly: false },
+  { title: "Photo Studio", path: "/", icon: Camera, highlight: true, adminOnly: false },
+  { title: "Render Studio", path: "/render", icon: Sparkles, highlight: false, adminOnly: false },
+  { title: "Workflow", path: "/workflow", icon: GitBranch, highlight: false, adminOnly: false },
+  { title: "Orchestrator", path: "/orchestrator", icon: Layers, highlight: false, adminOnly: false },
+  { title: "Models", path: "/models", icon: Box, highlight: false, adminOnly: false },
+  { title: "Monitor", path: "/monitor", icon: Activity, highlight: false, adminOnly: false },
+  { title: "Error Log", path: "/errors", icon: AlertTriangle, highlight: false, adminOnly: false },
+  { title: "History", path: "/history", icon: Clock, highlight: false, adminOnly: false },
+  { title: "Gallery", path: "/gallery", icon: Image, highlight: false, adminOnly: false },
+  { title: "Providers", path: "/providers", icon: Cloud, highlight: false, adminOnly: false },
+  { title: "TIP Auditor", path: "/tip-auditor", icon: ShieldCheck, highlight: false, adminOnly: false },
+  { title: "Admin Panel", path: "/admin", icon: Shield, highlight: true, adminOnly: true },
+  { title: "Profil", path: "/profile", icon: UserCog, highlight: true, adminOnly: false },
 ];
 
 interface AppSidebarProps {
@@ -38,6 +40,7 @@ interface AppSidebarProps {
 export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAdmin } = useUserRole();
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [initials, setInitials] = useState("U");
@@ -86,8 +89,8 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 space-y-0.5 p-2">
-        {navItems.map((item) => {
+      <nav className="flex-1 space-y-0.5 p-2 overflow-y-auto">
+        {navItems.filter((item) => !item.adminOnly || isAdmin).map((item) => {
           const active = location.pathname === item.path;
           return (
             <Link

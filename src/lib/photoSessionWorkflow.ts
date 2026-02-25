@@ -32,6 +32,14 @@ export interface PhotoSessionConfig {
   sampler?: string;
   scheduler?: string;
 
+  // Layer weights
+  ipWeight: number;
+  pulidWeight: number;
+  supirStrength: number;
+
+  // Prompt
+  promptBase: string;
+
   // Generation params
   width: number;
   height: number;
@@ -144,7 +152,9 @@ export function buildPhotoSessionWorkflow(config: PhotoSessionConfig): ComfyWork
 
   // ── 4. Build prompt ──
   const poseDesc = POSE_PROMPTS[config.pose] || POSE_PROMPTS["standing-front"];
-  const basePrompt = `professional photo session, ${poseDesc}, masterpiece, best quality, 8k, RAW photo, ultra high resolution, sharp focus, cinematic lighting`;
+  const basePrompt = config.promptBase
+    ? `${config.promptBase}, ${poseDesc}`
+    : `professional photo session, ${poseDesc}, masterpiece, best quality, 8k, RAW photo, ultra high resolution, sharp focus, cinematic lighting`;
 
   const promptId = id();
   workflow[promptId] = {
@@ -187,7 +197,7 @@ export function buildPhotoSessionWorkflow(config: PhotoSessionConfig): ComfyWork
       inputs: {
         model: modelOut,
         face_embed: [pulidEmbedId, 0],
-        weight: 0.85,
+        weight: config.pulidWeight ?? 0.85,
       },
     };
     modelOut = [pulidApplyId, 0];
@@ -202,7 +212,7 @@ export function buildPhotoSessionWorkflow(config: PhotoSessionConfig): ComfyWork
         inputs: {
           model: modelOut,
           image: [productLoadId, 0],
-          weight: 0.75,
+          weight: config.ipWeight ?? 0.75,
           noise: 0.1,
         },
       };
@@ -215,7 +225,7 @@ export function buildPhotoSessionWorkflow(config: PhotoSessionConfig): ComfyWork
         inputs: {
           model: modelOut,
           image: [locationLoadId, 0],
-          weight: 0.6,
+          weight: (config.ipWeight ?? 0.75) * 0.8,
         },
       };
       modelOut = [ipaStyleId, 0];
@@ -309,6 +319,7 @@ export function buildPhotoSessionWorkflow(config: PhotoSessionConfig): ComfyWork
       inputs: {
         image: finalImageOut,
         scale: 2,
+        strength: config.supirStrength ?? 0.4,
         face_restore: true,
       },
     };
@@ -343,6 +354,10 @@ export const DEFAULT_SESSION_CONFIG: PhotoSessionConfig = {
   },
   sampler: "dpmpp_2m",
   scheduler: "normal",
+  ipWeight: 0.7,
+  pulidWeight: 0.85,
+  supirStrength: 0.4,
+  promptBase: "professional photo session, masterpiece, best quality, 8k, RAW photo, ultra high resolution, sharp focus, cinematic lighting",
   width: 1024,
   height: 1536,
   steps: 25,

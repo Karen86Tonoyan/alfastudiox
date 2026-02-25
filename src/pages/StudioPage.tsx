@@ -21,6 +21,8 @@ import { PoseSelector } from "@/components/studio/PoseSelector";
 import { LayerToggles } from "@/components/studio/LayerToggles";
 import { ModelSelectors } from "@/components/studio/ModelSelectors";
 import { SessionPresets, type SessionPreset } from "@/components/studio/SessionPresets";
+import { RenderTracker } from "@/components/studio/RenderTracker";
+import { useRenderTracker } from "@/hooks/useRenderTracker";
 
 export default function StudioPage() {
   const comfy = useComfyUI();
@@ -32,6 +34,7 @@ export default function StudioPage() {
   const [modelFile, setModelFile] = useState<File | null>(null);
   const [productFile, setProductFile] = useState<File | null>(null);
   const [activePreset, setActivePreset] = useState<string | null>(null);
+  const tracker = useRenderTracker();
 
   const handlePresetSelect = useCallback((preset: SessionPreset) => {
     setConfig((prev) => ({
@@ -103,6 +106,7 @@ export default function StudioPage() {
     const promptId = await comfy.queuePrompt(workflow);
 
     if (promptId) {
+      tracker.logRender(finalConfig, activePreset, promptId);
       toast.success("Sesja w kolejce!");
     } else {
       toast.error("Nie udało się dodać do kolejki");
@@ -163,6 +167,17 @@ export default function StudioPage() {
 
           {/* ── Layers ── */}
           <LayerToggles layers={config.layers} onToggle={updateLayer} />
+
+          <div className="h-px bg-border" />
+
+          {/* ── Render Tracker ── */}
+          <RenderTracker
+            log={tracker.log}
+            used={tracker.used}
+            remaining={tracker.remaining}
+            budget={tracker.budget}
+            onClear={tracker.clearLog}
+          />
 
           <div className="h-px bg-border" />
 

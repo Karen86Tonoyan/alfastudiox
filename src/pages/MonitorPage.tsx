@@ -1,73 +1,144 @@
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Thermometer, Cpu, HardDrive, MemoryStick, AlertTriangle, CheckCircle, Pause } from "lucide-react";
+
+type StatusType = "ok" | "warn" | "danger";
 
 interface Metric {
   label: string;
   value: number;
   max: number;
   unit: string;
-  icon: React.ReactNode;
-  status: "ok" | "warn" | "danger";
+  status: StatusType;
 }
 
-const metrics: Metric[] = [
-  { label: "GPU Temp", value: 72, max: 100, unit: "°C", icon: <Thermometer className="h-4 w-4" />, status: "ok" },
-  { label: "VRAM", value: 9.2, max: 12, unit: "GB", icon: <MemoryStick className="h-4 w-4" />, status: "warn" },
-  { label: "CPU", value: 34, max: 100, unit: "%", icon: <Cpu className="h-4 w-4" />, status: "ok" },
-  { label: "RAM", value: 12.4, max: 32, unit: "GB", icon: <HardDrive className="h-4 w-4" />, status: "ok" },
-];
+interface EventLogItem {
+  time: string;
+  event: string;
+  type: StatusType;
+}
 
-const statusConfig = {
-  ok: { label: "Normalny", color: "bg-status-ok/20 text-status-ok border-status-ok/30", icon: <CheckCircle className="h-4 w-4" /> },
-  warn: { label: "Ostrzeżenie", color: "bg-status-warn/20 text-status-warn border-status-warn/30", icon: <AlertTriangle className="h-4 w-4" /> },
-  danger: { label: "Przegrzanie — pauza", color: "bg-status-danger/20 text-status-danger border-status-danger/30", icon: <Pause className="h-4 w-4" /> },
+const getStatus = (value: number, max: number): StatusType => {
+  const ratio = value / max;
+  if (ratio > 0.85) return "danger";
+  if (ratio > 0.7) return "warn";
+  return "ok";
 };
-
-const progressColor = {
-  ok: "bg-status-ok",
-  warn: "bg-status-warn",
-  danger: "bg-status-danger",
-};
-
-const eventLog = [
-  { time: "14:32:10", event: "Generowanie #47 zakończone — 12.3s", type: "ok" as const },
-  { time: "14:28:45", event: "GPU temp 78°C — próg ostrzeżenia", type: "warn" as const },
-  { time: "14:15:22", event: "Automatyczna pauza — GPU 85°C", type: "danger" as const },
-  { time: "14:12:00", event: "Wznowienie pracy po schłodzeniu do 68°C", type: "ok" as const },
-  { time: "13:58:33", event: "Generowanie #46 zakończone — 15.1s", type: "ok" as const },
-  { time: "13:45:10", event: "Zmiana progu temperatury: 85°C → 82°C", type: "warn" as const },
-];
 
 export default function MonitorPage() {
-  const systemStatus: "ok" | "warn" | "danger" = "ok";
+  const [metrics, setMetrics] = useState<Metric[]>([]);
+  const [eventLog, setEventLog] = useState<EventLogItem[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/monitor");
+        const data = await res.json();
+
+        const updatedMetrics: Metric[] = [
+          {
+            label: "GPU Temp",
+            value: data.gpuTemp,
+            max: 100,
+            unit: "°C",
+            status: getStatus(data.gpuTemp, 100),
+          },
+          {
+            label: "VRAM",
+            value: data.vramUsed,
+            max: data.vramMax,
+            unit: "GB",
+            status: getStatus(data.vramUsed, data.vramMax),
+          },
+          {
+            label: "CPU",
+            value: data.cpuUsage,
+            max: 100,
+            unit: "%",
+            status: getStatus(data.cpuUsage, 100),
+          },
+          {
+            label: "RAM",
+            value: data.ramUsed,
+            max: data.ramMax,
+            unit: "GB",
+            status: getStatus(data.ramUsed, data.ramMax),
+          },
+        ];
+
+        setMetrics(updatedMetrics);
+        setEventLog(data.events);
+      } catch (err) {
+        console.error("Monitor fetch error:", err);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const systemStatus: StatusType = metrics.some((m) => m.status === "danger")
+    ? "danger"
+    : metrics.some((m) => m.status === "warn")
+      ? "warn"
+      : "ok";
+
+  const statusConfig = {
+    ok: {
+      label: "Normalny",
+      color: "bg-green-500/20 text-green-500 border-green-500/30",
+      icon: <CheckCircle className="h-4 w-4" />,
+    },
+    warn: {
+      label: "Ostrzeżenie",
+      color: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30",
+      icon: <AlertTriangle className="h-4 w-4" />,
+    },
+    danger: {
+      label: "Przegrzanie — pauza",
+      color: "bg-red-500/20 text-red-500 border-red-500/30",
+      icon: <Pause className="h-4 w-4" />,
+    },
+  };
+
+  const progressColor = {
+    ok: "bg-green-500",
+    warn: "bg-yellow-500",
+    danger: "bg-red-500",
+  };
+
   const sc = statusConfig[systemStatus];
 
   return (
     <div className="space-y-4">
-      {/* Status banner */}
-      <Card className="border-l-4" style={{ borderLeftColor: systemStatus === "ok" ? "hsl(142,60%,50%)" : systemStatus === "warn" ? "hsl(40,90%,55%)" : "hsl(0,72%,50%)" }}>
+      {/* SYSTEM STATUS */}
+      <Card
+        className="border-l-4"
+        style={{
+          borderLeftColor:
+            systemStatus === "ok" ? "rgb(34,197,94)" : systemStatus === "warn" ? "rgb(234,179,8)" : "rgb(239,68,68)",
+        }}
+      >
         <CardContent className="flex items-center gap-3 p-4">
           {sc.icon}
           <span className="text-sm font-medium">Status systemu:</span>
           <Badge className={sc.color}>{sc.label}</Badge>
-          <span className="ml-auto text-xs text-muted-foreground">Próg temp: 82°C | Auto-pauza: włączona</span>
+          <span className="ml-auto text-xs text-muted-foreground">Auto-monitoring aktywny</span>
         </CardContent>
       </Card>
 
-      {/* Metrics */}
+      {/* METRICS */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {metrics.map((m) => (
           <Card key={m.label}>
             <CardContent className="p-4">
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {m.icon}
-                  {m.label}
-                </div>
-                <span className="font-mono text-sm font-bold text-foreground">
-                  {m.value}{m.unit}
+                <div className="text-sm text-muted-foreground">{m.label}</div>
+                <span className="font-mono text-sm font-bold">
+                  {m.value}
+                  {m.unit}
                 </span>
               </div>
               <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary">
@@ -84,7 +155,7 @@ export default function MonitorPage() {
         ))}
       </div>
 
-      {/* Event log */}
+      {/* EVENT LOG */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm">Log wydarzeń</CardTitle>
@@ -92,19 +163,16 @@ export default function MonitorPage() {
         <CardContent className="p-0">
           <div className="max-h-64 overflow-auto">
             {eventLog.map((e, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 border-b border-border px-4 py-2 last:border-0"
-              >
+              <div key={i} className="flex items-center gap-3 border-b border-border px-4 py-2 last:border-0">
                 <span className="shrink-0 font-mono text-[10px] text-muted-foreground">{e.time}</span>
                 <div
                   className="h-1.5 w-1.5 shrink-0 rounded-full"
                   style={{
                     backgroundColor:
-                      e.type === "ok" ? "hsl(142,60%,50%)" : e.type === "warn" ? "hsl(40,90%,55%)" : "hsl(0,72%,50%)",
+                      e.type === "ok" ? "rgb(34,197,94)" : e.type === "warn" ? "rgb(234,179,8)" : "rgb(239,68,68)",
                   }}
                 />
-                <span className="text-xs text-foreground">{e.event}</span>
+                <span className="text-xs">{e.event}</span>
               </div>
             ))}
           </div>

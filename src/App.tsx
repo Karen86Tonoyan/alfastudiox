@@ -22,6 +22,7 @@ import DashboardPage from "./pages/DashboardPage";
 import BuyCreditsPage from "./pages/BuyCreditsPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import ProfilePage from "./pages/ProfilePage";
+import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -75,6 +76,7 @@ const App = () => (
             <Route path="/buy-credits" element={<BuyCreditsPage />} />
             <Route path="/payment-success" element={<PaymentSuccessPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/admin" element={<AdminPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

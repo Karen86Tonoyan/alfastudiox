@@ -14,13 +14,147 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      credit_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          credit_balance: number
+          display_name: string | null
+          email: string | null
+          id: string
+          is_promo_customer: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credit_balance?: number
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          is_promo_customer?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credit_balance?: number
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          is_promo_customer?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      promo_tracker: {
+        Row: {
+          created_at: string
+          discount_amount: number
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          discount_amount?: number
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          discount_amount?: number
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      render_logs: {
+        Row: {
+          cfg: number | null
+          created_at: string
+          height: number | null
+          id: string
+          ip_weight: number | null
+          layers: Json | null
+          preset: string | null
+          pulid_weight: number | null
+          render_duration_ms: number | null
+          sampler: string | null
+          scheduler: string | null
+          steps: number | null
+          supir_strength: number | null
+          user_id: string | null
+          width: number | null
+        }
+        Insert: {
+          cfg?: number | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          ip_weight?: number | null
+          layers?: Json | null
+          preset?: string | null
+          pulid_weight?: number | null
+          render_duration_ms?: number | null
+          sampler?: string | null
+          scheduler?: string | null
+          steps?: number | null
+          supir_strength?: number | null
+          user_id?: string | null
+          width?: number | null
+        }
+        Update: {
+          cfg?: number | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          ip_weight?: number | null
+          layers?: Json | null
+          preset?: string | null
+          pulid_weight?: number | null
+          render_duration_ms?: number | null
+          sampler?: string | null
+          scheduler?: string | null
+          steps?: number | null
+          supir_strength?: number | null
+          user_id?: string | null
+          width?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_promo_count: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never

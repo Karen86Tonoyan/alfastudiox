@@ -161,7 +161,7 @@ export default function RenderPage() {
       }
     } else if (renderBackend.type === "cloud") {
       const provider = renderBackend.provider;
-      const supportedForCloudRender = ["openai", "google"];
+      const supportedForCloudRender = ["openai", "google", "replicate", "huggingface", "kimi", "qwen"];
 
       if (supportedForCloudRender.includes(provider)) {
         // Real API call via edge function

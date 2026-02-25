@@ -29,6 +29,8 @@ export interface PhotoSessionConfig {
   lora?: string;
   controlnet?: string;
   upscaler?: string;
+  sampler?: string;
+  scheduler?: string;
 
   // Generation params
   width: number;
@@ -275,8 +277,8 @@ export function buildPhotoSessionWorkflow(config: PhotoSessionConfig): ComfyWork
       seed,
       steps: config.steps,
       cfg: config.cfg,
-      sampler_name: "dpmpp_2m",
-      scheduler: "normal",
+      sampler_name: config.sampler || "dpmpp_2m",
+      scheduler: config.scheduler || "normal",
       denoise: 1.0,
     },
   };
@@ -339,6 +341,8 @@ export const DEFAULT_SESSION_CONFIG: PhotoSessionConfig = {
     openPose: false,
     supir: true,
   },
+  sampler: "dpmpp_2m",
+  scheduler: "normal",
   width: 1024,
   height: 1536,
   steps: 25,

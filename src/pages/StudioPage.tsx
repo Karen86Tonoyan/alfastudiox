@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useComfyUI } from "@/hooks/useComfyUI";
 import { useComfyModels } from "@/hooks/useComfyModels";
+import { useComfySamplers } from "@/hooks/useComfySamplers";
 import { buildPhotoSessionWorkflow, DEFAULT_SESSION_CONFIG, type PhotoSessionConfig } from "@/lib/photoSessionWorkflow";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,7 @@ import { SessionPresets, type SessionPreset } from "@/components/studio/SessionP
 export default function StudioPage() {
   const comfy = useComfyUI();
   const { models, loading: modelsLoading, refetch: refetchModels } = useComfyModels();
+  const { options: samplerOptions } = useComfySamplers();
   const [config, setConfig] = useState<PhotoSessionConfig>(DEFAULT_SESSION_CONFIG);
 
   const [locationFile, setLocationFile] = useState<File | null>(null);
@@ -200,6 +202,46 @@ export default function StudioPage() {
                   min={10} max={50} step={1}
                   className="py-1"
                 />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground">Sampler</span>
+                <Select
+                  value={config.sampler || "dpmpp_2m"}
+                  onValueChange={(v) => setConfig((prev) => ({ ...prev, sampler: v }))}
+                >
+                  <SelectTrigger className="h-8 bg-card border-border text-xs font-mono">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(samplerOptions.samplers.length > 0
+                      ? samplerOptions.samplers
+                      : ["euler", "euler_ancestral", "dpmpp_2m", "dpmpp_2m_sde", "dpmpp_3m_sde", "ddim", "uni_pc"]
+                    ).map((s) => (
+                      <SelectItem key={s} value={s} className="text-xs font-mono">{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-muted-foreground">Scheduler</span>
+                <Select
+                  value={config.scheduler || "normal"}
+                  onValueChange={(v) => setConfig((prev) => ({ ...prev, scheduler: v }))}
+                >
+                  <SelectTrigger className="h-8 bg-card border-border text-xs font-mono">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(samplerOptions.schedulers.length > 0
+                      ? samplerOptions.schedulers
+                      : ["normal", "karras", "exponential", "sgm_uniform", "simple", "ddim_uniform", "beta"]
+                    ).map((s) => (
+                      <SelectItem key={s} value={s} className="text-xs font-mono">{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="space-y-1">

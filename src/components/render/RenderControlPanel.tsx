@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -485,22 +486,35 @@ export function RenderControlPanel({ className, onRender, onSaveWorkflow, isComf
 
       {/* Render button */}
       <div className="border-t border-border p-4">
-        <Button
-          onClick={activeRendering ? handleCancel : handleRender}
-          disabled={(!activeRendering && !settings.prompt.trim()) || (!activeRendering && disableGenerate)}
-          className={cn(
-            "w-full h-11 gap-2 text-sm font-bold uppercase tracking-wider transition-all",
-            activeRendering
-              ? "bg-destructive text-destructive-foreground"
-              : "gold-gradient text-primary-foreground hover:opacity-90 gold-glow"
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="w-full inline-block">
+              <Button
+                onClick={activeRendering ? handleCancel : handleRender}
+                disabled={(!activeRendering && !settings.prompt.trim()) || (!activeRendering && disableGenerate)}
+                className={cn(
+                  "w-full h-11 gap-2 text-sm font-bold uppercase tracking-wider transition-all",
+                  activeRendering
+                    ? "bg-destructive text-destructive-foreground"
+                    : "gold-gradient text-primary-foreground hover:opacity-90 gold-glow"
+                )}
+              >
+                {activeRendering ? (
+                  <><Square className="h-4 w-4" /> Cancel Render</>
+                ) : (
+                  <><Play className="h-4 w-4" /> {isComfyConnected ? "Send to ComfyUI" : `Generate ${settings.modelType === "video" ? "Video" : "Image"}`}</>
+                )}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {!activeRendering && (disableGenerate || !settings.prompt.trim()) && (
+            <TooltipContent side="top">
+              {disableGenerate
+                ? "Brak klucza API dla wybranego dostawcy — skonfiguruj go w Providers"
+                : "Wpisz prompt, aby rozpocząć generowanie"}
+            </TooltipContent>
           )}
-        >
-          {activeRendering ? (
-            <><Square className="h-4 w-4" /> Cancel Render</>
-          ) : (
-            <><Play className="h-4 w-4" /> {isComfyConnected ? "Send to ComfyUI" : `Generate ${settings.modelType === "video" ? "Video" : "Image"}`}</>
-          )}
-        </Button>
+        </Tooltip>
       </div>
     </div>
   );

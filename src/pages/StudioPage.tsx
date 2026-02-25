@@ -19,6 +19,7 @@ import { ImageUploadZone } from "@/components/studio/ImageUploadZone";
 import { PoseSelector } from "@/components/studio/PoseSelector";
 import { LayerToggles } from "@/components/studio/LayerToggles";
 import { ModelSelectors } from "@/components/studio/ModelSelectors";
+import { SessionPresets, type SessionPreset } from "@/components/studio/SessionPresets";
 
 export default function StudioPage() {
   const comfy = useComfyUI();
@@ -28,6 +29,22 @@ export default function StudioPage() {
   const [locationFile, setLocationFile] = useState<File | null>(null);
   const [modelFile, setModelFile] = useState<File | null>(null);
   const [productFile, setProductFile] = useState<File | null>(null);
+  const [activePreset, setActivePreset] = useState<string | null>(null);
+
+  const handlePresetSelect = useCallback((preset: SessionPreset) => {
+    setConfig((prev) => ({
+      ...prev,
+      ...preset.config,
+      // keep model selections from ComfyUI
+      checkpoint: prev.checkpoint,
+      vae: prev.vae,
+      lora: prev.lora,
+      controlnet: prev.controlnet,
+      upscaler: prev.upscaler,
+    }));
+    setActivePreset(preset.id);
+    toast.success(`Preset: ${preset.name}`);
+  }, []);
 
   // Auto-connect on mount
   useEffect(() => {
@@ -117,6 +134,11 @@ export default function StudioPage() {
             <ImageUploadZone label="Modelka" icon={User} file={modelFile} onUpload={setModelFile} onClear={() => setModelFile(null)} />
             <ImageUploadZone label="Produkt" icon={ShoppingBag} file={productFile} onUpload={setProductFile} onClear={() => setProductFile(null)} />
           </div>
+
+          <div className="h-px bg-border" />
+
+          {/* ── Presets ── */}
+          <SessionPresets activePreset={activePreset} onSelect={handlePresetSelect} />
 
           <div className="h-px bg-border" />
 

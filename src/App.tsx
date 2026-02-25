@@ -19,6 +19,8 @@ import TIPAuditorPage from "./pages/TIPAuditorPage";
 import StudioPage from "./pages/StudioPage";
 import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
+import BuyCreditsPage from "./pages/BuyCreditsPage";
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +71,8 @@ const App = () => (
             <Route path="/gallery" element={<GalleryPage />} />
             <Route path="/providers" element={<ProvidersPage />} />
             <Route path="/tip-auditor" element={<TIPAuditorPage />} />
+            <Route path="/buy-credits" element={<BuyCreditsPage />} />
+            <Route path="/payment-success" element={<PaymentSuccessPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

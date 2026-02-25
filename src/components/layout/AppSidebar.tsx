@@ -2,7 +2,7 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
-  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut
+  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,7 @@ import alfaLogo from "@/assets/alfa-logo.png";
 
 const navItems = [
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard, highlight: true },
+  { title: "Kup Kredyty", path: "/buy-credits", icon: CreditCard, highlight: true },
   { title: "Photo Studio", path: "/", icon: Camera, highlight: true },
   { title: "Render Studio", path: "/render", icon: Sparkles },
   { title: "Workflow", path: "/workflow", icon: GitBranch },

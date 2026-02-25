@@ -322,6 +322,7 @@ export default function RenderPage() {
                 isComfyConnected={comfy.isConnected}
                 isComfyRendering={isRendering}
                 onCancelRender={handleCancel}
+                disableGenerate={missingApiKey}
               />
             </div>
 

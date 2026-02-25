@@ -104,9 +104,10 @@ interface RenderControlPanelProps {
   isComfyConnected?: boolean;
   isComfyRendering?: boolean;
   onCancelRender?: () => void;
+  disableGenerate?: boolean;
 }
 
-export function RenderControlPanel({ className, onRender, onSaveWorkflow, isComfyConnected, isComfyRendering, onCancelRender }: RenderControlPanelProps) {
+export function RenderControlPanel({ className, onRender, onSaveWorkflow, isComfyConnected, isComfyRendering, onCancelRender, disableGenerate }: RenderControlPanelProps) {
   const [settings, setSettings] = useState<RenderSettings>(defaultSettings);
   const [showAdvanced, setShowAdvanced] = useState(true);
 
@@ -486,7 +487,7 @@ export function RenderControlPanel({ className, onRender, onSaveWorkflow, isComf
       <div className="border-t border-border p-4">
         <Button
           onClick={activeRendering ? handleCancel : handleRender}
-          disabled={!activeRendering && !settings.prompt.trim()}
+          disabled={(!activeRendering && !settings.prompt.trim()) || (!activeRendering && disableGenerate)}
           className={cn(
             "w-full h-11 gap-2 text-sm font-bold uppercase tracking-wider transition-all",
             activeRendering

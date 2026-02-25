@@ -2,7 +2,7 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
-  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard
+  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,7 @@ const navItems = [
   { title: "Gallery", path: "/gallery", icon: Image },
   { title: "Providers", path: "/providers", icon: Cloud },
   { title: "TIP Auditor", path: "/tip-auditor", icon: ShieldCheck },
+  { title: "Profil", path: "/profile", icon: UserCog, highlight: true },
 ];
 
 interface AppSidebarProps {

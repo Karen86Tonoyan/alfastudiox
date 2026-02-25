@@ -1,11 +1,12 @@
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
   Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
@@ -38,6 +39,20 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [initials, setInitials] = useState("U");
+
+  useEffect(() => {
+    const load = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("profiles").select("avatar_url, display_name, email").eq("user_id", user.id).single();
+      if (data?.avatar_url) setAvatarUrl(data.avatar_url);
+      const name = data?.display_name || data?.email || "U";
+      setInitials(name.substring(0, 2).toUpperCase());
+    };
+    load();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -96,6 +111,19 @@ export function AppSidebar({ collapsed, onToggle }: AppSidebarProps) {
 
       {/* Footer */}
       <div className="border-t border-border p-3 space-y-2">
+        <Link
+          to="/profile"
+          className={cn(
+            "flex items-center gap-3 rounded-md px-2 py-2 hover:bg-secondary transition-all",
+            collapsed && "justify-center px-0"
+          )}
+        >
+          <Avatar className="h-7 w-7 border border-primary/20">
+            <AvatarImage src={avatarUrl ?? undefined} alt="Avatar" />
+            <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">{initials}</AvatarFallback>
+          </Avatar>
+          {!collapsed && <span className="text-xs text-foreground truncate">Mój profil</span>}
+        </Link>
         <AlertDialog open={logoutOpen} onOpenChange={setLogoutOpen}>
           <AlertDialogTrigger asChild>
             <button

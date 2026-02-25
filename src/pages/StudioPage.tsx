@@ -23,6 +23,7 @@ import { ModelSelectors } from "@/components/studio/ModelSelectors";
 import { SessionPresets, type SessionPreset } from "@/components/studio/SessionPresets";
 import { RenderTracker } from "@/components/studio/RenderTracker";
 import { useRenderTracker } from "@/hooks/useRenderTracker";
+import { CalibrationMode } from "@/components/studio/CalibrationMode";
 
 export default function StudioPage() {
   const comfy = useComfyUI();
@@ -35,6 +36,7 @@ export default function StudioPage() {
   const [productFile, setProductFile] = useState<File | null>(null);
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const tracker = useRenderTracker();
+  const [calibrationEnabled, setCalibrationEnabled] = useState(false);
 
   const handlePresetSelect = useCallback((preset: SessionPreset) => {
     setConfig((prev) => ({
@@ -118,6 +120,42 @@ export default function StudioPage() {
     toast.info("Anulowano render");
   };
 
+  const handleCalibrationRun = async (variants: PhotoSessionConfig[]) => {
+    if (!comfy.isConnected) {
+      toast.error("ComfyUI nie jest połączony");
+      return;
+    }
+
+    toast.info(`Kalibracja: przesyłanie obrazów...`);
+
+    const [locName, modName, prodName] = await Promise.all([
+      locationFile ? uploadToComfy(locationFile) : null,
+      modelFile ? uploadToComfy(modelFile) : null,
+      productFile ? uploadToComfy(productFile) : null,
+    ]);
+
+    for (let i = 0; i < variants.length; i++) {
+      const varConfig: PhotoSessionConfig = {
+        ...variants[i],
+        locationImage: locName,
+        modelImage: modName,
+        productImage: prodName,
+      };
+
+      const workflow = buildPhotoSessionWorkflow(varConfig);
+      const promptId = await comfy.queuePrompt(workflow);
+
+      if (promptId) {
+        tracker.logRender(varConfig, `calibration-${i + 1}`, promptId);
+        toast.success(`Wariant ${i + 1}/${variants.length} w kolejce`);
+      } else {
+        toast.error(`Wariant ${i + 1} — błąd kolejki`);
+      }
+    }
+
+    toast.info(`Kalibracja: ${variants.length} wariantów w kolejce`);
+  };
+
   const hasAnyImage = locationFile || modelFile || productFile;
   const activeLayers = Object.values(config.layers).filter(Boolean).length;
 
@@ -177,6 +215,18 @@ export default function StudioPage() {
             remaining={tracker.remaining}
             budget={tracker.budget}
             onClear={tracker.clearLog}
+          />
+
+          <div className="h-px bg-border" />
+
+          {/* ── Calibration Mode ── */}
+          <CalibrationMode
+            enabled={calibrationEnabled}
+            onToggle={setCalibrationEnabled}
+            baseConfig={config}
+            onRunCalibration={handleCalibrationRun}
+            isRendering={comfy.isRendering}
+            hasImages={!!hasAnyImage}
           />
 
           <div className="h-px bg-border" />

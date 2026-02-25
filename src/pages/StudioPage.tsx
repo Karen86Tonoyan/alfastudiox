@@ -63,7 +63,8 @@ export default function StudioPage() {
     try {
       const form = new FormData();
       form.append("image", file);
-      const res = await fetch(`http://localhost:8188/upload/image`, {
+      const { comfyApi } = await import("@/lib/comfyApi");
+      const res = await fetch(`http://${comfyApi.baseUrl}/upload/image`, {
         method: "POST",
         body: form,
       });

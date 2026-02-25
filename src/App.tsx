@@ -18,6 +18,7 @@ import ProvidersPage from "./pages/ProvidersPage";
 import TIPAuditorPage from "./pages/TIPAuditorPage";
 import StudioPage from "./pages/StudioPage";
 import AuthPage from "./pages/AuthPage";
+import DashboardPage from "./pages/DashboardPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,7 @@ const App = () => (
           <Route path="/auth" element={<AuthPage />} />
           <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
             <Route path="/" element={<StudioPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/render" element={<RenderPage />} />
             <Route path="/workflow" element={<WorkflowPage />} />
             <Route path="/orchestrator" element={<OrchestratorPage />} />

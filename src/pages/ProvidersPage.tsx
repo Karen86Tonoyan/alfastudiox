@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Bot, Cloud, Loader2, RefreshCw, Check, X,
   Cpu, Globe, Zap, Shield, ExternalLink, Settings,
-  Wifi, WifiOff, Server, Activity
+  Wifi, WifiOff, Server, Activity, Film, ImageIcon
 } from "lucide-react";
 import { useComfyUI } from "@/hooks/useComfyUI";
 import { ComfyModelManager } from "@/components/providers/ComfyModelManager";
@@ -439,17 +439,45 @@ export default function ProvidersPage() {
                         ))}
                       </div>
 
-                      {/* Available models */}
-                      <div className="space-y-1">
-                        <span className="text-[10px] text-muted-foreground uppercase">Dostępne modele</span>
-                        <div className="flex flex-wrap gap-1">
-                          {getProviderModels(provider.id).map((m) => (
-                            <Badge key={m.id} variant="outline" className="text-[8px] px-1.5 py-0 border-primary/20 text-primary">
-                              {m.name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
+                      {/* Available models — image */}
+                      {(() => {
+                        const allModels = getProviderModels(provider.id);
+                        const videoKeywords = ["video", "svd", "animate", "veo", "liveportrait"];
+                        const imageModels = allModels.filter((m) => !videoKeywords.some((k) => m.id.toLowerCase().includes(k) || m.name.toLowerCase().includes(k)));
+                        const videoModels = allModels.filter((m) => videoKeywords.some((k) => m.id.toLowerCase().includes(k) || m.name.toLowerCase().includes(k)));
+                        return (
+                          <>
+                            {imageModels.length > 0 && (
+                              <div className="space-y-1">
+                                <span className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
+                                  <ImageIcon className="h-3 w-3" /> Modele Image
+                                </span>
+                                <div className="flex flex-wrap gap-1">
+                                  {imageModels.map((m) => (
+                                    <Badge key={m.id} variant="outline" className="text-[8px] px-1.5 py-0 border-primary/20 text-primary">
+                                      {m.name}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {videoModels.length > 0 && (
+                              <div className="space-y-1">
+                                <span className="text-[10px] text-muted-foreground uppercase flex items-center gap-1">
+                                  <Film className="h-3 w-3 text-status-warn" /> Modele Video
+                                </span>
+                                <div className="flex flex-wrap gap-1">
+                                  {videoModels.map((m) => (
+                                    <Badge key={m.id} variant="outline" className="text-[8px] px-1.5 py-0 border-status-warn/30 text-status-warn">
+                                      {m.name}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
@@ -457,7 +485,81 @@ export default function ProvidersPage() {
             </div>
           </section>
 
-          {/* Info */}
+          {/* VIDEO MODELS OVERVIEW */}
+          <section className="rounded-lg border border-status-warn/20 bg-card overflow-hidden">
+            <div className="flex items-center gap-3 px-4 py-3 bg-status-warn/5 border-b border-status-warn/10">
+              <Film className="h-5 w-5 text-status-warn" />
+              <div className="flex-1">
+                <h2 className="text-sm font-bold text-foreground">Modele Video — Przegląd</h2>
+                <p className="text-[10px] text-muted-foreground">Wszystkie dostępne modele do generowania wideo</p>
+              </div>
+            </div>
+            <div className="p-4 space-y-3">
+              {/* Local models */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-muted-foreground uppercase font-semibold flex items-center gap-1">
+                  <Server className="h-3 w-3" /> Lokalne (ComfyUI / GPU)
+                </span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { name: "AnimateDiff", vram: "7 GB", desc: "Krótkie animacje z SD 1.5" },
+                    { name: "WanVideo", vram: "8 GB", desc: "Chińskie modele text-to-video" },
+                    { name: "Stable Video Diffusion", vram: "10 GB", desc: "Stabilne generowanie wideo" },
+                    { name: "SVD-XT (img2vid)", vram: "12 GB", desc: "Obraz → wideo, 25 klatek" },
+                    { name: "LivePortrait", vram: "4 GB", desc: "Animacja portretów" },
+                  ].map((m) => (
+                    <div key={m.name} className="flex items-center gap-2 rounded bg-secondary/50 px-2.5 py-2 text-[10px]">
+                      <Film className="h-3 w-3 text-status-warn shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-foreground block truncate">{m.name}</span>
+                        <span className="text-muted-foreground">{m.desc}</span>
+                      </div>
+                      <Badge variant="outline" className="text-[8px] px-1 py-0 border-primary/30 text-primary shrink-0">
+                        {m.vram}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cloud video models */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-muted-foreground uppercase font-semibold flex items-center gap-1">
+                  <Cloud className="h-3 w-3" /> Cloud Providers
+                </span>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { name: "SVD (Replicate)", provider: "Replicate", desc: "Stable Video Diffusion" },
+                    { name: "AnimateDiff (Replicate)", provider: "Replicate", desc: "SD 1.5 animacje" },
+                    { name: "Veo 2 (Google)", provider: "Google", desc: "Google video gen" },
+                    { name: "Kimi Video", provider: "Kimi", desc: "Moonshot video gen" },
+                    { name: "Wanx Video (Qwen)", provider: "Qwen", desc: "Alibaba video gen" },
+                  ].map((m) => (
+                    <div key={m.name} className="flex items-center gap-2 rounded bg-secondary/50 px-2.5 py-2 text-[10px]">
+                      <Film className="h-3 w-3 text-status-warn shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-foreground block truncate">{m.name}</span>
+                        <span className="text-muted-foreground">{m.desc}</span>
+                      </div>
+                      <Badge variant="outline" className="text-[8px] px-1 py-0 border-status-warn/30 text-status-warn shrink-0">
+                        {m.provider}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded bg-secondary/30 p-2.5 text-[10px] text-muted-foreground space-y-1">
+                <p className="font-semibold text-foreground">💡 Jak korzystać z video:</p>
+                <p>1. W <span className="text-primary font-mono">Render Studio</span> przełącz na tryb <span className="text-status-warn font-semibold">Video</span></p>
+                <p>2. Wybierz model wideo (AnimateDiff, WanVideo, SVD...)</p>
+                <p>3. Ustaw liczbę klatek (Frames) i FPS</p>
+                <p>4. Lokalne modele wymagają <span className="text-primary font-mono">ComfyUI</span> na Twoim GPU</p>
+                <p>5. Cloud modele wymagają klucza API odpowiedniego providera</p>
+              </div>
+            </div>
+          </section>
+
           <div className="rounded-lg border border-border bg-card p-4 space-y-2">
             <div className="flex items-center gap-2">
               <Shield className="h-4 w-4 text-primary" />

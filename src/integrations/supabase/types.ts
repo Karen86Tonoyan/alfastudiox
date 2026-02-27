@@ -152,6 +152,41 @@ export type Database = {
         }
         Relationships: []
       }
+      renders: {
+        Row: {
+          created_at: string | null
+          duration_seconds: number | null
+          id: number
+          render_type: string | null
+          status: string | null
+          user_id: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_seconds?: number | null
+          id?: number
+          render_type?: string | null
+          status?: string | null
+          user_id?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_seconds?: number | null
+          id?: number
+          render_type?: string | null
+          status?: string | null
+          user_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -167,6 +202,24 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: number
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: number
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: number
         }
         Relationships: []
       }

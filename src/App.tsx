@@ -24,6 +24,10 @@ import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 import ApiKeysGuidePage from "./pages/ApiKeysGuidePage";
+import IdeasPage from "./pages/IdeasPage";
+import LibraryPage from "./pages/LibraryPage";
+import MoviePipelinePage from "./pages/MoviePipelinePage";
+import PromptMemoryPage from "./pages/PromptMemoryPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

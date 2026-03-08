@@ -63,11 +63,17 @@ function RenderPreview({
   progress,
   currentNode,
   lastImage,
+  showBadge,
+  provider,
+  model,
 }: {
   isRendering: boolean;
   progress: number;
   currentNode: string | null;
   lastImage: string | null;
+  showBadge?: boolean;
+  provider?: string;
+  model?: string;
 }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center bg-background border border-border rounded-lg m-3 overflow-hidden">

@@ -24,6 +24,10 @@ import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminPage from "./pages/AdminPage";
 import ApiKeysGuidePage from "./pages/ApiKeysGuidePage";
+import IdeasPage from "./pages/IdeasPage";
+import LibraryPage from "./pages/LibraryPage";
+import MoviePipelinePage from "./pages/MoviePipelinePage";
+import PromptMemoryPage from "./pages/PromptMemoryPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -79,6 +83,10 @@ const App = () => (
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/api-keys-guide" element={<ApiKeysGuidePage />} />
+            <Route path="/ideas" element={<IdeasPage />} />
+            <Route path="/library" element={<LibraryPage />} />
+            <Route path="/movie-pipeline" element={<MoviePipelinePage />} />
+            <Route path="/prompt-memory" element={<PromptMemoryPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

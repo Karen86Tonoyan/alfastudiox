@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_actors: {
+        Row: {
+          body_type: string | null
+          category: string
+          created_at: string
+          default_style: string | null
+          face_prompt: string | null
+          id: string
+          is_preset: boolean
+          name: string
+          thumbnail_url: string | null
+          user_id: string | null
+          voice_style: string | null
+        }
+        Insert: {
+          body_type?: string | null
+          category?: string
+          created_at?: string
+          default_style?: string | null
+          face_prompt?: string | null
+          id?: string
+          is_preset?: boolean
+          name: string
+          thumbnail_url?: string | null
+          user_id?: string | null
+          voice_style?: string | null
+        }
+        Update: {
+          body_type?: string | null
+          category?: string
+          created_at?: string
+          default_style?: string | null
+          face_prompt?: string | null
+          id?: string
+          is_preset?: boolean
+          name?: string
+          thumbnail_url?: string | null
+          user_id?: string | null
+          voice_style?: string | null
+        }
+        Relationships: []
+      }
+      ai_locations: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_preset: boolean
+          mood: string | null
+          name: string
+          scene_prompt: string
+          thumbnail_url: string | null
+          time_of_day: string | null
+          user_id: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_preset?: boolean
+          mood?: string | null
+          name: string
+          scene_prompt: string
+          thumbnail_url?: string | null
+          time_of_day?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_preset?: boolean
+          mood?: string | null
+          name?: string
+          scene_prompt?: string
+          thumbnail_url?: string | null
+          time_of_day?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       credit_transactions: {
         Row: {
           amount: number
@@ -94,6 +175,48 @@ export type Database = {
           created_at?: string
           discount_amount?: number
           id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      prompt_memory: {
+        Row: {
+          created_at: string
+          id: string
+          improved_prompt: string | null
+          model: string | null
+          prompt: string
+          rating: number | null
+          result_url: string | null
+          settings: Json | null
+          style: string | null
+          tags: string[] | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          improved_prompt?: string | null
+          model?: string | null
+          prompt: string
+          rating?: number | null
+          result_url?: string | null
+          settings?: Json | null
+          style?: string | null
+          tags?: string[] | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          improved_prompt?: string | null
+          model?: string | null
+          prompt?: string
+          rating?: number | null
+          result_url?: string | null
+          settings?: Json | null
+          style?: string | null
+          tags?: string[] | null
           user_id?: string
         }
         Relationships: []
@@ -186,6 +309,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      storyboard_projects: {
+        Row: {
+          created_at: string
+          id: string
+          original_prompt: string
+          scenes: Json | null
+          script: Json | null
+          status: string
+          style: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          original_prompt: string
+          scenes?: Json | null
+          script?: Json | null
+          status?: string
+          style?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          original_prompt?: string
+          scenes?: Json | null
+          script?: Json | null
+          status?: string
+          style?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

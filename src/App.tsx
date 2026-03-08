@@ -83,6 +83,10 @@ const App = () => (
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/api-keys-guide" element={<ApiKeysGuidePage />} />
+            <Route path="/ideas" element={<IdeasPage />} />
+            <Route path="/library" element={<LibraryPage />} />
+            <Route path="/movie-pipeline" element={<MoviePipelinePage />} />
+            <Route path="/prompt-memory" element={<PromptMemoryPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -144,6 +144,95 @@ const providers: ProviderGuide[] = [
     models: ["Claude 3.5 Sonnet (analiza obrazów)"],
     category: "image"
   },
+  {
+    id: "grok",
+    name: "xAI (Grok)",
+    logo: "⚡",
+    url: "https://console.x.ai",
+    dashboardUrl: "https://console.x.ai/team/default/api-keys",
+    pricing: "Grok-2: ~$5/$15 za 1M tokenów",
+    freeCredits: "Darmowe kredyty na start",
+    steps: [
+      "Wejdź na console.x.ai i załóż konto",
+      "Przejdź do API Keys",
+      'Kliknij "Create API Key"',
+      "Skopiuj klucz",
+      "Wklej w ALFA Studio → Providers → Grok"
+    ],
+    models: ["Grok-2", "Grok-2 Vision", "Grok-3"],
+    category: "both"
+  },
+  {
+    id: "mistral",
+    name: "Mistral AI",
+    logo: "🌀",
+    url: "https://console.mistral.ai",
+    dashboardUrl: "https://console.mistral.ai/api-keys",
+    pricing: "Mistral Large: ~$2/$6 za 1M tokenów",
+    freeCredits: "Darmowy tier z limitem zapytań",
+    steps: [
+      "Wejdź na console.mistral.ai i załóż konto",
+      "Przejdź do API Keys w panelu",
+      'Kliknij "Create new key"',
+      "Skopiuj klucz API",
+      "Wklej w ALFA Studio → Providers → Mistral"
+    ],
+    models: ["Mistral Large", "Mistral Medium", "Pixtral (vision)"],
+    category: "image"
+  },
+  {
+    id: "deepseek",
+    name: "DeepSeek",
+    logo: "🔍",
+    url: "https://platform.deepseek.com",
+    dashboardUrl: "https://platform.deepseek.com/api_keys",
+    pricing: "DeepSeek-V3: ~$0.27/$1.10 za 1M tokenów",
+    freeCredits: "Darmowe kredyty na start",
+    steps: [
+      "Wejdź na platform.deepseek.com i załóż konto",
+      "Przejdź do API Keys",
+      'Kliknij "Create new API key"',
+      "Skopiuj klucz",
+      "Wklej w ALFA Studio → Providers → DeepSeek"
+    ],
+    models: ["DeepSeek-V3", "DeepSeek-R1", "Janus Pro (vision)"],
+    category: "both"
+  },
+  {
+    id: "azure",
+    name: "Microsoft Copilot / Azure AI",
+    logo: "🪟",
+    url: "https://azure.microsoft.com/en-us/products/ai-services",
+    dashboardUrl: "https://portal.azure.com/#view/Microsoft_Azure_ProjectOxford/CognitiveServicesHub",
+    pricing: "DALL-E 3: ~$0.04/obraz / GPT-4o Vision: od $2.50/1M tokenów",
+    freeCredits: "$200 kredytów Azure na 30 dni",
+    steps: [
+      "Załóż konto na portal.azure.com",
+      "Utwórz zasób Azure OpenAI Service",
+      "Przejdź do Keys and Endpoint w zasobie",
+      "Skopiuj Key 1 oraz Endpoint URL",
+      "Wklej w ALFA Studio → Providers → Azure / Copilot"
+    ],
+    models: ["GPT-4o (vision)", "DALL-E 3", "Whisper"],
+    category: "both"
+  },
+  {
+    id: "agnescloud",
+    name: "Agnes Cloud",
+    logo: "☁️",
+    url: "https://agnes.cloud",
+    dashboardUrl: "https://agnes.cloud/dashboard/api",
+    pricing: "Zależy od modelu — sprawdź cennik",
+    steps: [
+      "Wejdź na agnes.cloud i załóż konto",
+      "Przejdź do Dashboard → API",
+      'Kliknij "Generate API Key"',
+      "Skopiuj klucz",
+      "Wklej w ALFA Studio → Providers → Agnes Cloud"
+    ],
+    models: ["Stable Diffusion", "Custom Models"],
+    category: "image"
+  },
 ];
 
 function CopyButton({ text }: { text: string }) {

@@ -21,6 +21,7 @@ import { buildWorkflow } from "@/lib/workflowBuilder";
 import { loadProviders } from "@/lib/cloudProviders";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AITransparencyPanel, AITransparencyBadge, type AITransparencyConfig } from "@/components/render/AITransparency";
 
 function StatusBar({ gpu, isConnected }: { gpu: any; isConnected: boolean }) {
   const temp = gpu?.temp ?? 62;

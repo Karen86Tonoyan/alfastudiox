@@ -126,7 +126,9 @@ export class ComfyApiClient extends EventEmitter {
     this.emit("status", this._status);
 
     try {
-      this.ws = new WebSocket(`ws://${this._baseUrl}/ws`);
+      const wsProtocol = this._baseUrl.includes("ngrok") || this._baseUrl.includes("https") ? "wss" : "ws";
+      const cleanUrl = this._baseUrl.replace(/^https?:\/\//, "").replace(/^wss?:\/\//, "");
+      this.ws = new WebSocket(`${wsProtocol}://${cleanUrl}/ws`);
 
       this.ws.onopen = () => {
         this._status = "connected";

@@ -114,6 +114,13 @@ export class ComfyApiClient extends EventEmitter {
     localStorage.setItem("comfy_server_url", url);
   }
 
+  /** Returns the full HTTP(S) base URL for REST calls */
+  get httpUrl(): string {
+    const clean = this._baseUrl.replace(/^https?:\/\//, "").replace(/^wss?:\/\//, "");
+    const protocol = clean.includes("ngrok") || clean.includes(".app") ? "https" : "http";
+    return `${protocol}://${clean}`;
+  }
+
   get status() { return this._status; }
   get queue() { return this._queue; }
   get errors() { return this._errors; }

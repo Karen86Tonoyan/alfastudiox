@@ -16,7 +16,7 @@ export function useComfySamplers() {
   const fetchOptions = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://${comfyApi.baseUrl}/object_info/KSampler`, {
+      const res = await fetch(`${comfyApi.httpUrl}/object_info/KSampler`, {
         signal: AbortSignal.timeout(5000),
       });
       const data = await res.json();

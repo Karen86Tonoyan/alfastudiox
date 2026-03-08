@@ -121,6 +121,11 @@ export default function RenderPage() {
   const [renderHistory, setRenderHistory] = useState<RenderHistoryItem[]>([]);
   const [renderBackend, setRenderBackend] = useState<RenderBackend>({ type: "local" });
   const [cloudImage, setCloudImage] = useState<string | null>(null);
+  const [aiTransparency, setAiTransparency] = useState<AITransparencyConfig>({
+    watermarkEnabled: false,
+    metadataEnabled: true,
+    badgeVisible: true,
+  });
 
   const missingApiKey = renderBackend.type === "cloud"
     ? (() => {

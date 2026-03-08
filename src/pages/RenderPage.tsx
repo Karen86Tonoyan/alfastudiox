@@ -21,6 +21,7 @@ import { buildWorkflow } from "@/lib/workflowBuilder";
 import { loadProviders } from "@/lib/cloudProviders";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AITransparencyPanel, AITransparencyBadge, type AITransparencyConfig } from "@/components/render/AITransparency";
 
 function StatusBar({ gpu, isConnected }: { gpu: any; isConnected: boolean }) {
   const temp = gpu?.temp ?? 62;
@@ -62,21 +63,34 @@ function RenderPreview({
   progress,
   currentNode,
   lastImage,
+  showBadge,
+  provider,
+  model,
 }: {
   isRendering: boolean;
   progress: number;
   currentNode: string | null;
   lastImage: string | null;
+  showBadge?: boolean;
+  provider?: string;
+  model?: string;
 }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center bg-background border border-border rounded-lg m-3 overflow-hidden">
       {lastImage && !isRendering ? (
         <div className="flex flex-col items-center gap-2 p-4">
-          <img
-            src={lastImage}
-            alt="Render output"
-            className="max-h-[400px] max-w-full rounded-lg border border-primary/20 shadow-lg"
-          />
+          <div className="relative">
+            <img
+              src={lastImage}
+              alt="Render output"
+              className="max-h-[400px] max-w-full rounded-lg border border-primary/20 shadow-lg"
+            />
+            {showBadge && (
+              <div className="absolute bottom-2 left-2">
+                <AITransparencyBadge provider={provider} model={model} />
+              </div>
+            )}
+          </div>
           <span className="text-[10px] text-muted-foreground">Last render output</span>
         </div>
       ) : isRendering ? (
@@ -120,6 +134,11 @@ export default function RenderPage() {
   const [renderHistory, setRenderHistory] = useState<RenderHistoryItem[]>([]);
   const [renderBackend, setRenderBackend] = useState<RenderBackend>({ type: "local" });
   const [cloudImage, setCloudImage] = useState<string | null>(null);
+  const [aiTransparency, setAiTransparency] = useState<AITransparencyConfig>({
+    watermarkEnabled: false,
+    metadataEnabled: true,
+    badgeVisible: true,
+  });
 
   const missingApiKey = renderBackend.type === "cloud"
     ? (() => {
@@ -334,6 +353,9 @@ export default function RenderPage() {
               progress={progress}
               currentNode={comfy.currentNode}
               lastImage={cloudImage || comfy.lastImage}
+              showBadge={aiTransparency.badgeVisible}
+              provider={renderBackend.type === "cloud" ? renderBackend.provider : "ComfyUI"}
+              model={renderBackend.type === "cloud" ? renderBackend.model : currentSettings?.model}
             />
 
             <div className="w-[300px] border-l border-border flex flex-col overflow-hidden">
@@ -377,6 +399,12 @@ export default function RenderPage() {
                 )}
               </TabsTrigger>
               <TabsTrigger value="export" className="text-[10px] gap-1 h-6">Export</TabsTrigger>
+              <TabsTrigger value="ai-mark" className="text-[10px] gap-1 h-6">
+                AI Mark
+                {aiTransparency.watermarkEnabled && (
+                  <Badge variant="outline" className="ml-1 text-[7px] px-1 py-0 h-3 border-yellow-500/30 text-yellow-500">ON</Badge>
+                )}
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="queue" className="flex-1 overflow-hidden mt-0">
               <RenderQueuePanel className="h-full" />
@@ -386,6 +414,9 @@ export default function RenderPage() {
             </TabsContent>
             <TabsContent value="export" className="flex-1 overflow-hidden mt-0">
               <ExportSettingsPanel className="h-full" />
+            </TabsContent>
+            <TabsContent value="ai-mark" className="flex-1 overflow-hidden mt-0 p-3">
+              <AITransparencyPanel config={aiTransparency} onChange={setAiTransparency} />
             </TabsContent>
           </Tabs>
         </ResizablePanel>

@@ -2,7 +2,7 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
-  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog, Shield
+  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog, Shield, Key
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +27,7 @@ const navItems = [
   { title: "History", path: "/history", icon: Clock, highlight: false, adminOnly: false },
   { title: "Gallery", path: "/gallery", icon: Image, highlight: false, adminOnly: false },
   { title: "Providers", path: "/providers", icon: Cloud, highlight: false, adminOnly: false },
+  { title: "Klucze API", path: "/api-keys-guide", icon: Key, highlight: false, adminOnly: false },
   { title: "TIP Auditor", path: "/tip-auditor", icon: ShieldCheck, highlight: false, adminOnly: false },
   { title: "Admin Panel", path: "/admin", icon: Shield, highlight: true, adminOnly: true },
   { title: "Profil", path: "/profile", icon: UserCog, highlight: true, adminOnly: false },

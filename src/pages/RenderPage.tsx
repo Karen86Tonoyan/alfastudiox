@@ -353,6 +353,9 @@ export default function RenderPage() {
               progress={progress}
               currentNode={comfy.currentNode}
               lastImage={cloudImage || comfy.lastImage}
+              showBadge={aiTransparency.badgeVisible}
+              provider={renderBackend.type === "cloud" ? renderBackend.provider : "ComfyUI"}
+              model={renderBackend.type === "cloud" ? renderBackend.model : currentSettings?.model}
             />
 
             <div className="w-[300px] border-l border-border flex flex-col overflow-hidden">

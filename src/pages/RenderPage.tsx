@@ -73,11 +73,18 @@ function RenderPreview({
     <div className="flex-1 flex flex-col items-center justify-center bg-background border border-border rounded-lg m-3 overflow-hidden">
       {lastImage && !isRendering ? (
         <div className="flex flex-col items-center gap-2 p-4">
-          <img
-            src={lastImage}
-            alt="Render output"
-            className="max-h-[400px] max-w-full rounded-lg border border-primary/20 shadow-lg"
-          />
+          <div className="relative">
+            <img
+              src={lastImage}
+              alt="Render output"
+              className="max-h-[400px] max-w-full rounded-lg border border-primary/20 shadow-lg"
+            />
+            {showBadge && (
+              <div className="absolute bottom-2 left-2">
+                <AITransparencyBadge provider={provider} model={model} />
+              </div>
+            )}
+          </div>
           <span className="text-[10px] text-muted-foreground">Last render output</span>
         </div>
       ) : isRendering ? (

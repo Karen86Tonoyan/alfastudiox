@@ -305,6 +305,9 @@ export default function RenderPage() {
             <Link to="/providers" className="text-primary underline underline-offset-2 font-semibold hover:text-primary/80">
               Przejdź do Providers →
             </Link>
+            <Link to="/api-keys-guide" className="text-muted-foreground underline underline-offset-2 hover:text-foreground">
+              Jak zdobyć klucz? →
+            </Link>
           </AlertDescription>
         </Alert>
       )}

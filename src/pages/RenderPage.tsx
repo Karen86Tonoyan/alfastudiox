@@ -383,6 +383,12 @@ export default function RenderPage() {
                 )}
               </TabsTrigger>
               <TabsTrigger value="export" className="text-[10px] gap-1 h-6">Export</TabsTrigger>
+              <TabsTrigger value="ai-mark" className="text-[10px] gap-1 h-6">
+                AI Mark
+                {aiTransparency.watermarkEnabled && (
+                  <Badge variant="outline" className="ml-1 text-[7px] px-1 py-0 h-3 border-yellow-500/30 text-yellow-500">ON</Badge>
+                )}
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="queue" className="flex-1 overflow-hidden mt-0">
               <RenderQueuePanel className="h-full" />
@@ -392,6 +398,9 @@ export default function RenderPage() {
             </TabsContent>
             <TabsContent value="export" className="flex-1 overflow-hidden mt-0">
               <ExportSettingsPanel className="h-full" />
+            </TabsContent>
+            <TabsContent value="ai-mark" className="flex-1 overflow-hidden mt-0 p-3">
+              <AITransparencyPanel config={aiTransparency} onChange={setAiTransparency} />
             </TabsContent>
           </Tabs>
         </ResizablePanel>

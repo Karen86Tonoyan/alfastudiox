@@ -2,7 +2,8 @@ import { useLocation, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
-  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog, Shield, Key
+  Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog, Shield, Key,
+  Lightbulb, Users, Clapperboard, Brain
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";

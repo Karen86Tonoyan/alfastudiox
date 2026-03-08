@@ -121,7 +121,7 @@ export function useComfyUI(serverUrl?: string) {
 
   const fetchLastImage = useCallback(async (promptId: string) => {
     try {
-      const res = await fetch(`http://${comfyApi.baseUrl}/history/${promptId}`);
+      const res = await fetch(`${comfyApi.httpUrl}/history/${promptId}`);
       const data = await res.json();
       const outputs = data[promptId]?.outputs;
       if (outputs) {
@@ -129,7 +129,7 @@ export function useComfyUI(serverUrl?: string) {
           const images = outputs[nodeId]?.images;
           if (images?.length > 0) {
             const img = images[0];
-            const imageUrl = `http://${comfyApi.baseUrl}/view?filename=${encodeURIComponent(img.filename)}&subfolder=${encodeURIComponent(img.subfolder || "")}&type=${img.type || "output"}`;
+            const imageUrl = `${comfyApi.httpUrl}/view?filename=${encodeURIComponent(img.filename)}&subfolder=${encodeURIComponent(img.subfolder || "")}&type=${img.type || "output"}`;
             setState((s) => ({ ...s, lastImage: imageUrl }));
             return;
           }

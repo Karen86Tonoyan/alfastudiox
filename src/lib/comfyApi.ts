@@ -228,7 +228,7 @@ export class ComfyApiClient extends EventEmitter {
 
   async queuePrompt(workflow: object, clientId?: string): Promise<string | null> {
     try {
-      const res = await fetch(`http://${this._baseUrl}/prompt`, {
+      const res = await fetch(`${this.httpUrl}/prompt`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: workflow, client_id: clientId }),
@@ -248,7 +248,7 @@ export class ComfyApiClient extends EventEmitter {
 
   async getQueue(): Promise<any> {
     try {
-      const res = await fetch(`http://${this._baseUrl}/queue`);
+      const res = await fetch(`${this.httpUrl}/queue`);
       return await res.json();
     } catch {
       return null;
@@ -257,13 +257,13 @@ export class ComfyApiClient extends EventEmitter {
 
   async cancelCurrent(): Promise<void> {
     try {
-      await fetch(`http://${this._baseUrl}/interrupt`, { method: "POST" });
+      await fetch(`${this.httpUrl}/interrupt`, { method: "POST" });
     } catch {}
   }
 
   async clearQueue(): Promise<void> {
     try {
-      await fetch(`http://${this._baseUrl}/queue`, {
+      await fetch(`${this.httpUrl}/queue`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ clear: true }),
@@ -273,7 +273,7 @@ export class ComfyApiClient extends EventEmitter {
 
   async getSystemStats(): Promise<GpuInfo | null> {
     try {
-      const res = await fetch(`http://${this._baseUrl}/system_stats`);
+      const res = await fetch(`${this.httpUrl}/system_stats`);
       const data = await res.json();
       const device = data.devices?.[0];
       if (device) {
@@ -354,7 +354,7 @@ export class ComfyApiClient extends EventEmitter {
       };
 
       const nodeName = nodeMap[type];
-      const res = await fetch(`http://${this._baseUrl}/object_info/${nodeName}`, {
+      const res = await fetch(`${this.httpUrl}/object_info/${nodeName}`, {
         signal: AbortSignal.timeout(5000),
       });
       const data = await res.json();

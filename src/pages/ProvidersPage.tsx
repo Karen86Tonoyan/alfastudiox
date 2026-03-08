@@ -120,6 +120,20 @@ export default function ProvidersPage() {
             </div>
 
             <div className="p-4 space-y-3">
+              {/* ngrok hint */}
+              {ollamaConfig.baseUrl.includes("localhost") && (
+                <div className="rounded bg-primary/5 border border-primary/20 p-2.5 text-[10px] text-muted-foreground space-y-1">
+                  <p className="font-semibold text-primary flex items-center gap-1.5">
+                    <Globe className="h-3 w-3" /> Tryb tunelu (ngrok)
+                  </p>
+                  <p>Aby testować z preview Lovable bez klonowania repo:</p>
+                  <p>1. Zainstaluj ngrok: <span className="font-mono text-primary">brew install ngrok</span> lub pobierz z ngrok.com</p>
+                  <p>2. Uruchom tunel: <span className="font-mono text-primary">ngrok http 11434</span></p>
+                  <p>3. Wklej publiczny URL (np. <span className="font-mono text-primary">https://abc123.ngrok-free.app</span>) poniżej</p>
+                  <p className="text-[9px] text-muted-foreground/70">Uwaga: Ollama wymaga ustawienia <span className="font-mono">OLLAMA_ORIGINS=*</span> aby akceptować żądania z zewnątrz</p>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-[10px] text-muted-foreground uppercase">Adres serwera</label>
@@ -127,8 +141,13 @@ export default function ProvidersPage() {
                     value={ollamaConfig.baseUrl}
                     onChange={(e) => handleSaveOllamaConfig({ baseUrl: e.target.value })}
                     className="h-8 text-xs bg-background border-border font-mono"
-                    placeholder="http://localhost:11434"
+                    placeholder="https://abc123.ngrok-free.app"
                   />
+                  {ollamaConfig.baseUrl.includes("ngrok") && (
+                    <span className="text-[9px] text-status-ok flex items-center gap-1">
+                      <Globe className="h-2.5 w-2.5" /> Tryb tunelu aktywny
+                    </span>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] text-muted-foreground uppercase">Domyślny model</label>
@@ -239,6 +258,19 @@ export default function ProvidersPage() {
             </div>
 
             <div className="p-4 space-y-3">
+              {/* ngrok hint for ComfyUI */}
+              {comfyUrl.includes("localhost") && (
+                <div className="rounded bg-primary/5 border border-primary/20 p-2.5 text-[10px] text-muted-foreground space-y-1">
+                  <p className="font-semibold text-primary flex items-center gap-1.5">
+                    <Globe className="h-3 w-3" /> Tryb tunelu (ngrok)
+                  </p>
+                  <p>Aby połączyć ComfyUI z preview Lovable:</p>
+                  <p>1. Uruchom tunel: <span className="font-mono text-primary">ngrok http 8188</span></p>
+                  <p>2. Wklej publiczny URL poniżej (bez <span className="font-mono">https://</span>), np. <span className="font-mono text-primary">abc123.ngrok-free.app</span></p>
+                  <p className="text-[9px] text-muted-foreground/70">ComfyUI musi nasłuchiwać na 0.0.0.0: <span className="font-mono">python main.py --listen 0.0.0.0</span></p>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-[10px] text-muted-foreground uppercase">Adres serwera</label>
@@ -246,14 +278,19 @@ export default function ProvidersPage() {
                     value={comfyUrl}
                     onChange={(e) => setComfyUrl(e.target.value)}
                     className="h-8 text-xs bg-background border-border font-mono"
-                    placeholder="localhost:8188"
+                    placeholder="abc123.ngrok-free.app"
                     disabled={comfy.isConnected}
                   />
+                  {comfyUrl.includes("ngrok") && (
+                    <span className="text-[9px] text-status-ok flex items-center gap-1">
+                      <Globe className="h-2.5 w-2.5" /> Tryb tunelu aktywny
+                    </span>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <label className="text-[10px] text-muted-foreground uppercase">Protokół</label>
                   <Input
-                    value="WebSocket (ws://)"
+                    value={comfyUrl.includes("ngrok") ? "WebSocket (wss://)" : "WebSocket (ws://)"}
                     className="h-8 text-xs bg-background border-border font-mono text-muted-foreground"
                     disabled
                   />

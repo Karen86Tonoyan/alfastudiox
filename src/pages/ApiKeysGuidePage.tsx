@@ -30,7 +30,7 @@ const providers: ProviderGuide[] = [
     steps: [
       "Wejdź na platform.openai.com i załóż konto",
       "Przejdź do Settings → API Keys",
-      "Kliknij „Create new secret key"",
+      'Kliknij "Create new secret key"',
       "Skopiuj klucz (zaczyna się od sk-...)",
       "Wklej klucz w ALFA Studio → Providers → OpenAI"
     ],
@@ -48,7 +48,7 @@ const providers: ProviderGuide[] = [
     steps: [
       "Wejdź na replicate.com i zaloguj się przez GitHub",
       "Przejdź do Account → API Tokens",
-      "Kliknij „Create token"",
+      'Kliknij "Create token"',
       "Skopiuj token (zaczyna się od r8_...)",
       "Wklej w ALFA Studio → Providers → Replicate"
     ],
@@ -66,7 +66,7 @@ const providers: ProviderGuide[] = [
     steps: [
       "Wejdź na aistudio.google.com",
       "Zaloguj się kontem Google",
-      "Kliknij „Get API key" → „Create API key"",
+      'Kliknij "Get API key" then "Create API key"',
       "Wybierz projekt Google Cloud (lub utwórz nowy)",
       "Skopiuj klucz i wklej w ALFA Studio → Providers → Google"
     ],
@@ -84,7 +84,7 @@ const providers: ProviderGuide[] = [
     steps: [
       "Załóż konto na huggingface.co",
       "Przejdź do Settings → Access Tokens",
-      "Kliknij „New token" — wybierz typ „Read"",
+      'Kliknij "New token" — wybierz typ "Read"',
       "Skopiuj token (zaczyna się od hf_...)",
       "Wklej w ALFA Studio → Providers → Hugging Face"
     ],
@@ -120,7 +120,7 @@ const providers: ProviderGuide[] = [
       "Wejdź na dashscope.console.aliyun.com",
       "Załóż konto Alibaba Cloud",
       "Przejdź do API Key Management",
-      "Kliknij „Create API Key"",
+      'Kliknij "Create API Key"',
       "Wklej w ALFA Studio → Providers → Qwen"
     ],
     models: ["Wanx Image", "Wanx Video", "Qwen-VL"],
@@ -138,7 +138,7 @@ const providers: ProviderGuide[] = [
       "Wejdź na console.anthropic.com",
       "Załóż konto i dodaj kartę płatniczą",
       "Przejdź do Settings → API Keys",
-      "Kliknij „Create Key"",
+      'Kliknij "Create Key"',
       "Wklej w ALFA Studio → Providers → Anthropic"
     ],
     models: ["Claude 3.5 Sonnet (analiza obrazów)"],

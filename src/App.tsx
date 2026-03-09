@@ -88,6 +88,7 @@ const App = () => (
             <Route path="/library" element={<LibraryPage />} />
             <Route path="/movie-pipeline" element={<MoviePipelinePage />} />
             <Route path="/prompt-memory" element={<PromptMemoryPage />} />
+            <Route path="/automation" element={<AutomationPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

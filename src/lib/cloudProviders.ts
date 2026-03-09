@@ -13,7 +13,8 @@ export type ProviderType =
   | "google"
   | "anthropic"
   | "kimi"
-  | "qwen";
+  | "qwen"
+  | "agnes";
 
 export interface ProviderConfig {
   id: ProviderType;
@@ -128,6 +129,17 @@ const DEFAULT_PROVIDERS: ProviderConfig[] = [
     icon: "🐲",
     features: ["Qwen-VL", "Wanx Image", "Video Gen", "Multimodal", "Flux Support"],
   },
+  {
+    id: "agnes",
+    name: "Agnes Cloud",
+    description: "Agnes Cloud — generowanie obrazów i chat AI",
+    apiKey: "",
+    baseUrl: "https://agnes.cloud/api/v1",
+    enabled: false,
+    status: "disconnected",
+    icon: "☁️",
+    features: ["Image Gen", "Stable Diffusion", "Custom Models", "Chat AI"],
+  },
 ];
 
 export function loadProviders(): ProviderConfig[] {
@@ -221,6 +233,13 @@ export async function testProviderConnection(provider: ProviderConfig): Promise<
         });
         return res.ok || res.status !== 401;
       }
+      case "agnes": {
+        const res = await fetch("https://agnes.cloud/api/v1/models", {
+          headers: { Authorization: `Bearer ${provider.apiKey}` },
+          signal: AbortSignal.timeout(5000),
+        });
+        return res.ok || res.status !== 401;
+      }
       default:
         return false;
     }
@@ -301,6 +320,13 @@ export function getProviderModels(provider: ProviderType): { id: string; name: s
         { id: "qwen-vl-plus", name: "Qwen-VL Plus" },
         { id: "wanx-video", name: "Wanx Video" },
         { id: "flux-schnell", name: "Flux Schnell (via DashScope)" },
+      ];
+    case "agnes":
+      return [
+        { id: "stable-diffusion-xl", name: "Stable Diffusion XL" },
+        { id: "stable-diffusion-3", name: "Stable Diffusion 3" },
+        { id: "flux-1", name: "Flux.1" },
+        { id: "agnes-chat", name: "Agnes Chat (LLM)" },
       ];
     default:
       return [];

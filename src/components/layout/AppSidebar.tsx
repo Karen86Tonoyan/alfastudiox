@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
   Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog, Shield, Key,
-  Lightbulb, Users, Clapperboard, Brain
+  Lightbulb, Users, Clapperboard, Brain, Workflow
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,6 +33,7 @@ const navItems = [
   { title: "Biblioteka AI", path: "/library", icon: Users, highlight: false, adminOnly: false },
   { title: "One Prompt → Film", path: "/movie-pipeline", icon: Clapperboard, highlight: true, adminOnly: false },
   { title: "Pamięć Promptów", path: "/prompt-memory", icon: Brain, highlight: false, adminOnly: false },
+  { title: "Automation Hub", path: "/automation", icon: Workflow, highlight: true, adminOnly: false },
   { title: "TIP Auditor", path: "/tip-auditor", icon: ShieldCheck, highlight: false, adminOnly: false },
   { title: "Admin Panel", path: "/admin", icon: Shield, highlight: true, adminOnly: true },
   { title: "Profil", path: "/profile", icon: UserCog, highlight: true, adminOnly: false },

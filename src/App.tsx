@@ -28,6 +28,7 @@ import IdeasPage from "./pages/IdeasPage";
 import LibraryPage from "./pages/LibraryPage";
 import MoviePipelinePage from "./pages/MoviePipelinePage";
 import PromptMemoryPage from "./pages/PromptMemoryPage";
+import AutomationPage from "./pages/AutomationPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -87,6 +88,7 @@ const App = () => (
             <Route path="/library" element={<LibraryPage />} />
             <Route path="/movie-pipeline" element={<MoviePipelinePage />} />
             <Route path="/prompt-memory" element={<PromptMemoryPage />} />
+            <Route path="/automation" element={<AutomationPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

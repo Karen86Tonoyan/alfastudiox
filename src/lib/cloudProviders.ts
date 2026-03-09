@@ -129,6 +129,17 @@ const DEFAULT_PROVIDERS: ProviderConfig[] = [
     icon: "🐲",
     features: ["Qwen-VL", "Wanx Image", "Video Gen", "Multimodal", "Flux Support"],
   },
+  {
+    id: "agnes",
+    name: "Agnes Cloud",
+    description: "Agnes Cloud — generowanie obrazów i chat AI",
+    apiKey: "",
+    baseUrl: "https://agnes.cloud/api/v1",
+    enabled: false,
+    status: "disconnected",
+    icon: "☁️",
+    features: ["Image Gen", "Stable Diffusion", "Custom Models", "Chat AI"],
+  },
 ];
 
 export function loadProviders(): ProviderConfig[] {

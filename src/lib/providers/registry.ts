@@ -8,6 +8,7 @@ import { deepseekProvider } from "./deepseek";
 import { xaiProvider } from "./xai";
 import { qwenProvider } from "./qwen";
 import { kimiProvider } from "./kimi";
+import { agnesProvider } from "./agnes";
 
 const allProviders: AIProvider[] = [
   openaiProvider,
@@ -19,6 +20,7 @@ const allProviders: AIProvider[] = [
   xaiProvider,
   qwenProvider,
   kimiProvider,
+  agnesProvider,
 ];
 
 /** Get all registered providers */

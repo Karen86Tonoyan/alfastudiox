@@ -13,7 +13,8 @@ export type ProviderType =
   | "google"
   | "anthropic"
   | "kimi"
-  | "qwen";
+  | "qwen"
+  | "agnes";
 
 export interface ProviderConfig {
   id: ProviderType;

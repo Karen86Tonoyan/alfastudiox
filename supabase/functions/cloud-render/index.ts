@@ -327,6 +327,41 @@ async function renderQwen(req: RenderRequest): Promise<{ imageUrl: string }> {
   throw new Error("DashScope task timed out after 3 minutes");
 }
 
+// ─── Agnes Cloud ───────────────────────────────────────────────────
+async function renderAgnes(req: RenderRequest): Promise<{ imageUrl: string }> {
+  const res = await fetch("https://agnes.cloud/api/v1/images/generate", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${req.apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      prompt: req.prompt,
+      negative_prompt: req.negativePrompt,
+      width: req.width,
+      height: req.height,
+      steps: req.steps ?? 30,
+      seed: req.seed && req.seed > 0 ? req.seed : undefined,
+      model: req.model !== "agnes-default" ? req.model : undefined,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`Agnes Cloud error ${res.status}: ${err?.error ?? err?.message ?? res.statusText}`);
+  }
+
+  const data = await res.json();
+  
+  // Agnes może zwrócić URL lub base64
+  if (data?.url) return { imageUrl: data.url };
+  if (data?.image) return { imageUrl: `data:image/png;base64,${data.image}` };
+  if (data?.data?.[0]?.url) return { imageUrl: data.data[0].url };
+  if (data?.data?.[0]?.b64_json) return { imageUrl: `data:image/png;base64,${data.data[0].b64_json}` };
+  
+  throw new Error("No image returned from Agnes Cloud");
+}
+
 // ─── Helpers ───────────────────────────────────────────────────────
 function getAspectRatio(w: number, h: number): string {
   const ratio = w / h;
@@ -391,8 +426,12 @@ serve(async (req) => {
         result = await renderQwen(renderReq);
         break;
       }
+      case "agnes": {
+        result = await renderAgnes(renderReq);
+        break;
+      }
       default:
-        throw new Error(`Provider "${renderReq.provider}" is not supported. Supported: OpenAI, Google, Replicate, Hugging Face, Kimi, Qwen.`);
+        throw new Error(`Provider "${renderReq.provider}" is not supported. Supported: OpenAI, Google, Replicate, Hugging Face, Kimi, Qwen, Agnes Cloud.`);
     }
 
     // Log render

@@ -426,8 +426,12 @@ serve(async (req) => {
         result = await renderQwen(renderReq);
         break;
       }
+      case "agnes": {
+        result = await renderAgnes(renderReq);
+        break;
+      }
       default:
-        throw new Error(`Provider "${renderReq.provider}" is not supported. Supported: OpenAI, Google, Replicate, Hugging Face, Kimi, Qwen.`);
+        throw new Error(`Provider "${renderReq.provider}" is not supported. Supported: OpenAI, Google, Replicate, Hugging Face, Kimi, Qwen, Agnes Cloud.`);
     }
 
     // Log render

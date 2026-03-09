@@ -321,6 +321,13 @@ export function getProviderModels(provider: ProviderType): { id: string; name: s
         { id: "wanx-video", name: "Wanx Video" },
         { id: "flux-schnell", name: "Flux Schnell (via DashScope)" },
       ];
+    case "agnes":
+      return [
+        { id: "stable-diffusion-xl", name: "Stable Diffusion XL" },
+        { id: "stable-diffusion-3", name: "Stable Diffusion 3" },
+        { id: "flux-1", name: "Flux.1" },
+        { id: "agnes-chat", name: "Agnes Chat (LLM)" },
+      ];
     default:
       return [];
   }

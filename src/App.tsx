@@ -28,6 +28,7 @@ import IdeasPage from "./pages/IdeasPage";
 import LibraryPage from "./pages/LibraryPage";
 import MoviePipelinePage from "./pages/MoviePipelinePage";
 import PromptMemoryPage from "./pages/PromptMemoryPage";
+import AutomationPage from "./pages/AutomationPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

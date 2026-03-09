@@ -233,6 +233,13 @@ export async function testProviderConnection(provider: ProviderConfig): Promise<
         });
         return res.ok || res.status !== 401;
       }
+      case "agnes": {
+        const res = await fetch("https://agnes.cloud/api/v1/models", {
+          headers: { Authorization: `Bearer ${provider.apiKey}` },
+          signal: AbortSignal.timeout(5000),
+        });
+        return res.ok || res.status !== 401;
+      }
       default:
         return false;
     }

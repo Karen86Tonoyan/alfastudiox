@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
   Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog, Shield, Key,
-  Lightbulb, Users, Clapperboard, Brain
+  Lightbulb, Users, Clapperboard, Brain, Workflow
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";

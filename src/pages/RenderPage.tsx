@@ -361,7 +361,6 @@ export default function RenderPage() {
             <div className="w-[300px] border-l border-border flex flex-col overflow-hidden">
               <AIAssistPanel
                 className="flex-1 overflow-hidden"
-                ollama={ollama}
                 currentSettings={currentSettings ?? {
                   model: "sdxl", modelType: "image", prompt: "", negativePrompt: "",
                   seed: -1, sampler: "dpmpp_2m", steps: 30, cfg: 7, width: 1024, height: 1024,

@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Monitor, Cpu, Thermometer, HardDrive, Zap, Wifi, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useComfyUI } from "@/hooks/useComfyUI";
-import { useOllama } from "@/hooks/useOllama";
+
 import { buildWorkflow } from "@/lib/workflowBuilder";
 import { loadProviders } from "@/lib/cloudProviders";
 import { supabase } from "@/integrations/supabase/client";

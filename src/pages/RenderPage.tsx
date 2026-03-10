@@ -16,7 +16,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Monitor, Cpu, Thermometer, HardDrive, Zap, Wifi, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useComfyUI } from "@/hooks/useComfyUI";
-import { useOllama } from "@/hooks/useOllama";
+
 import { buildWorkflow } from "@/lib/workflowBuilder";
 import { loadProviders } from "@/lib/cloudProviders";
 import { supabase } from "@/integrations/supabase/client";
@@ -126,7 +126,7 @@ function RenderPreview({
 
 export default function RenderPage() {
   const comfy = useComfyUI();
-  const ollama = useOllama();
+  // AI now uses Lovable AI gateway via AIAssistPanel
   const [currentSettings, setCurrentSettings] = useState<RenderSettings | null>(null);
   const [vfxEffects, setVfxEffects] = useState<VFXEffect[]>([]);
   const [localProgress, setLocalProgress] = useState(0);
@@ -361,7 +361,6 @@ export default function RenderPage() {
             <div className="w-[300px] border-l border-border flex flex-col overflow-hidden">
               <AIAssistPanel
                 className="flex-1 overflow-hidden"
-                ollama={ollama}
                 currentSettings={currentSettings ?? {
                   model: "sdxl", modelType: "image", prompt: "", negativePrompt: "",
                   seed: -1, sampler: "dpmpp_2m", steps: 30, cfg: 7, width: 1024, height: 1024,

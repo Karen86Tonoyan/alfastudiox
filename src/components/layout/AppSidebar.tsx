@@ -18,6 +18,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 const navItems = [
   { title: "Dashboard", path: "/dashboard", icon: LayoutDashboard, highlight: true, adminOnly: false },
   { title: "Kup Kredyty", path: "/buy-credits", icon: CreditCard, highlight: true, adminOnly: false },
+  { title: "Plany", path: "/subscribe", icon: Crown, highlight: true, adminOnly: false },
   { title: "Photo Studio", path: "/", icon: Camera, highlight: true, adminOnly: false },
   { title: "Render Studio", path: "/render", icon: Sparkles, highlight: false, adminOnly: false },
   { title: "Workflow", path: "/workflow", icon: GitBranch, highlight: false, adminOnly: false },

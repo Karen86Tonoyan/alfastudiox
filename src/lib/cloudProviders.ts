@@ -324,8 +324,18 @@ export function getProviderModels(provider: ProviderType): { id: string; name: s
     case "agnes":
       return [
         { id: "stable-diffusion-xl", name: "Stable Diffusion XL" },
+        { id: "sdxl-turbo", name: "SDXL Turbo" },
+        { id: "sdxl-lightning", name: "SDXL Lightning" },
         { id: "stable-diffusion-3", name: "Stable Diffusion 3" },
-        { id: "flux-1", name: "Flux.1" },
+        { id: "stable-diffusion-3.5", name: "Stable Diffusion 3.5" },
+        { id: "flux-1-dev", name: "Flux.1 Dev" },
+        { id: "flux-1-schnell", name: "Flux.1 Schnell" },
+        { id: "flux-1-pro", name: "Flux.1 Pro" },
+        { id: "flux-1.1-pro", name: "Flux 1.1 Pro" },
+        { id: "realvisxl-v4", name: "RealVisXL v4" },
+        { id: "juggernaut-xl", name: "Juggernaut XL" },
+        { id: "dreamshaper-xl", name: "DreamShaper XL" },
+        { id: "agnes-custom", name: "Custom Model (Agnes)" },
         { id: "agnes-chat", name: "Agnes Chat (LLM)" },
       ];
     default:

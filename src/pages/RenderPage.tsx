@@ -126,7 +126,7 @@ function RenderPreview({
 
 export default function RenderPage() {
   const comfy = useComfyUI();
-  const ollama = useOllama();
+  // AI now uses Lovable AI gateway via AIAssistPanel
   const [currentSettings, setCurrentSettings] = useState<RenderSettings | null>(null);
   const [vfxEffects, setVfxEffects] = useState<VFXEffect[]>([]);
   const [localProgress, setLocalProgress] = useState(0);

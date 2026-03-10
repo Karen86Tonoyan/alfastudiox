@@ -29,6 +29,7 @@ import LibraryPage from "./pages/LibraryPage";
 import MoviePipelinePage from "./pages/MoviePipelinePage";
 import PromptMemoryPage from "./pages/PromptMemoryPage";
 import AutomationPage from "./pages/AutomationPage";
+import SubscribePage from "./pages/SubscribePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

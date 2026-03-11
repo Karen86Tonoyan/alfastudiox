@@ -59,12 +59,14 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+const basename = import.meta.env.VITE_BASE_PATH || "/";
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename={basename}>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           <Route element={<AuthGuard><AppLayout /></AuthGuard>}>

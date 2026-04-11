@@ -186,12 +186,12 @@ export function parseJSON(jsonText: string, config: TIPConfig): TIPReport {
   }
 
   const frames: TIPFrameResult[] = rawFrames.map((r: Record<string, unknown>, i: number) => {
-    const frame = Number(r.frame ?? r.frame_number ?? i + 1);
-    const tipScore = Number(r.tip_score ?? r.tip ?? r.score ?? 0);
-    const tipSmoothed = Number(r.tip_smoothed ?? r.tip_smooth ?? r.smoothed ?? tipScore);
-    const zEmbedding = Number(r.z_embedding ?? r.z_e ?? r.ze ?? 0);
-    const zGeometry = Number(r.z_geometry ?? r.z_g ?? r.zg ?? 0);
-    const zTexture = Number(r.z_texture ?? r.z_t ?? r.zt ?? 0);
+    const frame = Number(r.frame ?? r.frame_number ?? i + 1) || (i + 1);
+    const tipScore = Number(r.tip_score ?? r.tip ?? r.score ?? 0) || 0;
+    const tipSmoothed = Number(r.tip_smoothed ?? r.tip_smooth ?? r.smoothed ?? tipScore) || tipScore;
+    const zEmbedding = Number(r.z_embedding ?? r.z_e ?? r.ze ?? 0) || 0;
+    const zGeometry = Number(r.z_geometry ?? r.z_g ?? r.zg ?? 0) || 0;
+    const zTexture = Number(r.z_texture ?? r.z_t ?? r.zt ?? 0) || 0;
 
     let status: TIPFrameResult["status"];
     if (r.status) {

@@ -182,7 +182,8 @@ export class ComfyApiClient extends EventEmitter {
   }
 
   private handleMessage(msg: Record<string, unknown>) {
-    const data = msg.data as Record<string, unknown> | undefined;
+    const rawData = msg.data;
+    const data = rawData !== null && typeof rawData === "object" ? rawData as Record<string, unknown> : undefined;
     switch (msg.type) {
       case "progress": {
         const progressData = data as { prompt_id: string; node?: string; value: number; max: number } | undefined;

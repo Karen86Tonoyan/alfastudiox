@@ -1,73 +1,160 @@
-# Welcome to your Lovable project
+# AlfaStudioX 🎬✨
 
-## Project info
+**Profesjonalne studio kreatywne AI** — generuj obrazy, wideo i całe filmy z jednego prompta. Łączy lokalne renderowanie przez ComfyUI z dostępem do wiodących chmurowych API (OpenAI, Google, Replicate i inne).
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+---
 
-## How can I edit this code?
+## 🔑 Kluczowa technologia: Podział modelu 120B na kartę RTX 5070 Ti
 
-There are several ways of editing your application.
+> **TL;DR:** Dzięki podziałowi modelu 120 miliardów parametrów na **3 osobne fragmenty (shardy)**, możliwe jest uruchomienie go na **jednej karcie RTX 5070 Ti (16 GB VRAM)** bez potrzeby posiadania farmy GPU ani serwerów chmurowych.
 
-**Use Lovable**
+### Jak to działa?
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Model 120B w pełnej precyzji FP16 zajmuje ~240 GB pamięci — daleko poza możliwościami pojedynczej karty konsumenckiej. AlfaStudioX implementuje podejście **3-częściowego shardingu**, które rozwiązuje ten problem:
 
-Changes made via Lovable will be committed automatically to this repo.
+| Shard | Warstwy modelu | Rozmiar (Q4_K_M) | Gdzie ładowany |
+|-------|---------------|-----------------|----------------|
+| **Część 1** | Warstwy wejściowe + embedding + pierwsze N bloków transformera | ~18–20 GB | VRAM (GPU) |
+| **Część 2** | Środkowe bloki transformera | ~18–20 GB | RAM systemowy + offload GPU |
+| **Część 3** | Ostatnie bloki transformera + głowica wyjściowa | ~18–20 GB | RAM systemowy + offload GPU |
 
-**Use your preferred IDE**
+**Sekwencja działania:**
+1. **Załaduj Shard 1** → przetwórz dane → wynik pośredni zapisz na dysk/RAM
+2. **Zwolnij Shard 1** z VRAM → **załaduj Shard 2** → kontynuuj przetwarzanie
+3. **Zwolnij Shard 2** → **załaduj Shard 3** → wygeneruj finalny output
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+> ⚡ Dzięki agresywnej kwantyzacji **Q4_K_M** (lub Q5_K_M dla wyższej jakości) każdy shard waży ~18–22 GB na dysku, ale zajmuje jedynie **~12–14 GB VRAM** podczas działania — co mieści się w 16 GB pamięci karty 5070 Ti.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Wymagania sprzętowe
 
-Follow these steps:
+```
+GPU:  NVIDIA RTX 5070 Ti (16 GB VRAM) lub więcej
+RAM:  64 GB DDR5 (zalecane 96 GB)
+Dysk: NVMe SSD, min. 120 GB wolnego miejsca (na 3 shardy)
+CPU:  Ryzen 7 / Core i7 12. gen lub nowszy
+```
+
+### Przygotowanie plików modelu (przykład dla llama.cpp / GGUF)
+
+```bash
+# 1. Pobierz model w formacie GGUF (np. z Hugging Face)
+huggingface-cli download <model-repo> --local-dir ./models/120b/
+
+# 2. Podziel plik na 3 shardy po ~20 GB
+llama-split --model ./models/120b/model.gguf \
+            --split-max-size 20G \
+            --output ./models/120b/shards/part
+
+# Wynik: part-00001.gguf, part-00002.gguf, part-00003.gguf
+
+# 3. Uruchom serwer ComfyUI lub llama.cpp z plikami shardów
+./server --model ./models/120b/shards/part-00001.gguf \
+         --n-gpu-layers 999 \
+         --split-mode row \
+         --tensor-split 1,0,0
+```
+
+### Konfiguracja w AlfaStudioX
+
+W panelu **Providers** wprowadź adres lokalnego serwera (domyślnie `http://localhost:8080`) i wybierz załadowany model. Aplikacja automatycznie wykryje parametry GPU i dostępną pamięć VRAM.
+
+---
+
+## 🚀 Funkcjonalności
+
+| Moduł | Opis |
+|-------|------|
+| **Photo Studio** | Generuj sesje zdjęciowe AI — miejsce + modelka + produkt → ComfyUI |
+| **Render** | Renderowanie obrazów i wideo (lokalne ComfyUI lub chmura) |
+| **Movie Pipeline** | Jeden prompt → pełny film z storyboardem, scenami i napisami |
+| **Workflow** | Wizualny edytor przepływów ComfyUI z węzłami AI |
+| **Models** | Zarządzanie modelami: Checkpoint, LoRA, VAE, ControlNet |
+| **Orchestrator** | Wieloagentowa orkiestracja zadań AI |
+| **Automation** | Automatyczne pipeline'y i harmonogramowanie renderów |
+| **Providers** | Integracja z OpenAI, Google, Replicate, HuggingFace i innymi |
+| **Gallery** | Biblioteka wygenerowanych obrazów i wideo |
+| **TIP Auditor** | Audyt transparentności AI (watermark, metadane, znakowanie) |
+
+---
+
+## 🛠️ Stack technologiczny
+
+- **Frontend:** React 18 + TypeScript + Vite
+- **UI:** shadcn/ui + Tailwind CSS + Radix UI
+- **Backend:** Supabase (auth, baza danych, edge functions)
+- **Renderowanie lokalne:** ComfyUI (WebSocket API)
+- **Renderowanie chmurowe:** OpenAI DALL·E, Google Imagen, Replicate, HuggingFace
+- **Stan aplikacji:** TanStack React Query
+
+---
+
+## ⚙️ Instalacja i uruchomienie
+
+### Wymagania wstępne
+- Node.js 18+ oraz npm / bun
+- (opcjonalnie) ComfyUI zainstalowane lokalnie
+
+### Kroki
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# 1. Sklonuj repozytorium
 git clone <YOUR_GIT_URL>
+cd alfastudiox
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Zainstaluj zależności
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 3. Uruchom serwer deweloperski
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Aplikacja będzie dostępna pod adresem `http://localhost:5173`.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Komendy
 
-**Use GitHub Codespaces**
+```sh
+npm run dev        # serwer deweloperski z hot-reload
+npm run build      # build produkcyjny
+npm run preview    # podgląd buildu produkcyjnego
+npm run test       # uruchom testy jednostkowe
+npm run lint       # sprawdź kod ESLintem
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 🔌 Konfiguracja ComfyUI (renderowanie lokalne)
 
-This project is built with:
+1. Zainstaluj i uruchom [ComfyUI](https://github.com/comfyanonymous/ComfyUI) lokalnie
+2. Upewnij się, że ComfyUI działa na `http://127.0.0.1:8188`
+3. W AlfaStudioX kliknij **Connect** w pasku `ComfyConnectionBar`
+4. Aplikacja automatycznie wykryje dostępne modele, samplery i parametry GPU
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Obsługiwane modele ComfyUI
+- Checkpointy (SDXL, SD 1.5, Flux, inne GGUF)
+- LoRA, LyCORIS
+- VAE
+- ControlNet (Canny, OpenPose, Depth, itp.)
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## ☁️ Konfiguracja providerów chmurowych
 
-## Can I connect a custom domain to my Lovable project?
+1. Przejdź do sekcji **Providers** w menu
+2. Dodaj klucze API dla wybranych usług
+3. Wybierz backend w pasku renderowania (ComfyUI ↔ chmura)
 
-Yes, you can!
+Obsługiwane providery: OpenAI, Google Gemini/Imagen, Replicate, HuggingFace, Kimi, Qwen, Agnes.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+---
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## 🚢 Wdrożenie
+
+Otwórz [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) i kliknij **Share → Publish**.
+
+Możesz też podłączyć własną domenę: **Project → Settings → Domains → Connect Domain**.
+
+---
+
+## 📄 Licencja
+
+Projekt prywatny — wszelkie prawa zastrzeżone.

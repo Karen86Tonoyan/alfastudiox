@@ -50,14 +50,14 @@ export default function IdeasPage() {
       if (data?.error) throw new Error(data.error);
 
       setIdeas(
-        (data?.ideas || []).map((idea: any) => ({
+        (data?.ideas || []).map((idea: { title?: string; description?: string; category?: string }) => ({
           ...idea,
           category: activeTab,
         }))
       );
       toast.success(`Wygenerowano ${data?.ideas?.length || 0} pomysłów`);
-    } catch (err: any) {
-      toast.error(`Błąd: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`Błąd: ${err instanceof Error ? err.message : String(err)}`);
       // Fallback mock ideas
       setIdeas(getMockIdeas(activeTab, topic));
     } finally {

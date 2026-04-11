@@ -153,7 +153,7 @@ export function loadProviders(): ProviderConfig[] {
         return existing ? { ...def, ...existing } : def;
       });
     }
-  } catch {}
+  } catch { /* ignore */ }
   return DEFAULT_PROVIDERS;
 }
 

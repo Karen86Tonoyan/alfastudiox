@@ -30,7 +30,7 @@ export interface UseOllamaReturn {
   isSuggesting: boolean;
   isChatting: boolean;
   enhancePrompt: (prompt: string, type: "image" | "video") => Promise<string | null>;
-  suggestParams: (description: string) => Promise<Record<string, any> | null>;
+  suggestParams: (description: string) => Promise<Record<string, unknown> | null>;
   chatStream: (
     messages: OllamaChatMessage[],
     onChunk: (text: string) => void,

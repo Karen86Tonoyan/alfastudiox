@@ -87,10 +87,10 @@ export default function MoviePipelinePage() {
           scenes: (data?.storyboard?.scenes || getMockStoryboard(prompt, style).scenes),
           style,
           status: "storyboard",
-        } as any);
+        });
       }
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : String(err));
       // Show mock anyway
       setStoryboard(getMockStoryboard(prompt, style));
       setCurrentStep(1);

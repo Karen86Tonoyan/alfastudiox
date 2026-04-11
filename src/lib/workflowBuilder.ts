@@ -29,7 +29,7 @@ const LORA_FILES: Record<string, string> = {
 
 interface ComfyNode {
   class_type: string;
-  inputs: Record<string, any>;
+  inputs: Record<string, unknown>;
 }
 
 type ComfyWorkflow = Record<string, ComfyNode>;

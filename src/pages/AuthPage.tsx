@@ -52,10 +52,10 @@ const AuthPage = () => {
           description: "Sprawdź email, aby potwierdzić rejestrację.",
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
         title: "Błąd",
-        description: err.message,
+        description: err instanceof Error ? err.message : String(err),
         variant: "destructive",
       });
     } finally {

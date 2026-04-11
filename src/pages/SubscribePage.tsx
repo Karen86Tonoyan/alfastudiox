@@ -71,8 +71,8 @@ export default function SubscribePage() {
     setSubscribing(planKey);
     try {
       await subscribe(planKey);
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
     } finally {
       setSubscribing(null);
     }
@@ -81,8 +81,8 @@ export default function SubscribePage() {
   const handleManage = async () => {
     try {
       await manageSubscription();
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
     }
   };
 

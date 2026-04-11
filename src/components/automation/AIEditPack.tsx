@@ -13,7 +13,7 @@ interface AIOperation {
   name: string;
   icon: React.ElementType;
   description: string;
-  params: { key: string; label: string; type: "text" | "number" | "slider" | "select"; options?: string[]; min?: number; max?: number; default: any }[];
+  params: { key: string; label: string; type: "text" | "number" | "slider" | "select"; options?: string[]; min?: number; max?: number; default: string | number | boolean }[];
 }
 
 const AI_OPS: AIOperation[] = [
@@ -89,7 +89,7 @@ const AI_OPS: AIOperation[] = [
 export function AIEditPack() {
   const [selectedOp, setSelectedOp] = useState<string>("remove_bg");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [params, setParams] = useState<Record<string, any>>({});
+  const [params, setParams] = useState<Record<string, string | number | boolean>>({});
   const [isProcessing, setIsProcessing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -98,7 +98,7 @@ export function AIEditPack() {
   const handleOpSelect = (id: string) => {
     setSelectedOp(id);
     const op = AI_OPS.find((o) => o.id === id)!;
-    const defaults: Record<string, any> = {};
+    const defaults: Record<string, string | number | boolean> = {};
     op.params.forEach((p) => { defaults[p.key] = p.default; });
     setParams(defaults);
   };

@@ -43,9 +43,9 @@ export default function TIPAuditorPage() {
         toast.success(`Zaimportowano ${parsed.totalFrames} klatek z ${file.name}`, {
           description: `Postać: ${parsed.character} | Avg TIP: ${parsed.avgTip.toFixed(3)}`,
         });
-      } catch (err: any) {
-        setImportError(err.message || "Błąd parsowania pliku");
-        toast.error("Błąd importu", { description: err.message });
+      } catch (err: unknown) {
+        setImportError(err instanceof Error ? err.message : "Błąd parsowania pliku");
+        toast.error("Błąd importu", { description: err instanceof Error ? err.message : String(err) });
       }
     };
     reader.readAsText(file);

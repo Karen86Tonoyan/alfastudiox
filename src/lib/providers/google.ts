@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 function getApiKey(): string | null {
   try {
     const providers = JSON.parse(localStorage.getItem("alfa-cloud-providers") || "[]");
-    return providers.find((p: any) => p.id === "google")?.apiKey || null;
+    return providers.find((p: { id: string; apiKey?: string }) => p.id === "google")?.apiKey || null;
   } catch { return null; }
 }
 
@@ -50,8 +50,8 @@ export const googleProvider: AIProvider = {
       const json = await res.json();
       if (json.error) return { text: "", error: json.error.message };
       return { text: json.candidates?.[0]?.content?.parts?.[0]?.text || "" };
-    } catch (e: any) {
-      return { text: "", error: e.message };
+    } catch (e: unknown) {
+      return { text: "", error: e instanceof Error ? e.message : String(e) };
     }
   },
 };

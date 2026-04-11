@@ -152,7 +152,7 @@ export function RenderControlPanel({ className, onRender, onSaveWorkflow, isComf
         try {
           const imported = JSON.parse(ev.target?.result as string);
           setSettings({ ...defaultSettings, ...imported });
-        } catch {}
+        } catch { /* ignore */ }
       };
       reader.readAsText(file);
     };

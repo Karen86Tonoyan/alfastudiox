@@ -164,7 +164,7 @@ export function parseCSV(csvText: string, config: TIPConfig): TIPReport {
 // Accepts: { character?, frames: [...] } or raw array [...]
 // Each frame: { frame, tip_score|tip, tip_smoothed?, z_embedding|z_e, z_geometry|z_g, z_texture|z_t, status? }
 export function parseJSON(jsonText: string, config: TIPConfig): TIPReport {
-  let data: any;
+  let data: unknown;
   try {
     data = JSON.parse(jsonText);
   } catch {
@@ -172,25 +172,26 @@ export function parseJSON(jsonText: string, config: TIPConfig): TIPReport {
   }
 
   let character = "Imported";
-  let rawFrames: any[];
+  let rawFrames: Record<string, unknown>[];
 
   if (Array.isArray(data)) {
-    rawFrames = data;
-  } else if (data && Array.isArray(data.frames)) {
-    rawFrames = data.frames;
-    if (data.character) character = data.character;
-    if (data.name) character = data.name;
+    rawFrames = data as Record<string, unknown>[];
+  } else if (data && typeof data === "object" && Array.isArray((data as Record<string, unknown>).frames)) {
+    const obj = data as Record<string, unknown>;
+    rawFrames = obj.frames as Record<string, unknown>[];
+    if (obj.character) character = String(obj.character);
+    if (obj.name) character = String(obj.name);
   } else {
     throw new Error("JSON musi być tablicą klatek lub obiektem z polem 'frames'");
   }
 
-  const frames: TIPFrameResult[] = rawFrames.map((r: any, i: number) => {
-    const frame = r.frame ?? r.frame_number ?? i + 1;
-    const tipScore = r.tip_score ?? r.tip ?? r.score ?? 0;
-    const tipSmoothed = r.tip_smoothed ?? r.tip_smooth ?? r.smoothed ?? tipScore;
-    const zEmbedding = r.z_embedding ?? r.z_e ?? r.ze ?? 0;
-    const zGeometry = r.z_geometry ?? r.z_g ?? r.zg ?? 0;
-    const zTexture = r.z_texture ?? r.z_t ?? r.zt ?? 0;
+  const frames: TIPFrameResult[] = rawFrames.map((r: Record<string, unknown>, i: number) => {
+    const frame = Number(r.frame ?? r.frame_number ?? i + 1);
+    const tipScore = Number(r.tip_score ?? r.tip ?? r.score ?? 0);
+    const tipSmoothed = Number(r.tip_smoothed ?? r.tip_smooth ?? r.smoothed ?? tipScore);
+    const zEmbedding = Number(r.z_embedding ?? r.z_e ?? r.ze ?? 0);
+    const zGeometry = Number(r.z_geometry ?? r.z_g ?? r.zg ?? 0);
+    const zTexture = Number(r.z_texture ?? r.z_t ?? r.zt ?? 0);
 
     let status: TIPFrameResult["status"];
     if (r.status) {

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 function getApiKey(): string | null {
   try {
     const providers = JSON.parse(localStorage.getItem("alfa-cloud-providers") || "[]");
-    return providers.find((p: any) => p.id === "replicate")?.apiKey || null;
+    return providers.find((p: { id: string; apiKey?: string }) => p.id === "replicate")?.apiKey || null;
   } catch { return null; }
 }
 

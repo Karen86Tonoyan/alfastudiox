@@ -10,7 +10,7 @@ interface RecipeStep {
   id: string;
   type: string;
   label: string;
-  params: Record<string, any>;
+  params: Record<string, string | number | boolean>;
 }
 
 interface Recipe {
@@ -39,7 +39,7 @@ const STEP_TYPES = [
   { value: "logo_overlay", label: "Logo Overlay", icon: "🏷️" },
 ];
 
-const DEFAULT_PARAMS: Record<string, Record<string, any>> = {
+const DEFAULT_PARAMS: Record<string, Record<string, string | number | boolean>> = {
   resize: { width: 1920, height: 1080, mode: "fit" },
   crop: { x: 0, y: 0, width: 1000, height: 1000 },
   format: { output: "webp", quality: 90 },
@@ -93,7 +93,7 @@ const PRESET_RECIPES: Recipe[] = [
   },
 ];
 
-function StepParamsEditor({ step, onChange }: { step: RecipeStep; onChange: (params: Record<string, any>) => void }) {
+function StepParamsEditor({ step, onChange }: { step: RecipeStep; onChange: (params: Record<string, string | number | boolean>) => void }) {
   return (
     <div className="grid grid-cols-2 gap-2 mt-2">
       {Object.entries(step.params).map(([key, value]) => (
@@ -160,7 +160,7 @@ export function RecipeBuilder() {
     setRecipes(recipes.map((r) => (r.id === updated.id ? updated : r)));
   };
 
-  const updateStepParams = (stepId: string, params: Record<string, any>) => {
+  const updateStepParams = (stepId: string, params: Record<string, string | number | boolean>) => {
     if (!activeRecipe) return;
     const updated = {
       ...activeRecipe,

@@ -123,10 +123,10 @@ export function CalibrationMode({
                 const applied = variant.apply(baseConfig);
                 const currentVal = variant.param === "pulidWeight"
                   ? (baseConfig.layers.pulid ? baseConfig.pulidWeight : "off")
-                  : (baseConfig as any)[variant.param];
+                  : (baseConfig as Record<string, unknown>)[variant.param];
                 const newVal = variant.param === "pulidWeight"
-                  ? ((applied as any).pulidWeight ?? 0)
-                  : (applied as any)[variant.param] ?? currentVal;
+                  ? ((applied as Record<string, unknown>).pulidWeight ?? 0)
+                  : (applied as Record<string, unknown>)[variant.param] ?? currentVal;
 
                 return (
                   <button

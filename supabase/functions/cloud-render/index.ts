@@ -112,9 +112,9 @@ async function renderGeminiVision(req: RenderRequest): Promise<{ imageUrl: strin
 
   const data = await res.json();
   const parts = data.candidates?.[0]?.content?.parts ?? [];
-  const imagePart = parts.find((p: any) => p.inlineData?.mimeType?.startsWith("image/"));
+  const imagePart = parts.find((p: { inlineData?: { mimeType?: string; data?: string } }) => p.inlineData?.mimeType?.startsWith("image/"));
   if (!imagePart) {
-    const textPart = parts.find((p: any) => p.text);
+    const textPart = parts.find((p: { text?: string }) => p.text);
     throw new Error(`Gemini did not return an image. Response: ${textPart?.text?.substring(0, 200) ?? "empty"}`);
   }
   return { imageUrl: `data:${imagePart.inlineData.mimeType};base64,${imagePart.inlineData.data}` };
@@ -196,17 +196,19 @@ async function renderHuggingFace(req: RenderRequest): Promise<{ imageUrl: string
 
   const hfModel = modelMap[req.model] ?? req.model;
 
+  const parameters: Record<string, unknown> = {
+    width: req.width,
+    height: req.height,
+    num_inference_steps: req.steps ?? 30,
+    guidance_scale: req.cfg ?? 7,
+  };
+  if (req.negativePrompt) parameters.negative_prompt = req.negativePrompt;
+  if (req.seed && req.seed > 0) parameters.seed = req.seed;
+
   const payload: Record<string, unknown> = {
     inputs: req.prompt,
-    parameters: {
-      width: req.width,
-      height: req.height,
-      num_inference_steps: req.steps ?? 30,
-      guidance_scale: req.cfg ?? 7,
-    },
+    parameters,
   };
-  if (req.negativePrompt) (payload.parameters as any).negative_prompt = req.negativePrompt;
-  if (req.seed && req.seed > 0) (payload.parameters as any).seed = req.seed;
 
   const res = await fetch(`https://api-inference.huggingface.co/models/${hfModel}`, {
     method: "POST",

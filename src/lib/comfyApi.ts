@@ -71,7 +71,7 @@ export interface ComfyModelInfo {
 
 // --- Event system ---
 
-type EventHandler = (...args: any[]) => void;
+type EventHandler = (...args: unknown[]) => void;
 
 class EventEmitter {
   private handlers: Record<string, EventHandler[]> = {};
@@ -86,7 +86,7 @@ class EventEmitter {
     this.handlers[event] = (this.handlers[event] || []).filter((h) => h !== handler);
   }
 
-  emit(event: string, ...args: any[]) {
+  emit(event: string, ...args: unknown[]) {
     (this.handlers[event] || []).forEach((h) => h(...args));
   }
 }
@@ -181,26 +181,32 @@ export class ComfyApiClient extends EventEmitter {
     this.reconnectTimer = setTimeout(() => this.connect(), 5000);
   }
 
-  private handleMessage(msg: any) {
+  private handleMessage(msg: Record<string, unknown>) {
+    const rawData = msg.data;
+    const data = rawData !== null && typeof rawData === "object" ? rawData as Record<string, unknown> : undefined;
     switch (msg.type) {
-      case "progress":
-        this._progress = {
-          promptId: msg.data.prompt_id,
-          node: msg.data.node || "",
-          step: msg.data.value,
-          totalSteps: msg.data.max,
-          percentage: Math.round((msg.data.value / msg.data.max) * 100),
-        };
-        this.emit("progress", this._progress);
+      case "progress": {
+        const progressData = data as { prompt_id: string; node?: string; value: number; max: number } | undefined;
+        if (progressData) {
+          this._progress = {
+            promptId: progressData.prompt_id,
+            node: progressData.node || "",
+            step: progressData.value,
+            totalSteps: progressData.max,
+            percentage: Math.round((progressData.value / progressData.max) * 100),
+          };
+          this.emit("progress", this._progress);
+        }
         break;
+      }
 
       case "executing":
-        if (msg.data.node === null) {
+        if (data?.node === null) {
           // execution done
           this._progress = null;
-          this.emit("execution_done", msg.data.prompt_id);
+          this.emit("execution_done", data?.prompt_id);
         } else {
-          this.emit("executing_node", msg.data.node);
+          this.emit("executing_node", data?.node);
         }
         break;
 
@@ -209,18 +215,20 @@ export class ComfyApiClient extends EventEmitter {
           id: crypto.randomUUID(),
           timestamp: Date.now(),
           type: "node_error",
-          message: msg.data.exception_message || "Unknown error",
-          node: msg.data.node_type,
-          stackTrace: msg.data.traceback?.join("\n"),
+          message: (data?.exception_message as string) || "Unknown error",
+          node: data?.node_type as string | undefined,
+          stackTrace: (data?.traceback as string[] | undefined)?.join("\n"),
         });
         break;
 
-      case "status":
-        if (msg.data?.status?.exec_info) {
-          const pending = msg.data.status.exec_info.queue_remaining;
+      case "status": {
+        const statusData = data as { status?: { exec_info?: { queue_remaining?: number } } } | undefined;
+        if (statusData?.status?.exec_info) {
+          const pending = statusData.status.exec_info.queue_remaining;
           this.emit("queue_size", pending);
         }
         break;
+      }
     }
   }
 
@@ -246,7 +254,7 @@ export class ComfyApiClient extends EventEmitter {
     }
   }
 
-  async getQueue(): Promise<any> {
+  async getQueue(): Promise<unknown> {
     try {
       const res = await fetch(`${this.httpUrl}/queue`);
       return await res.json();
@@ -258,7 +266,7 @@ export class ComfyApiClient extends EventEmitter {
   async cancelCurrent(): Promise<void> {
     try {
       await fetch(`${this.httpUrl}/interrupt`, { method: "POST" });
-    } catch {}
+    } catch { /* ignore */ }
   }
 
   async clearQueue(): Promise<void> {
@@ -268,7 +276,7 @@ export class ComfyApiClient extends EventEmitter {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ clear: true }),
       });
-    } catch {}
+    } catch { /* ignore */ }
   }
 
   async getSystemStats(): Promise<GpuInfo | null> {

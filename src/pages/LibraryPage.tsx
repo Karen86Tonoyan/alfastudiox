@@ -110,7 +110,7 @@ export default function LibraryPage() {
       body_type: newActor.body_type || null,
       voice_style: newActor.voice_style || null,
       default_style: newActor.default_style || null,
-    } as any);
+    });
 
     if (error) { toast.error(error.message); return; }
     toast.success("Aktor dodany");
@@ -131,7 +131,7 @@ export default function LibraryPage() {
       scene_prompt: newLocation.scene_prompt,
       time_of_day: newLocation.time_of_day || "day",
       mood: newLocation.mood || null,
-    } as any);
+    });
 
     if (error) { toast.error(error.message); return; }
     toast.success("Lokacja dodana");

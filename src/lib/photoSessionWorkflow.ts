@@ -50,7 +50,7 @@ export interface PhotoSessionConfig {
 
 interface ComfyNode {
   class_type: string;
-  inputs: Record<string, any>;
+  inputs: Record<string, unknown>;
 }
 
 type ComfyWorkflow = Record<string, ComfyNode>;
@@ -129,7 +129,7 @@ export function buildPhotoSessionWorkflow(config: PhotoSessionConfig): ComfyWork
   }
 
   // ── 3. Janus-Pro auto-prompt (optional) ──
-  let autoPromptText = "";
+  const autoPromptText = "";
   let janusDescId: string | null = null;
 
   if (config.layers.janusPrompt && modelLoadId) {

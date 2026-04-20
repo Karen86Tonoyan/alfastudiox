@@ -30,8 +30,8 @@ const BuyCreditsPage = () => {
       if (data?.url) {
         window.open(data.url, "_blank");
       }
-    } catch (err: any) {
-      toast({ title: "Błąd", description: err.message || "Nie udało się utworzyć sesji płatności", variant: "destructive" });
+    } catch (err: unknown) {
+      toast({ title: "Błąd", description: err instanceof Error ? err.message : "Nie udało się utworzyć sesji płatności", variant: "destructive" });
     } finally {
       setLoading(false);
     }

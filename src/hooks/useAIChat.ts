@@ -84,13 +84,13 @@ export function useAIChat() {
             const parsed = JSON.parse(jsonStr);
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) onDelta(content);
-          } catch {}
+          } catch { /* ignore */ }
         }
       }
 
       onDone();
-    } catch (e: any) {
-      onError?.(e.message);
+    } catch (e: unknown) {
+      onError?.(e instanceof Error ? e.message : String(e));
     } finally {
       setIsStreaming(false);
     }

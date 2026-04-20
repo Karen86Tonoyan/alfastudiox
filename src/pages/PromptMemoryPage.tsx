@@ -33,7 +33,7 @@ export default function PromptMemoryPage() {
       .from("prompt_memory")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(100) as any;
+      .limit(100);
     setPrompts(data || []);
   };
 
@@ -51,19 +51,19 @@ export default function PromptMemoryPage() {
       if (error) throw new Error(error.message);
       const improved = data?.ideas?.[0]?.description || data?.ideas?.[0]?.title;
       if (improved) {
-        await supabase.from("prompt_memory").update({ improved_prompt: improved } as any).eq("id", entry.id);
+        await supabase.from("prompt_memory").update({ improved_prompt: improved }).eq("id", entry.id);
         toast.success("Prompt ulepszony przez AI");
         loadPrompts();
       }
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : String(err));
     } finally {
       setImproving(null);
     }
   };
 
   const ratePrompt = async (id: string, rating: number) => {
-    await supabase.from("prompt_memory").update({ rating } as any).eq("id", id);
+    await supabase.from("prompt_memory").update({ rating }).eq("id", id);
     setPrompts((prev) => prev.map((p) => (p.id === id ? { ...p, rating } : p)));
   };
 

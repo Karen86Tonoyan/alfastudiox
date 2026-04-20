@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import type { Enums } from "@/integrations/supabase/types";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
@@ -81,13 +82,13 @@ export default function AdminPage() {
       if (existing) {
         const { error } = await supabase
           .from("user_roles")
-          .update({ role: newRole as any })
+          .update({ role: newRole as Enums<"app_role"> })
           .eq("user_id", userId);
         if (error) { toast.error("Błąd zmiany roli"); return; }
       } else {
         const { error } = await supabase
           .from("user_roles")
-          .insert({ user_id: userId, role: newRole as any });
+          .insert({ user_id: userId, role: newRole as Enums<"app_role"> });
         if (error) { toast.error("Błąd zmiany roli"); return; }
       }
     }

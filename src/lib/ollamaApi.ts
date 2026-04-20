@@ -16,7 +16,7 @@ export function getOllamaConfig(): OllamaConfig {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch { /* ignore */ }
   return { baseUrl: "http://localhost:11434", defaultModel: "llama3.2", enabled: true };
 }
 
@@ -174,7 +174,7 @@ export async function* streamGenerate(
         const json = JSON.parse(line);
         if (json.response) yield json.response;
         if (json.done) return;
-      } catch {}
+      } catch { /* ignore */ }
     }
   }
 }
@@ -189,7 +189,7 @@ export async function enhancePrompt(basicPrompt: string, modelType: "image" | "v
 }
 
 /** Auto-suggest render parameters based on a prompt description */
-export async function suggestParameters(description: string): Promise<Record<string, any>> {
+export async function suggestParameters(description: string): Promise<Record<string, unknown>> {
   const system = `You are an AI render parameter optimizer. Given a scene description, suggest optimal render parameters as JSON. Include: model (sdxl/flux-dev/flux-schnell), sampler, steps (10-50), cfg (1-15), width, height, lora (none/detail-tweaker/film-grain/cinematic/anime/photorealistic), loraWeight (0-1). For video scenes, also include: frames (8-64), fps (8-24). Return ONLY valid JSON, no markdown or explanations.`;
 
   const response = await generate(description, undefined, system);
@@ -197,7 +197,7 @@ export async function suggestParameters(description: string): Promise<Record<str
     // Try to extract JSON from the response
     const match = response.match(/\{[\s\S]*\}/);
     if (match) return JSON.parse(match[0]);
-  } catch {}
+  } catch { /* ignore */ }
   return {};
 }
 

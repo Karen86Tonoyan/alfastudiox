@@ -22,8 +22,9 @@ import { loadProviders } from "@/lib/cloudProviders";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AITransparencyPanel, AITransparencyBadge, type AITransparencyConfig } from "@/components/render/AITransparency";
+import type { GpuInfo } from "@/lib/comfyApi";
 
-function StatusBar({ gpu, isConnected }: { gpu: any; isConnected: boolean }) {
+function StatusBar({ gpu, isConnected }: { gpu: GpuInfo | null; isConnected: boolean }) {
   const temp = gpu?.temp ?? 62;
   const vramUsed = gpu?.vramUsed?.toFixed(1) ?? "8.2";
   const vramTotal = gpu?.vramTotal?.toFixed(0) ?? "16";
@@ -241,8 +242,8 @@ export default function RenderPage() {
             addToHistory(renderStartRef.current.settings, "success", Date.now() - renderStartRef.current.time);
             renderStartRef.current = null;
           }
-        } catch (err: any) {
-          toast.error(`Błąd renderowania: ${err.message}`);
+        } catch (err: unknown) {
+          toast.error(`Błąd renderowania: ${err instanceof Error ? err.message : String(err)}`);
           if (renderStartRef.current) {
             addToHistory(renderStartRef.current.settings, "failed", Date.now() - renderStartRef.current.time);
             renderStartRef.current = null;

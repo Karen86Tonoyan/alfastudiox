@@ -48,8 +48,8 @@ export function AIAssistPanel({
     try {
       const result = await enhancePrompt(input);
       if (result) setEnhancedResult(result);
-    } catch (e: any) {
-      toast.error(e.message);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : String(e));
     } finally {
       setIsEnhancing(false);
     }

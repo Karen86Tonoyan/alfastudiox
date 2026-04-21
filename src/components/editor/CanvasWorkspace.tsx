@@ -369,14 +369,14 @@ export function CanvasWorkspace({
             }}
           />
           {/* Inner circle — hardness core */}
-          {brush.hardness < 0.95 && brushScreenSize > 8 && (
+          {brush.hardness < 0.95 && brushScreenSize > 6 && (brushScreenSize * brush.hardness) > 3 && (
             <div
               className="rounded-full border border-white/30 absolute"
               style={{
-                width: Math.max(2, brushScreenSize * brush.hardness),
-                height: Math.max(2, brushScreenSize * brush.hardness),
-                left: -Math.max(2, brushScreenSize * brush.hardness) / 2,
-                top: -Math.max(2, brushScreenSize * brush.hardness) / 2,
+                width: brushScreenSize * brush.hardness,
+                height: brushScreenSize * brush.hardness,
+                left: -(brushScreenSize * brush.hardness) / 2,
+                top: -(brushScreenSize * brush.hardness) / 2,
                 boxShadow: "0 0 0 1px rgba(0,0,0,0.2)",
               }}
             />

@@ -279,6 +279,19 @@ export function CanvasWorkspace({
         <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-card/90 border border-primary/40 rounded-lg px-4 py-3 backdrop-blur-sm flex items-center gap-4 text-xs text-foreground shadow-lg z-10">
           <span className="font-semibold text-primary uppercase tracking-wider text-[10px] shrink-0">Maska</span>
 
+          {/* Active color + mode indicator */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <div
+              className="w-4 h-4 rounded-sm border border-border"
+              style={{ background: maskEditMode === "erase" ? "#000000" : "#ffffff" }}
+              title={maskEditMode === "erase" ? "Czarny (ukrywa)" : "Biały (odkrywa)"}
+            />
+            <span className="text-[9px] text-muted-foreground font-mono">
+              {maskEditMode === "erase" ? "Czarny" : maskEditMode === "fill" ? "Biały" : "Biały"}
+            </span>
+            <kbd className="text-[8px] font-mono bg-secondary/60 border border-border rounded px-1 py-0.5 text-muted-foreground">Q</kbd>
+          </div>
+
           {/* Mode buttons */}
           <div className="flex items-center gap-0.5 border border-border rounded-md p-0.5 shrink-0">
             {([

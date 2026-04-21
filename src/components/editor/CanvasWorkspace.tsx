@@ -2,9 +2,41 @@ import { useRef, useEffect, useCallback, useState } from "react";
 import type { EditorLayer, ToolType, BrushSettings } from "@/lib/editorEngine";
 import { composeLayers, drawBrushLine, drawBrushStroke } from "@/lib/editorEngine";
 import { Slider } from "@/components/ui/slider";
-import { Paintbrush, Eraser, PaintBucket } from "lucide-react";
+import { Paintbrush, Eraser, PaintBucket, Save, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export type MaskEditMode = "paint" | "erase" | "fill";
+
+interface MaskBrushPreset {
+  name: string;
+  size: number;
+  hardness: number;
+  opacity: number;
+  flow: number;
+}
+
+const DEFAULT_PRESETS: MaskBrushPreset[] = [
+  { name: "Soft", size: 40, hardness: 0.1, opacity: 0.5, flow: 0.6 },
+  { name: "Hard", size: 12, hardness: 1.0, opacity: 1.0, flow: 1.0 },
+  { name: "Stencil", size: 80, hardness: 0.9, opacity: 0.3, flow: 0.4 },
+];
+
+const PRESETS_KEY = "alfa-mask-brush-presets";
+
+function loadPresets(): MaskBrushPreset[] {
+  try {
+    const raw = localStorage.getItem(PRESETS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return [...DEFAULT_PRESETS];
+}
+
+function savePresets(presets: MaskBrushPreset[]) {
+  localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+}
 
 interface CanvasWorkspaceProps {
   layers: EditorLayer[];
@@ -47,6 +79,8 @@ export function CanvasWorkspace({
   const lastPos = useRef<{ x: number; y: number } | null>(null);
   const panning = useRef(false);
   const panStart = useRef({ x: 0, y: 0 });
+  const [maskPresets, setMaskPresets] = useState<MaskBrushPreset[]>(loadPresets);
+  const [newPresetName, setNewPresetName] = useState("");
 
   // Compose & render
   const render = useCallback(() => {
@@ -314,6 +348,93 @@ export function CanvasWorkspace({
                 <kbd className="ml-0.5 text-[8px] opacity-60 font-mono">{shortcut}</kbd>
               </button>
             ))}
+          </div>
+
+          {/* Presets */}
+          <div className="flex items-center gap-1 shrink-0">
+            {maskPresets.map((p, i) => (
+              <button
+                key={i}
+                onClick={() => onBrushChange?.({ size: p.size, hardness: p.hardness, opacity: p.opacity, flow: p.flow })}
+                className="px-1.5 py-0.5 rounded text-[9px] border border-border hover:border-primary/40 hover:bg-primary/10 transition-all text-muted-foreground hover:text-foreground"
+                title={`${p.name}: ${p.size}px, twardość ${Math.round(p.hardness * 100)}%, krycie ${Math.round(p.opacity * 100)}%, przepływ ${Math.round(p.flow * 100)}%`}
+              >
+                {p.name}
+              </button>
+            ))}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="px-1 py-0.5 rounded text-[9px] border border-dashed border-border hover:border-primary/40 text-muted-foreground hover:text-foreground transition-all" title="Zarządzaj presetami">
+                  <Star className="h-3 w-3" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-3 space-y-2" align="start">
+                <span className="text-[10px] font-semibold uppercase text-muted-foreground">Zapisz aktualny preset</span>
+                <div className="flex gap-1">
+                  <Input
+                    value={newPresetName}
+                    onChange={(e) => setNewPresetName(e.target.value)}
+                    placeholder="Nazwa presetu"
+                    className="h-6 text-[10px]"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-6 px-2 text-[9px] shrink-0"
+                    onClick={() => {
+                      const name = newPresetName.trim() || `Preset ${maskPresets.length + 1}`;
+                      const preset: MaskBrushPreset = {
+                        name,
+                        size: brush.size,
+                        hardness: brush.hardness,
+                        opacity: brush.opacity,
+                        flow: brush.flow,
+                      };
+                      const next = [...maskPresets, preset];
+                      setMaskPresets(next);
+                      savePresets(next);
+                      setNewPresetName("");
+                      toast.success(`Preset „${name}" zapisany`);
+                    }}
+                  >
+                    <Save className="h-3 w-3" />
+                  </Button>
+                </div>
+                {maskPresets.length > 0 && (
+                  <div className="space-y-0.5 pt-1 border-t border-border">
+                    <span className="text-[9px] text-muted-foreground">Kliknij × aby usunąć</span>
+                    {maskPresets.map((p, i) => (
+                      <div key={i} className="flex items-center justify-between text-[10px]">
+                        <span className="text-foreground">{p.name}</span>
+                        <span className="text-muted-foreground font-mono text-[8px]">
+                          {p.size}px H{Math.round(p.hardness * 100)} O{Math.round(p.opacity * 100)} F{Math.round(p.flow * 100)}
+                        </span>
+                        <button
+                          className="text-destructive hover:text-destructive/80 text-[10px] ml-1"
+                          onClick={() => {
+                            const next = maskPresets.filter((_, j) => j !== i);
+                            setMaskPresets(next);
+                            savePresets(next);
+                          }}
+                        >×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="w-full h-5 text-[8px] text-muted-foreground"
+                  onClick={() => {
+                    setMaskPresets([...DEFAULT_PRESETS]);
+                    savePresets([...DEFAULT_PRESETS]);
+                    toast.info("Przywrócono domyślne presety");
+                  }}
+                >
+                  Przywróć domyślne
+                </Button>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="flex items-center gap-2 min-w-[140px]">

@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Eye, EyeOff, Lock, Unlock, Plus, Trash2, Copy,
-  ChevronDown, Layers, Merge
+  ChevronDown, Layers, Merge, CircleDot, CircleOff
 } from "lucide-react";
 import type { EditorLayer, BlendMode } from "@/lib/editorEngine";
 
@@ -43,6 +43,10 @@ interface LayerPanelProps {
   onDuplicate: (id: string) => void;
   onMergeDown: (id: string) => void;
   onFlatten: () => void;
+  maskMode?: boolean;
+  onToggleMaskMode?: () => void;
+  onAddMask?: (id: string) => void;
+  onDeleteMask?: (id: string) => void;
 }
 
 export function LayerPanel({
@@ -59,6 +63,10 @@ export function LayerPanel({
   onDuplicate,
   onMergeDown,
   onFlatten,
+  maskMode,
+  onToggleMaskMode,
+  onAddMask,
+  onDeleteMask,
 }: LayerPanelProps) {
   const active = layers.find((l) => l.id === activeLayerId);
 
@@ -165,6 +173,26 @@ export function LayerPanel({
         <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => onDuplicate(activeLayerId)} title="Duplikuj">
           <Copy className="h-3 w-3" />
         </Button>
+        {active?.maskCanvas ? (
+          <>
+            <Button
+              size="sm"
+              variant={maskMode ? "default" : "ghost"}
+              className={`h-6 w-6 p-0 ${maskMode ? "bg-destructive/80 text-destructive-foreground" : ""}`}
+              onClick={onToggleMaskMode}
+              title="Edytuj maskę (Q)"
+            >
+              <CircleDot className="h-3 w-3" />
+            </Button>
+            <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-destructive" onClick={() => onDeleteMask?.(activeLayerId)} title="Usuń maskę">
+              <CircleOff className="h-3 w-3" />
+            </Button>
+          </>
+        ) : (
+          <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => onAddMask?.(activeLayerId)} title="Dodaj maskę">
+            <CircleDot className="h-3 w-3" />
+          </Button>
+        )}
         <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => onMergeDown(activeLayerId)} title="Scal w dół">
           <Merge className="h-3 w-3" />
         </Button>

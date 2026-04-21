@@ -47,20 +47,62 @@ export function CanvasWorkspace({
     if (!display) return;
     composeLayers(layers, display, canvasWidth, canvasHeight);
 
-    // Mask overlay: red tint where mask hides content
+    // Mask overlay: adjustment layers get green/red heat-map, regular layers get red tint
     if (maskMode && activeLayer?.maskCanvas) {
       const ctx = display.getContext("2d")!;
       const mask = activeLayer.maskCanvas;
       const mCtx = mask.getContext("2d")!;
       const mData = mCtx.getImageData(0, 0, mask.width, mask.height);
       const overlay = ctx.createImageData(mask.width, mask.height);
-      for (let i = 0; i < mData.data.length; i += 4) {
-        const brightness = mData.data[i];
-        if (brightness < 255) {
-          overlay.data[i] = 255;
-          overlay.data[i + 1] = 0;
+      const isAdj = !!activeLayer.adjustment;
+
+      if (isAdj) {
+        // Heat-map: green = active (white mask), red = masked-out (black mask)
+        for (let i = 0; i < mData.data.length; i += 4) {
+          const v = mData.data[i]; // 0 = fully masked, 255 = fully active
+          // Green channel proportional to active area, red to masked area
+          overlay.data[i]     = Math.round(255 - v);       // R — strong where masked
+          overlay.data[i + 1] = Math.round(v);             // G — strong where active
           overlay.data[i + 2] = 0;
-          overlay.data[i + 3] = Math.round((255 - brightness) * 0.5);
+          overlay.data[i + 3] = 100;                       // constant semi-transparent
+        }
+      } else {
+        // Regular layer: red tint where mask hides content
+        for (let i = 0; i < mData.data.length; i += 4) {
+          const brightness = mData.data[i];
+          if (brightness < 255) {
+            overlay.data[i] = 255;
+            overlay.data[i + 1] = 0;
+            overlay.data[i + 2] = 0;
+            overlay.data[i + 3] = Math.round((255 - brightness) * 0.5);
+          }
+        }
+      }
+
+      const tmp = document.createElement("canvas");
+      tmp.width = mask.width;
+      tmp.height = mask.height;
+      const tmpCtx = tmp.getContext("2d")!;
+      tmpCtx.putImageData(overlay, 0, 0);
+      ctx.drawImage(tmp, activeLayer.x, activeLayer.y);
+    }
+
+    // Adjustment layer effect preview (even outside mask mode)
+    if (!maskMode && activeLayer?.adjustment && activeLayer?.maskCanvas) {
+      const ctx = display.getContext("2d")!;
+      const mask = activeLayer.maskCanvas;
+      const mCtx = mask.getContext("2d")!;
+      const mData = mCtx.getImageData(0, 0, mask.width, mask.height);
+      // Subtle border glow around active regions
+      const overlay = ctx.createImageData(mask.width, mask.height);
+      for (let i = 0; i < mData.data.length; i += 4) {
+        const v = mData.data[i];
+        if (v > 10 && v < 245) {
+          // Transition zones — show cyan edge
+          overlay.data[i]     = 0;
+          overlay.data[i + 1] = 200;
+          overlay.data[i + 2] = 255;
+          overlay.data[i + 3] = 40;
         }
       }
       const tmp = document.createElement("canvas");
@@ -70,7 +112,7 @@ export function CanvasWorkspace({
       tmpCtx.putImageData(overlay, 0, 0);
       ctx.drawImage(tmp, activeLayer.x, activeLayer.y);
     }
-  }, [layers, canvasWidth, canvasHeight, maskMode, activeLayer]);
+  }, [layers, canvasWidth, canvasHeight, maskMode, activeLayer, activeLayer?.adjustment]);
 
   useEffect(() => {
     const display = displayRef.current;

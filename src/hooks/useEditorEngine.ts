@@ -12,6 +12,7 @@ import {
   createAdjustmentLayer,
   serializeLayer,
   deserializeLayer,
+  fitMaskToTransform,
 } from "@/lib/editorEngine";
 
 const MAX_HISTORY = 50;
@@ -139,6 +140,8 @@ export function useEditorEngine(initialW = 1920, initialH = 1080) {
       dup.blendMode = src.blendMode;
       dup.x = src.x;
       dup.y = src.y;
+      dup.scaleX = src.scaleX;
+      dup.scaleY = src.scaleY;
       const idx = prev.findIndex((l) => l.id === id);
       const next = [...prev.slice(0, idx + 1), dup, ...prev.slice(idx + 1)];
       pushHistory("Duplikuj warstwę", next, dup.id);
@@ -259,6 +262,18 @@ export function useEditorEngine(initialW = 1920, initialH = 1080) {
     });
   }, [layers, effectiveActiveId, addMask]);
 
+  const scaleLayer = useCallback((id: string, scaleX: number, scaleY: number) => {
+    setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, scaleX, scaleY } : l)));
+  }, []);
+
+  const applyMaskFit = useCallback((id: string) => {
+    setLayers((prev) => {
+      const next = prev.map((l) => (l.id === id ? fitMaskToTransform(l) : l));
+      pushHistory("Dopasuj maskę", next, id);
+      return next;
+    });
+  }, [pushHistory]);
+
   const resizeCanvas = useCallback((w: number, h: number) => {
     setCanvasWidth(w);
     setCanvasHeight(h);
@@ -299,6 +314,8 @@ export function useEditorEngine(initialW = 1920, initialH = 1080) {
     addMask,
     deleteMask,
     toggleMaskMode,
+    scaleLayer,
+    applyMaskFit,
     resizeCanvas,
     undo,
     redo,

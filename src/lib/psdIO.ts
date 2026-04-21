@@ -82,6 +82,8 @@ export async function importPSD(buffer: ArrayBuffer): Promise<{
       x: child.left ?? 0,
       y: child.top ?? 0,
       adjustment: null,
+      scaleX: 1,
+      scaleY: 1,
     });
   }
 
@@ -118,6 +120,8 @@ export async function importPSD(buffer: ArrayBuffer): Promise<{
       x: 0,
       y: 0,
       adjustment: null,
+      scaleX: 1,
+      scaleY: 1,
     });
   }
 

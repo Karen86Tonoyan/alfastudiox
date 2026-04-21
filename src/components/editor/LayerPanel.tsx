@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Eye, EyeOff, Lock, Unlock, Plus, Trash2, Copy,
-  ChevronDown, Layers, Merge, CircleDot, CircleOff, SlidersHorizontal
+  ChevronDown, Layers, Merge, CircleDot, CircleOff, SlidersHorizontal, Scaling
 } from "lucide-react";
 import type { EditorLayer, BlendMode } from "@/lib/editorEngine";
 
@@ -47,6 +47,7 @@ interface LayerPanelProps {
   onToggleMaskMode?: () => void;
   onAddMask?: (id: string) => void;
   onDeleteMask?: (id: string) => void;
+  onFitMask?: (id: string) => void;
 }
 
 export function LayerPanel({
@@ -67,6 +68,7 @@ export function LayerPanel({
   onToggleMaskMode,
   onAddMask,
   onDeleteMask,
+  onFitMask,
 }: LayerPanelProps) {
   const active = layers.find((l) => l.id === activeLayerId);
 
@@ -192,6 +194,9 @@ export function LayerPanel({
             </Button>
             <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-destructive" onClick={() => onDeleteMask?.(activeLayerId)} title="Usuń maskę">
               <CircleOff className="h-3 w-3" />
+            </Button>
+            <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => onFitMask?.(activeLayerId)} title="Dopasuj maskę do transformacji">
+              <Scaling className="h-3 w-3" />
             </Button>
           </>
         ) : (

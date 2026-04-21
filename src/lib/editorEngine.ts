@@ -30,6 +30,8 @@ export interface EditorLayer {
   x: number;
   y: number;
   adjustment?: AdjustmentData | null;
+  scaleX: number;
+  scaleY: number;
 }
 
 export type ToolType =
@@ -66,6 +68,8 @@ interface SerializedLayer {
   x: number;
   y: number;
   adjustment?: AdjustmentData | null;
+  scaleX?: number;
+  scaleY?: number;
 }
 
 let _counter = 0;
@@ -87,6 +91,8 @@ export function createLayer(w: number, h: number, name?: string): EditorLayer {
     x: 0,
     y: 0,
     adjustment: null,
+    scaleX: 1,
+    scaleY: 1,
   };
 }
 
@@ -108,6 +114,8 @@ export function createLayerFromImage(img: HTMLImageElement, name?: string): Edit
     x: 0,
     y: 0,
     adjustment: null,
+    scaleX: 1,
+    scaleY: 1,
   };
 }
 
@@ -151,6 +159,8 @@ export function createAdjustmentLayer(
     x: 0,
     y: 0,
     adjustment: defaults,
+    scaleX: 1,
+    scaleY: 1,
   };
 }
 
@@ -186,12 +196,16 @@ export function composeLayers(
         tmp.width = width;
         tmp.height = height;
         const tmpCtx = tmp.getContext("2d")!;
-        tmpCtx.drawImage(layer.canvas, layer.x, layer.y);
+        const lw = layer.canvas.width * layer.scaleX;
+        const lh = layer.canvas.height * layer.scaleY;
+        tmpCtx.drawImage(layer.canvas, layer.x, layer.y, lw, lh);
         tmpCtx.globalCompositeOperation = "destination-in";
-        tmpCtx.drawImage(layer.maskCanvas, layer.x, layer.y);
+        tmpCtx.drawImage(layer.maskCanvas, layer.x, layer.y, lw, lh);
         ctx.drawImage(tmp, 0, 0);
       } else {
-        ctx.drawImage(layer.canvas, layer.x, layer.y);
+        const lw = layer.canvas.width * layer.scaleX;
+        const lh = layer.canvas.height * layer.scaleY;
+        ctx.drawImage(layer.canvas, layer.x, layer.y, lw, lh);
       }
 
       ctx.restore();
@@ -390,6 +404,8 @@ export function serializeLayer(layer: EditorLayer): SerializedLayer {
     x: layer.x,
     y: layer.y,
     adjustment: layer.adjustment ?? null,
+    scaleX: layer.scaleX,
+    scaleY: layer.scaleY,
   };
 }
 
@@ -421,6 +437,8 @@ export function deserializeLayer(s: SerializedLayer): EditorLayer {
     x: s.x,
     y: s.y,
     adjustment: s.adjustment ?? null,
+    scaleX: s.scaleX ?? 1,
+    scaleY: s.scaleY ?? 1,
   };
 }
 
@@ -449,7 +467,7 @@ export function exportToBlob(
       ctx.save();
       ctx.globalAlpha = layer.opacity;
       ctx.globalCompositeOperation = blendModeToComposite(layer.blendMode);
-      ctx.drawImage(layer.canvas, layer.x, layer.y);
+      ctx.drawImage(layer.canvas, layer.x, layer.y, layer.canvas.width * layer.scaleX, layer.canvas.height * layer.scaleY);
       ctx.restore();
     }
 
@@ -459,4 +477,39 @@ export function exportToBlob(
       quality ?? 0.92
     );
   });
+}
+
+// ── Fit mask to current layer transform ──
+export function fitMaskToTransform(layer: EditorLayer): EditorLayer {
+  if (!layer.maskCanvas) return layer;
+
+  const newW = Math.round(layer.canvas.width * layer.scaleX);
+  const newH = Math.round(layer.canvas.height * layer.scaleY);
+  if (newW <= 0 || newH <= 0) return layer;
+
+  // Resample mask to new dimensions using smooth interpolation
+  const newMask = document.createElement("canvas");
+  newMask.width = newW;
+  newMask.height = newH;
+  const mCtx = newMask.getContext("2d")!;
+  mCtx.imageSmoothingEnabled = true;
+  mCtx.imageSmoothingQuality = "high";
+  mCtx.drawImage(layer.maskCanvas, 0, 0, newW, newH);
+
+  // Also resample the pixel canvas
+  const newCanvas = document.createElement("canvas");
+  newCanvas.width = newW;
+  newCanvas.height = newH;
+  const cCtx = newCanvas.getContext("2d")!;
+  cCtx.imageSmoothingEnabled = true;
+  cCtx.imageSmoothingQuality = "high";
+  cCtx.drawImage(layer.canvas, 0, 0, newW, newH);
+
+  return {
+    ...layer,
+    canvas: newCanvas,
+    maskCanvas: newMask,
+    scaleX: 1,
+    scaleY: 1,
+  };
 }

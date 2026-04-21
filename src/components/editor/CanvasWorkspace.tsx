@@ -86,6 +86,7 @@ export function CanvasWorkspace({
   const panStart = useRef({ x: 0, y: 0 });
   const [maskPresets, setMaskPresets] = useState<MaskBrushPreset[]>(loadPresets);
   const [newPresetName, setNewPresetName] = useState("");
+  const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
 
   // Compose & render
   const render = useCallback(() => {
@@ -288,12 +289,29 @@ export function CanvasWorkspace({
 
   const cursorStyle = (): string => {
     if (activeTool === "hand") return "grab";
+    if (maskMode && isBrushTool) return "none";
     if (isBrushTool) return "crosshair";
     if (activeTool === "eyedropper") return "crosshair";
     if (activeTool === "zoom") return "zoom-in";
     if (activeTool === "move") return "move";
     return "default";
   };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (maskMode && isBrushTool) {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (rect) {
+        setCursorPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+      }
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setCursorPos(null);
+  };
+
+  // Brush cursor size in screen pixels
+  const brushScreenSize = brush.size * zoom;
 
   return (
     <div
@@ -305,6 +323,8 @@ export function CanvasWorkspace({
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
       onWheel={handleWheel}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
     >
       <div
         className="absolute"
@@ -326,6 +346,55 @@ export function CanvasWorkspace({
       <div className="absolute bottom-3 right-3 bg-card/80 border border-border rounded px-2 py-1 text-[10px] font-mono text-muted-foreground backdrop-blur-sm">
         {Math.round(zoom * 100)}% · {canvasWidth}×{canvasHeight}
       </div>
+
+      {/* Brush cursor preview */}
+      {maskMode && isBrushTool && cursorPos && (
+        <div
+          className="pointer-events-none absolute z-20"
+          style={{
+            left: cursorPos.x,
+            top: cursorPos.y,
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          {/* Outer circle — full brush size */}
+          <div
+            className="rounded-full border border-white/60 absolute"
+            style={{
+              width: Math.max(4, brushScreenSize),
+              height: Math.max(4, brushScreenSize),
+              left: -Math.max(4, brushScreenSize) / 2,
+              top: -Math.max(4, brushScreenSize) / 2,
+              boxShadow: "0 0 0 1px rgba(0,0,0,0.4)",
+            }}
+          />
+          {/* Inner circle — hardness core */}
+          {brush.hardness < 0.95 && brushScreenSize > 8 && (
+            <div
+              className="rounded-full border border-white/30 absolute"
+              style={{
+                width: Math.max(2, brushScreenSize * brush.hardness),
+                height: Math.max(2, brushScreenSize * brush.hardness),
+                left: -Math.max(2, brushScreenSize * brush.hardness) / 2,
+                top: -Math.max(2, brushScreenSize * brush.hardness) / 2,
+                boxShadow: "0 0 0 1px rgba(0,0,0,0.2)",
+              }}
+            />
+          )}
+          {/* Center dot */}
+          <div
+            className="rounded-full absolute"
+            style={{
+              width: 3,
+              height: 3,
+              left: -1.5,
+              top: -1.5,
+              background: maskEditMode === "erase" ? "#000" : "#fff",
+              boxShadow: maskEditMode === "erase" ? "0 0 0 1px rgba(255,255,255,0.5)" : "0 0 0 1px rgba(0,0,0,0.5)",
+            }}
+          />
+        </div>
+      )}
 
       {/* Mask mode HUD */}
       {maskMode && (

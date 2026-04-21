@@ -328,6 +328,8 @@ export default function EditorPage() {
             onAddMask={engine.addMask}
             onDeleteMask={engine.deleteMask}
             onFitMask={engine.applyMaskFit}
+            onMoveUp={engine.moveLayerUp}
+            onMoveDown={engine.moveLayerDown}
           />
         </div>
       </div>

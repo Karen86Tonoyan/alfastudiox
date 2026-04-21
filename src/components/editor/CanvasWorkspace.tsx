@@ -14,6 +14,7 @@ interface CanvasWorkspaceProps {
   onZoomChange: (z: number) => void;
   onPanChange: (p: { x: number; y: number }) => void;
   onStrokeEnd: () => void;
+  maskMode?: boolean;
 }
 
 export function CanvasWorkspace({
@@ -28,6 +29,7 @@ export function CanvasWorkspace({
   onZoomChange,
   onPanChange,
   onStrokeEnd,
+  maskMode = false,
 }: CanvasWorkspaceProps) {
   const displayRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -41,7 +43,31 @@ export function CanvasWorkspace({
     const display = displayRef.current;
     if (!display) return;
     composeLayers(layers, display, canvasWidth, canvasHeight);
-  }, [layers, canvasWidth, canvasHeight]);
+
+    // Mask overlay: red tint where mask hides content
+    if (maskMode && activeLayer?.maskCanvas) {
+      const ctx = display.getContext("2d")!;
+      const mask = activeLayer.maskCanvas;
+      const mCtx = mask.getContext("2d")!;
+      const mData = mCtx.getImageData(0, 0, mask.width, mask.height);
+      const overlay = ctx.createImageData(mask.width, mask.height);
+      for (let i = 0; i < mData.data.length; i += 4) {
+        const brightness = mData.data[i];
+        if (brightness < 255) {
+          overlay.data[i] = 255;
+          overlay.data[i + 1] = 0;
+          overlay.data[i + 2] = 0;
+          overlay.data[i + 3] = Math.round((255 - brightness) * 0.5);
+        }
+      }
+      const tmp = document.createElement("canvas");
+      tmp.width = mask.width;
+      tmp.height = mask.height;
+      const tmpCtx = tmp.getContext("2d")!;
+      tmpCtx.putImageData(overlay, 0, 0);
+      ctx.drawImage(tmp, activeLayer.x, activeLayer.y);
+    }
+  }, [layers, canvasWidth, canvasHeight, maskMode, activeLayer]);
 
   useEffect(() => {
     const display = displayRef.current;

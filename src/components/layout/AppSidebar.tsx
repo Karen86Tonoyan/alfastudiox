@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
   Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog, Shield, Key,
-  Lightbulb, Users, Clapperboard, Brain, Workflow
+  Lightbulb, Users, Clapperboard, Brain, Workflow, PenTool
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,7 @@ const navItems = [
   { title: "Kup Kredyty", path: "/buy-credits", icon: CreditCard, highlight: true, adminOnly: false },
   { title: "Plany", path: "/subscribe", icon: Crown, highlight: true, adminOnly: false },
   { title: "Photo Studio", path: "/", icon: Camera, highlight: true, adminOnly: false },
+  { title: "Edytor", path: "/editor", icon: PenTool, highlight: true, adminOnly: false },
   { title: "Render Studio", path: "/render", icon: Sparkles, highlight: false, adminOnly: false },
   { title: "Workflow", path: "/workflow", icon: GitBranch, highlight: false, adminOnly: false },
   { title: "Orchestrator", path: "/orchestrator", icon: Layers, highlight: false, adminOnly: false },

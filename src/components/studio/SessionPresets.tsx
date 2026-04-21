@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Sparkles, Camera, Wind, Gem, ShoppingBag, Cpu, Plus, Trash2, Save, Star } from "lucide-react";
+import { Sparkles, Camera, Wind, Gem, ShoppingBag, Cpu, Plus, Trash2, Save, Star, User, Clapperboard } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +49,20 @@ function scaleForGpu(preset: SessionPreset, tier: GpuTier): SessionPreset["confi
 
 const BASE_PRESETS: SessionPreset[] = [
   {
+    id: "portrait",
+    name: "Portret",
+    icon: User,
+    description: "Klasyczny portret, bokeh, 50mm, naturalny skin tone",
+    vramMin: 8,
+    config: {
+      pose: "closeup", width: 1024, height: 1536, steps: 25, cfg: 6.0,
+      sampler: "dpmpp_2m", scheduler: "karras",
+      ipWeight: 0.65, pulidWeight: 0.9, supirStrength: 0.35,
+      promptBase: "classic portrait photography, shallow depth of field, 50mm lens, natural skin tones, soft bokeh background, warm natural light, eye contact, professional headshot quality",
+      layers: { janusPrompt: true, pulid: true, ipAdapter: false, depth: false, openPose: false, supir: true },
+    },
+  },
+  {
     id: "beauty",
     name: "Beauty Studio",
     icon: Gem,
@@ -88,6 +102,20 @@ const BASE_PRESETS: SessionPreset[] = [
       ipWeight: 0.65, pulidWeight: 0.9, supirStrength: 0.45,
       promptBase: "high-end editorial photography, dramatic lighting, medium format camera, cinematic tone, film grain, Vogue magazine quality, haute couture",
       layers: { janusPrompt: true, pulid: true, ipAdapter: true, depth: true, openPose: true, supir: true },
+    },
+  },
+  {
+    id: "cinematic",
+    name: "Cinematic",
+    icon: Clapperboard,
+    description: "Filmowy kadr, anamorficzny, teal-orange, drama",
+    vramMin: 10,
+    config: {
+      pose: "editorial", width: 1536, height: 640, steps: 30, cfg: 5.0,
+      sampler: "dpmpp_sde", scheduler: "karras",
+      ipWeight: 0.6, pulidWeight: 0.85, supirStrength: 0.4,
+      promptBase: "cinematic still frame, anamorphic lens flare, teal and orange color grading, dramatic side lighting, 2.39:1 aspect ratio feel, movie scene, shallow DOF, atmospheric haze, film grain, blockbuster quality",
+      layers: { janusPrompt: true, pulid: true, ipAdapter: true, depth: true, openPose: false, supir: true },
     },
   },
   {

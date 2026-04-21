@@ -88,12 +88,29 @@ export function CanvasWorkspace({
   const [newPresetName, setNewPresetName] = useState("");
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
   const [brushOutlineOnly, setBrushOutlineOnly] = useState(() => localStorage.getItem("maskBrushOutlineOnly") === "true");
-  const [cursorColor, setCursorColor] = useState<"auto" | "white" | "black" | string>(() => {
-    const saved = localStorage.getItem("maskCursorColor");
-    if (saved === "white" || saved === "black" || saved === "auto") return saved;
-    if (saved && saved.startsWith("#")) return saved;
-    return "auto";
-  });
+   const [cursorColor, setCursorColor] = useState<"auto" | "white" | "black" | string>(() => {
+     const saved = localStorage.getItem("maskCursorColor");
+     if (saved === "white" || saved === "black" || saved === "auto") return saved;
+     if (saved && saved.startsWith("#")) return saved;
+     return "auto";
+   });
+
+   // Sync HUD settings across tabs via storage event
+   useEffect(() => {
+     const handler = (e: StorageEvent) => {
+       if (e.key === "maskBrushOutlineOnly") {
+         setBrushOutlineOnly(e.newValue === "true");
+       }
+       if (e.key === "maskCursorColor" && e.newValue) {
+         const v = e.newValue;
+         if (v === "auto" || v === "white" || v === "black" || v.startsWith("#")) {
+           setCursorColor(v);
+         }
+       }
+     };
+     window.addEventListener("storage", handler);
+     return () => window.removeEventListener("storage", handler);
+   }, []);
 
   // Compose & render
   const render = useCallback(() => {

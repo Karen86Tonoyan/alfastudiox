@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Eye, EyeOff, Lock, Unlock, Plus, Trash2, Copy,
-  ChevronDown, Layers, Merge, CircleDot, CircleOff, SlidersHorizontal, Scaling
+  ChevronDown, ChevronUp, Layers, Merge, CircleDot, CircleOff, SlidersHorizontal, Scaling, ArrowUp, ArrowDown
 } from "lucide-react";
 import type { EditorLayer, BlendMode } from "@/lib/editorEngine";
 
@@ -48,6 +48,8 @@ interface LayerPanelProps {
   onAddMask?: (id: string) => void;
   onDeleteMask?: (id: string) => void;
   onFitMask?: (id: string) => void;
+  onMoveUp?: (id: string) => void;
+  onMoveDown?: (id: string) => void;
 }
 
 export function LayerPanel({
@@ -69,6 +71,8 @@ export function LayerPanel({
   onAddMask,
   onDeleteMask,
   onFitMask,
+  onMoveUp,
+  onMoveDown,
 }: LayerPanelProps) {
   const active = layers.find((l) => l.id === activeLayerId);
 
@@ -177,6 +181,12 @@ export function LayerPanel({
       <div className="flex items-center gap-0.5 px-2 py-1.5 border-t border-border">
         <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={onAdd} title="Nowa warstwa">
           <Plus className="h-3 w-3" />
+        </Button>
+        <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => onMoveUp?.(activeLayerId)} title="Przesuń w górę (Ctrl+])">
+          <ArrowUp className="h-3 w-3" />
+        </Button>
+        <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => onMoveDown?.(activeLayerId)} title="Przesuń w dół (Ctrl+[)">
+          <ArrowDown className="h-3 w-3" />
         </Button>
         <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => onDuplicate(activeLayerId)} title="Duplikuj">
           <Copy className="h-3 w-3" />

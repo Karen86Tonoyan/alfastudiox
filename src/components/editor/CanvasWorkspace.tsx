@@ -88,7 +88,10 @@ export function CanvasWorkspace({
   const [newPresetName, setNewPresetName] = useState("");
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
   const [brushOutlineOnly, setBrushOutlineOnly] = useState(false);
-  const [cursorColor, setCursorColor] = useState<"auto" | "white" | "black">("auto");
+  const [cursorColor, setCursorColor] = useState<"auto" | "white" | "black">(() => {
+    const saved = localStorage.getItem("maskCursorColor");
+    return saved === "white" || saved === "black" ? saved : "auto";
+  });
 
   // Compose & render
   const render = useCallback(() => {
@@ -513,7 +516,7 @@ export function CanvasWorkspace({
               ○
             </button>
             <button
-              onClick={() => setCursorColor((v) => v === "auto" ? "white" : v === "white" ? "black" : "auto")}
+              onClick={() => setCursorColor((v) => { const next = v === "auto" ? "white" : v === "white" ? "black" : "auto"; localStorage.setItem("maskCursorColor", next); return next; })}
               className="px-1.5 py-0.5 rounded text-[9px] border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
               title={`Kolor kursora: ${cursorColor === "auto" ? "Auto" : cursorColor === "white" ? "Biały" : "Czarny"}`}
             >

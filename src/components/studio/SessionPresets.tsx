@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { Sparkles, Camera, Wind, Gem, ShoppingBag, Cpu, Plus, Trash2, Save, Star, User, Clapperboard } from "lucide-react";
+import { Sparkles, Camera, Wind, Gem, ShoppingBag, Cpu, Plus, Trash2, Save, Star, User, Clapperboard, Download, Upload } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -169,6 +169,7 @@ export function SessionPresets({ activePreset, gpu, currentConfig, onSelect }: S
   const tier = getGpuTier(gpu);
   const vramTotal = gpu?.vramTotal ?? 0;
   const [customPresets, setCustomPresets] = useState<StoredPreset[]>(loadCustomPresets);
+  const importRef = useRef<HTMLInputElement>(null);
   const [showSave, setShowSave] = useState(false);
   const [newName, setNewName] = useState("");
 
@@ -210,6 +211,38 @@ export function SessionPresets({ activePreset, gpu, currentConfig, onSelect }: S
     const updated = customPresets.filter((p) => p.id !== id);
     setCustomPresets(updated);
     saveCustomPresets(updated);
+  };
+
+  const handleExportAll = () => {
+    const blob = new Blob([JSON.stringify(customPresets, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `presets_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const imported: StoredPreset[] = JSON.parse(reader.result as string);
+        if (!Array.isArray(imported)) throw new Error("Invalid format");
+        const existingIds = new Set(customPresets.map((p) => p.id));
+        const newPresets = imported.filter((p) => p.id && p.name && p.config && !existingIds.has(p.id));
+        if (newPresets.length === 0) return;
+        const updated = [...customPresets, ...newPresets];
+        setCustomPresets(updated);
+        saveCustomPresets(updated);
+      } catch {
+        // silent fail on invalid JSON
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
   };
 
   const allPresets: SessionPreset[] = [
@@ -305,12 +338,23 @@ export function SessionPresets({ activePreset, gpu, currentConfig, onSelect }: S
           </Button>
         </div>
       ) : (
-        <button
-          onClick={() => setShowSave(true)}
-          className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors w-full justify-center py-1 rounded border border-dashed border-border hover:border-primary/30"
-        >
-          <Plus className="h-3 w-3" /> Zapisz bieżące jako preset
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setShowSave(true)}
+            className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors flex-1 justify-center py-1 rounded border border-dashed border-border hover:border-primary/30"
+          >
+            <Plus className="h-3 w-3" /> Zapisz jako preset
+          </button>
+          {customPresets.length > 0 && (
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px] text-muted-foreground" onClick={handleExportAll} title="Eksportuj presety do JSON">
+              <Download className="h-3 w-3" />
+            </Button>
+          )}
+          <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px] text-muted-foreground" onClick={() => importRef.current?.click()} title="Importuj presety z JSON">
+            <Upload className="h-3 w-3" />
+          </Button>
+          <input ref={importRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
+        </div>
       )}
 
       {tier !== "high" && (

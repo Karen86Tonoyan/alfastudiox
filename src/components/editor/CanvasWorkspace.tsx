@@ -87,7 +87,7 @@ export function CanvasWorkspace({
   const [maskPresets, setMaskPresets] = useState<MaskBrushPreset[]>(loadPresets);
   const [newPresetName, setNewPresetName] = useState("");
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
-  const [brushOutlineOnly, setBrushOutlineOnly] = useState(false);
+  const [brushOutlineOnly, setBrushOutlineOnly] = useState(() => localStorage.getItem("maskBrushOutlineOnly") === "true");
   const [cursorColor, setCursorColor] = useState<"auto" | "white" | "black" | string>(() => {
     const saved = localStorage.getItem("maskCursorColor");
     if (saved === "white" || saved === "black" || saved === "auto") return saved;
@@ -511,6 +511,8 @@ export function CanvasWorkspace({
           <div className="flex items-center gap-1 shrink-0">
             <button
               onClick={() => setBrushOutlineOnly((v) => !v)}
+              // persist
+              onClickCapture={() => { const next = !brushOutlineOnly; localStorage.setItem("maskBrushOutlineOnly", String(next)); }}
               className={`px-1.5 py-0.5 rounded text-[9px] border transition-all ${
                 brushOutlineOnly
                   ? "bg-accent text-accent-foreground border-primary/40"

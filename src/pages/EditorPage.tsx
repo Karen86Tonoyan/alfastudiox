@@ -126,6 +126,44 @@ export default function EditorPage() {
         if (e.key === "4" && !e.ctrlKey && !e.altKey) setMaskBlendMode("absolute");
         if (e.key === "5" && !e.ctrlKey && !e.altKey) setMaskBlendMode("additive");
         if (e.key === "6" && !e.ctrlKey && !e.altKey) setMaskBlendMode("subtractive");
+
+        // Brush parameter shortcuts
+        // [ / ] — size ±5
+        if (e.key === "[" && !e.ctrlKey && !e.altKey) {
+          e.preventDefault();
+          engine.setBrush((prev) => ({ ...prev, size: Math.max(1, prev.size - 5) }));
+        }
+        if (e.key === "]" && !e.ctrlKey && !e.altKey) {
+          e.preventDefault();
+          engine.setBrush((prev) => ({ ...prev, size: Math.min(200, prev.size + 5) }));
+        }
+        // Shift+[ / Shift+] — hardness ±10%
+        if (e.shiftKey && e.key === "{") {
+          e.preventDefault();
+          engine.setBrush((prev) => ({ ...prev, hardness: Math.max(0, +(prev.hardness - 0.1).toFixed(2)) }));
+        }
+        if (e.shiftKey && e.key === "}") {
+          e.preventDefault();
+          engine.setBrush((prev) => ({ ...prev, hardness: Math.min(1, +(prev.hardness + 0.1).toFixed(2)) }));
+        }
+        // Alt+[ / Alt+] — opacity ±10%
+        if (e.altKey && e.key === "[") {
+          e.preventDefault();
+          engine.setBrush((prev) => ({ ...prev, opacity: Math.max(0.01, +(prev.opacity - 0.1).toFixed(2)) }));
+        }
+        if (e.altKey && e.key === "]") {
+          e.preventDefault();
+          engine.setBrush((prev) => ({ ...prev, opacity: Math.min(1, +(prev.opacity + 0.1).toFixed(2)) }));
+        }
+        // Alt+Shift+[ / Alt+Shift+] — flow ±10%
+        if (e.altKey && e.shiftKey && e.key === "{") {
+          e.preventDefault();
+          engine.setBrush((prev) => ({ ...prev, flow: Math.max(0.01, +(prev.flow - 0.1).toFixed(2)) }));
+        }
+        if (e.altKey && e.shiftKey && e.key === "}") {
+          e.preventDefault();
+          engine.setBrush((prev) => ({ ...prev, flow: Math.min(1, +(prev.flow + 0.1).toFixed(2)) }));
+        }
       }
     };
     window.addEventListener("keydown", handler);

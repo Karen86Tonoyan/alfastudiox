@@ -25,6 +25,7 @@ import { SessionPresets, type SessionPreset } from "@/components/studio/SessionP
 import { RenderTracker } from "@/components/studio/RenderTracker";
 import { useRenderTracker } from "@/hooks/useRenderTracker";
 import { CalibrationMode } from "@/components/studio/CalibrationMode";
+import { BeforeAfterSlider } from "@/components/studio/BeforeAfterSlider";
 
 export default function StudioPage() {
   const comfy = useComfyUI();
@@ -38,6 +39,9 @@ export default function StudioPage() {
   const [activePreset, setActivePreset] = useState<string | null>(null);
   const tracker = useRenderTracker();
   const [calibrationEnabled, setCalibrationEnabled] = useState(false);
+  const [compareActive, setCompareActive] = useState(false);
+  const [beforeSrc, setBeforeSrc] = useState<string | null>(null);
+  const [previousRenderSrc, setPreviousRenderSrc] = useState<string | null>(null);
 
   const handlePresetSelect = useCallback((preset: SessionPreset) => {
     setConfig((prev) => ({

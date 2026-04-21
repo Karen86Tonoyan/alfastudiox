@@ -56,7 +56,7 @@ const PaymentSuccessPage = () => {
               <div className="flex items-center justify-center gap-2">
                 <Coins className="h-5 w-5 text-primary" />
                 <span className="text-lg font-semibold gold-text">
-                  +{result?.credits_added ?? 200} kredytów
+                  +{String(result?.credits_added ?? 200)} kredytów
                 </span>
               </div>
               {result?.is_promo && (

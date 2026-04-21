@@ -479,7 +479,7 @@ export function CanvasWorkspace({
           </div>
 
           <div className="flex items-center gap-2 min-w-[140px]">
-            <span className="text-muted-foreground w-16">Rozmiar</span>
+            <span className="text-muted-foreground w-16">Rozmiar <kbd className="text-[7px] opacity-50 font-mono">[ ]</kbd></span>
             <Slider
               min={1} max={200} step={1}
               value={[brush.size]}
@@ -489,7 +489,7 @@ export function CanvasWorkspace({
             <span className="font-mono w-8 text-right">{brush.size}</span>
           </div>
           <div className="flex items-center gap-2 min-w-[140px]">
-            <span className="text-muted-foreground w-16">Twardość</span>
+            <span className="text-muted-foreground w-16">Twardość <kbd className="text-[7px] opacity-50 font-mono">⇧[]</kbd></span>
             <Slider
               min={0} max={100} step={1}
               value={[Math.round(brush.hardness * 100)]}
@@ -499,7 +499,7 @@ export function CanvasWorkspace({
             <span className="font-mono w-8 text-right">{Math.round(brush.hardness * 100)}%</span>
           </div>
           <div className="flex items-center gap-2 min-w-[140px]">
-            <span className="text-muted-foreground w-16">Krycie</span>
+            <span className="text-muted-foreground w-16">Krycie <kbd className="text-[7px] opacity-50 font-mono">⌥[]</kbd></span>
             <Slider
               min={1} max={100} step={1}
               value={[Math.round(brush.opacity * 100)]}
@@ -509,7 +509,7 @@ export function CanvasWorkspace({
             <span className="font-mono w-8 text-right">{Math.round(brush.opacity * 100)}%</span>
           </div>
           <div className="flex items-center gap-2 min-w-[140px]">
-            <span className="text-muted-foreground w-16">Przepływ</span>
+            <span className="text-muted-foreground w-16">Przepływ <kbd className="text-[7px] opacity-50 font-mono">⌥⇧[]</kbd></span>
             <Slider
               min={1} max={100} step={1}
               value={[Math.round(brush.flow * 100)]}

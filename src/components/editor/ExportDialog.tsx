@@ -4,9 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Download, FileImage } from "lucide-react";
-import { exportToBlob, type EditorLayer } from "@/lib/editorEngine";
+import { Download, FileImage, Layers, CircleDot } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { exportToBlob, exportMaskBlobs, exportLayerBlobs, type EditorLayer } from "@/lib/editorEngine";
 import { exportPSD } from "@/lib/psdIO";
+import { toast } from "sonner";
 
 interface ExportDialogProps {
   layers: EditorLayer[];
@@ -19,6 +21,8 @@ export function ExportDialog({ layers, canvasWidth, canvasHeight }: ExportDialog
   const [quality, setQuality] = useState(92);
   const [filename, setFilename] = useState("export");
   const [exporting, setExporting] = useState(false);
+  const [exportMasks, setExportMasks] = useState(false);
+  const [exportFrames, setExportFrames] = useState(false);
 
   const handleExport = async () => {
     setExporting(true);
@@ -36,6 +40,35 @@ export function ExportDialog({ layers, canvasWidth, canvasHeight }: ExportDialog
       a.download = `${filename}.${format === "jpeg" ? "jpg" : format}`;
       a.click();
       URL.revokeObjectURL(url);
+
+      // Export masks
+      if (exportMasks && format !== "psd") {
+        const masks = await exportMaskBlobs(layers, "png");
+        for (const m of masks) {
+          const mUrl = URL.createObjectURL(m.blob);
+          const mA = document.createElement("a");
+          mA.href = mUrl;
+          mA.download = `${filename}_${m.name}.png`;
+          mA.click();
+          URL.revokeObjectURL(mUrl);
+        }
+        if (masks.length > 0) toast.success(`Wyeksportowano ${masks.length} masek`);
+      }
+
+      // Export frames (per-layer composites)
+      if (exportFrames && format !== "psd") {
+        const imgFormat = format === "psd" ? "png" : format;
+        const frames = await exportLayerBlobs(layers, canvasWidth, canvasHeight, imgFormat as "png" | "jpeg" | "webp", quality / 100);
+        for (const f of frames) {
+          const fUrl = URL.createObjectURL(f.blob);
+          const fA = document.createElement("a");
+          fA.href = fUrl;
+          fA.download = `${filename}_${f.name}.${imgFormat === "jpeg" ? "jpg" : imgFormat}`;
+          fA.click();
+          URL.revokeObjectURL(fUrl);
+        }
+        if (frames.length > 0) toast.success(`Wyeksportowano ${frames.length} klatek warstw`);
+      }
     } finally {
       setExporting(false);
     }
@@ -91,6 +124,33 @@ export function ExportDialog({ layers, canvasWidth, canvasHeight }: ExportDialog
                 max={100}
                 step={1}
               />
+            </div>
+          )}
+          {format !== "psd" && (
+            <div className="space-y-2 border border-border rounded-md p-2.5">
+              <span className="text-[10px] text-muted-foreground uppercase font-semibold">Dodatkowe pliki</span>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="export-masks"
+                  checked={exportMasks}
+                  onCheckedChange={(v) => setExportMasks(!!v)}
+                />
+                <label htmlFor="export-masks" className="text-[10px] text-foreground flex items-center gap-1 cursor-pointer">
+                  <CircleDot className="h-3 w-3 text-muted-foreground" />
+                  Eksportuj maski warstw (PNG)
+                </label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="export-frames"
+                  checked={exportFrames}
+                  onCheckedChange={(v) => setExportFrames(!!v)}
+                />
+                <label htmlFor="export-frames" className="text-[10px] text-foreground flex items-center gap-1 cursor-pointer">
+                  <Layers className="h-3 w-3 text-muted-foreground" />
+                  Eksportuj klatki warstw (z dopasowaniami)
+                </label>
+              </div>
             </div>
           )}
           <div className="text-[10px] text-muted-foreground">

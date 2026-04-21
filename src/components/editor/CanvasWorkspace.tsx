@@ -88,6 +88,7 @@ export function CanvasWorkspace({
   const [newPresetName, setNewPresetName] = useState("");
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
   const [brushOutlineOnly, setBrushOutlineOnly] = useState(false);
+  const [cursorColor, setCursorColor] = useState<"auto" | "white" | "black">("auto");
 
   // Compose & render
   const render = useCallback(() => {

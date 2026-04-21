@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import type { EditorLayer, ToolType, BrushSettings } from "@/lib/editorEngine";
 import { composeLayers, drawBrushLine, drawBrushStroke } from "@/lib/editorEngine";
+import { Slider } from "@/components/ui/slider";
 
 interface CanvasWorkspaceProps {
   layers: EditorLayer[];
@@ -15,6 +16,7 @@ interface CanvasWorkspaceProps {
   onPanChange: (p: { x: number; y: number }) => void;
   onStrokeEnd: () => void;
   maskMode?: boolean;
+  onBrushChange?: (patch: Partial<BrushSettings>) => void;
 }
 
 export function CanvasWorkspace({
@@ -30,6 +32,7 @@ export function CanvasWorkspace({
   onPanChange,
   onStrokeEnd,
   maskMode = false,
+  onBrushChange,
 }: CanvasWorkspaceProps) {
   const displayRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -210,6 +213,53 @@ export function CanvasWorkspace({
       <div className="absolute bottom-3 right-3 bg-card/80 border border-border rounded px-2 py-1 text-[10px] font-mono text-muted-foreground backdrop-blur-sm">
         {Math.round(zoom * 100)}% · {canvasWidth}×{canvasHeight}
       </div>
+
+      {/* Mask mode HUD */}
+      {maskMode && (
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-card/90 border border-primary/40 rounded-lg px-4 py-3 backdrop-blur-sm flex items-center gap-6 text-xs text-foreground shadow-lg z-10">
+          <span className="font-semibold text-primary uppercase tracking-wider text-[10px]">Maska</span>
+          <div className="flex items-center gap-2 min-w-[140px]">
+            <span className="text-muted-foreground w-16">Rozmiar</span>
+            <Slider
+              min={1} max={200} step={1}
+              value={[brush.size]}
+              onValueChange={([v]) => onBrushChange?.({ size: v })}
+              className="w-24"
+            />
+            <span className="font-mono w-8 text-right">{brush.size}</span>
+          </div>
+          <div className="flex items-center gap-2 min-w-[140px]">
+            <span className="text-muted-foreground w-16">Twardość</span>
+            <Slider
+              min={0} max={100} step={1}
+              value={[Math.round(brush.hardness * 100)]}
+              onValueChange={([v]) => onBrushChange?.({ hardness: v / 100 })}
+              className="w-24"
+            />
+            <span className="font-mono w-8 text-right">{Math.round(brush.hardness * 100)}%</span>
+          </div>
+          <div className="flex items-center gap-2 min-w-[140px]">
+            <span className="text-muted-foreground w-16">Krycie</span>
+            <Slider
+              min={1} max={100} step={1}
+              value={[Math.round(brush.opacity * 100)]}
+              onValueChange={([v]) => onBrushChange?.({ opacity: v / 100 })}
+              className="w-24"
+            />
+            <span className="font-mono w-8 text-right">{Math.round(brush.opacity * 100)}%</span>
+          </div>
+          <div className="flex items-center gap-2 min-w-[140px]">
+            <span className="text-muted-foreground w-16">Przepływ</span>
+            <Slider
+              min={1} max={100} step={1}
+              value={[Math.round(brush.flow * 100)]}
+              onValueChange={([v]) => onBrushChange?.({ flow: v / 100 })}
+              className="w-24"
+            />
+            <span className="font-mono w-8 text-right">{Math.round(brush.flow * 100)}%</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

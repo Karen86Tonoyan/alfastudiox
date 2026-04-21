@@ -279,6 +279,7 @@ export default function EditorPage() {
           onPanChange={engine.setPan}
           onStrokeEnd={handleStrokeEnd}
           maskMode={engine.maskMode}
+          onBrushChange={(patch) => engine.setBrush((prev) => ({ ...prev, ...patch }))}
         />
 
         {/* Right panels */}

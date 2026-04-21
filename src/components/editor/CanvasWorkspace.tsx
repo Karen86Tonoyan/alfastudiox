@@ -102,7 +102,7 @@ export function CanvasWorkspace({
     return { x: cx, y: cy };
   };
 
-  const isBrushTool = activeTool === "brush" || activeTool === "eraser";
+  const isBrushTool = activeTool === "brush" || activeTool === "eraser" || maskMode;
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.button === 1 || activeTool === "hand" || (e.button === 0 && e.altKey)) {
@@ -115,8 +115,10 @@ export function CanvasWorkspace({
 
     drawing.current = true;
     const pos = toCanvasCoords(e.clientX, e.clientY);
-    const ctx = activeLayer.canvas.getContext("2d")!;
-    drawBrushStroke(ctx, pos.x - activeLayer.x, pos.y - activeLayer.y, brush, activeTool === "eraser");
+    const targetCanvas = maskMode && activeLayer.maskCanvas ? activeLayer.maskCanvas : activeLayer.canvas;
+    const ctx = targetCanvas.getContext("2d")!;
+    const useBrush = maskMode ? { ...brush, color: activeTool === "eraser" ? "#ffffff" : "#000000" } : brush;
+    drawBrushStroke(ctx, pos.x - activeLayer.x, pos.y - activeLayer.y, useBrush, !maskMode && activeTool === "eraser");
     lastPos.current = pos;
     (e.target as Element).setPointerCapture(e.pointerId);
   };

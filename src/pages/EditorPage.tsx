@@ -13,6 +13,7 @@ import { LayerPanel } from "@/components/editor/LayerPanel";
 import { PropertiesPanel } from "@/components/editor/PropertiesPanel";
 import { ExportDialog } from "@/components/editor/ExportDialog";
 import { AdjustmentPanel } from "@/components/editor/AdjustmentPanel";
+import { AIGenerateDialog } from "@/components/editor/AIGenerateDialog";
 
 export default function EditorPage() {
   const engine = useEditorEngine(1920, 1080);
@@ -164,6 +165,14 @@ export default function EditorPage() {
         </Button>
 
         <div className="h-4 w-px bg-border mx-1" />
+
+        <AIGenerateDialog
+          canvasWidth={engine.canvasWidth}
+          canvasHeight={engine.canvasHeight}
+          onImageGenerated={(img, name) => {
+            engine.addImageLayer(img, name);
+          }}
+        />
 
         <Button
           size="sm"

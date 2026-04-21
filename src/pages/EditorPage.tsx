@@ -243,6 +243,10 @@ export default function EditorPage() {
             onDuplicate={engine.duplicateLayer}
             onMergeDown={engine.mergeDown}
             onFlatten={engine.flattenAll}
+            maskMode={engine.maskMode}
+            onToggleMaskMode={engine.toggleMaskMode}
+            onAddMask={engine.addMask}
+            onDeleteMask={engine.deleteMask}
           />
         </div>
       </div>

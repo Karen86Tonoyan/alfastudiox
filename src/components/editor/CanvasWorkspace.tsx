@@ -2,6 +2,9 @@ import { useRef, useEffect, useCallback, useState } from "react";
 import type { EditorLayer, ToolType, BrushSettings } from "@/lib/editorEngine";
 import { composeLayers, drawBrushLine, drawBrushStroke } from "@/lib/editorEngine";
 import { Slider } from "@/components/ui/slider";
+import { Paintbrush, Eraser, PaintBucket } from "lucide-react";
+
+export type MaskEditMode = "paint" | "erase" | "fill";
 
 interface CanvasWorkspaceProps {
   layers: EditorLayer[];
@@ -17,6 +20,8 @@ interface CanvasWorkspaceProps {
   onStrokeEnd: () => void;
   maskMode?: boolean;
   onBrushChange?: (patch: Partial<BrushSettings>) => void;
+  maskEditMode?: MaskEditMode;
+  onMaskEditModeChange?: (mode: MaskEditMode) => void;
 }
 
 export function CanvasWorkspace({
@@ -33,6 +38,8 @@ export function CanvasWorkspace({
   onStrokeEnd,
   maskMode = false,
   onBrushChange,
+  maskEditMode = "paint",
+  onMaskEditModeChange,
 }: CanvasWorkspaceProps) {
   const displayRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -158,11 +165,21 @@ export function CanvasWorkspace({
 
     if (!activeLayer || activeLayer.locked || !isBrushTool) return;
 
+    // Fill entire mask on click when in fill mode
+    if (maskMode && activeLayer.maskCanvas && maskEditMode === "fill") {
+      const mCtx = activeLayer.maskCanvas.getContext("2d")!;
+      mCtx.fillStyle = "#ffffff";
+      mCtx.fillRect(0, 0, activeLayer.maskCanvas.width, activeLayer.maskCanvas.height);
+      onStrokeEnd();
+      return;
+    }
+
     drawing.current = true;
     const pos = toCanvasCoords(e.clientX, e.clientY);
     const targetCanvas = maskMode && activeLayer.maskCanvas ? activeLayer.maskCanvas : activeLayer.canvas;
     const ctx = targetCanvas.getContext("2d")!;
-    const useBrush = maskMode ? { ...brush, color: activeTool === "eraser" ? "#ffffff" : "#000000" } : brush;
+    const maskColor = maskEditMode === "erase" ? "#000000" : "#ffffff";
+    const useBrush = maskMode ? { ...brush, color: activeTool === "eraser" ? "#ffffff" : maskColor } : brush;
     drawBrushStroke(ctx, pos.x - activeLayer.x, pos.y - activeLayer.y, useBrush, !maskMode && activeTool === "eraser");
     lastPos.current = pos;
     (e.target as Element).setPointerCapture(e.pointerId);
@@ -179,7 +196,8 @@ export function CanvasWorkspace({
     const pos = toCanvasCoords(e.clientX, e.clientY);
     const targetCanvas = maskMode && activeLayer.maskCanvas ? activeLayer.maskCanvas : activeLayer.canvas;
     const ctx = targetCanvas.getContext("2d")!;
-    const useBrush = maskMode ? { ...brush, color: activeTool === "eraser" ? "#ffffff" : "#000000" } : brush;
+    const maskColor = maskEditMode === "erase" ? "#000000" : "#ffffff";
+    const useBrush = maskMode ? { ...brush, color: activeTool === "eraser" ? "#ffffff" : maskColor } : brush;
     drawBrushLine(
       ctx,
       lastPos.current.x - activeLayer.x, lastPos.current.y - activeLayer.y,
@@ -258,8 +276,33 @@ export function CanvasWorkspace({
 
       {/* Mask mode HUD */}
       {maskMode && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-card/90 border border-primary/40 rounded-lg px-4 py-3 backdrop-blur-sm flex items-center gap-6 text-xs text-foreground shadow-lg z-10">
-          <span className="font-semibold text-primary uppercase tracking-wider text-[10px]">Maska</span>
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-card/90 border border-primary/40 rounded-lg px-4 py-3 backdrop-blur-sm flex items-center gap-4 text-xs text-foreground shadow-lg z-10">
+          <span className="font-semibold text-primary uppercase tracking-wider text-[10px] shrink-0">Maska</span>
+
+          {/* Mode buttons */}
+          <div className="flex items-center gap-0.5 border border-border rounded-md p-0.5 shrink-0">
+            {([
+              { mode: "paint" as MaskEditMode, icon: Paintbrush, label: "Maluj", shortcut: "1" },
+              { mode: "erase" as MaskEditMode, icon: Eraser, label: "Wyczyść", shortcut: "2" },
+              { mode: "fill" as MaskEditMode, icon: PaintBucket, label: "Wypełnij", shortcut: "3" },
+            ] as const).map(({ mode, icon: Icon, label, shortcut }) => (
+              <button
+                key={mode}
+                onClick={() => onMaskEditModeChange?.(mode)}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all ${
+                  maskEditMode === mode
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+                title={`${label} (${shortcut})`}
+              >
+                <Icon className="h-3 w-3" />
+                <span>{label}</span>
+                <kbd className="ml-0.5 text-[8px] opacity-60 font-mono">{shortcut}</kbd>
+              </button>
+            ))}
+          </div>
+
           <div className="flex items-center gap-2 min-w-[140px]">
             <span className="text-muted-foreground w-16">Rozmiar</span>
             <Slider

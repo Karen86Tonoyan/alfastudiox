@@ -132,13 +132,15 @@ export function CanvasWorkspace({
     if (!drawing.current || !activeLayer || !lastPos.current) return;
 
     const pos = toCanvasCoords(e.clientX, e.clientY);
-    const ctx = activeLayer.canvas.getContext("2d")!;
+    const targetCanvas = maskMode && activeLayer.maskCanvas ? activeLayer.maskCanvas : activeLayer.canvas;
+    const ctx = targetCanvas.getContext("2d")!;
+    const useBrush = maskMode ? { ...brush, color: activeTool === "eraser" ? "#ffffff" : "#000000" } : brush;
     drawBrushLine(
       ctx,
       lastPos.current.x - activeLayer.x, lastPos.current.y - activeLayer.y,
       pos.x - activeLayer.x, pos.y - activeLayer.y,
-      brush,
-      activeTool === "eraser"
+      useBrush,
+      !maskMode && activeTool === "eraser"
     );
     lastPos.current = pos;
   };

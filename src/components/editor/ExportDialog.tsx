@@ -57,13 +57,12 @@ export function ExportDialog({ layers, canvasWidth, canvasHeight }: ExportDialog
 
       // Export frames (per-layer composites)
       if (exportFrames && format !== "psd") {
-        const imgFormat = format === "psd" ? "png" : format;
-        const frames = await exportLayerBlobs(layers, canvasWidth, canvasHeight, imgFormat as "png" | "jpeg" | "webp", quality / 100);
+        const frames = await exportLayerBlobs(layers, canvasWidth, canvasHeight, format, quality / 100);
         for (const f of frames) {
           const fUrl = URL.createObjectURL(f.blob);
           const fA = document.createElement("a");
           fA.href = fUrl;
-          fA.download = `${filename}_${f.name}.${imgFormat === "jpeg" ? "jpg" : imgFormat}`;
+          fA.download = `${filename}_${f.name}.${format === "jpeg" ? "jpg" : format}`;
           fA.click();
           URL.revokeObjectURL(fUrl);
         }

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
   Undo2, Redo2, Upload, FilePlus, ZoomIn, ZoomOut,
-  Maximize, ImagePlus
+  Maximize, ImagePlus, CircleDot
 } from "lucide-react";
 import { useEditorEngine } from "@/hooks/useEditorEngine";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
@@ -63,6 +63,10 @@ export default function EditorPage() {
       if (e.key === "Delete" && !e.ctrlKey && !e.altKey) engine.removeLayer(engine.activeLayerId);
       if ((e.ctrlKey || e.metaKey) && e.key === "e") { e.preventDefault(); engine.mergeDown(engine.activeLayerId); }
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "E") { e.preventDefault(); engine.flattenAll(); }
+
+      // Mask mode
+      if (e.key === "q" && !e.ctrlKey && !e.altKey && !e.metaKey) engine.toggleMaskMode();
+      if (e.key === "\\" && !e.ctrlKey) engine.toggleMaskMode();
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -158,6 +162,18 @@ export default function EditorPage() {
           <FilePlus className="h-3 w-3" /> Nowa warstwa
         </Button>
 
+        <div className="h-4 w-px bg-border mx-1" />
+
+        <Button
+          size="sm"
+          variant={engine.maskMode ? "default" : "ghost"}
+          className={`h-6 gap-1 text-[10px] px-2 ${engine.maskMode ? "bg-destructive/80 hover:bg-destructive text-destructive-foreground" : ""}`}
+          onClick={engine.toggleMaskMode}
+          title="Tryb maski (Q)"
+        >
+          <CircleDot className="h-3 w-3" /> {engine.maskMode ? "Maska ON" : "Maska"}
+        </Button>
+
         <div className="ml-auto">
           <ExportDialog
             layers={engine.layers}
@@ -202,6 +218,7 @@ export default function EditorPage() {
           onZoomChange={engine.setZoom}
           onPanChange={engine.setPan}
           onStrokeEnd={handleStrokeEnd}
+          maskMode={engine.maskMode}
         />
 
         {/* Layer panel */}

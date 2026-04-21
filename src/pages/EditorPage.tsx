@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { FileUp } from "lucide-react";
 import { useEditorEngine } from "@/hooks/useEditorEngine";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { CanvasWorkspace } from "@/components/editor/CanvasWorkspace";
+import type { MaskEditMode } from "@/components/editor/CanvasWorkspace";
 import { LayerPanel } from "@/components/editor/LayerPanel";
 import { PropertiesPanel } from "@/components/editor/PropertiesPanel";
 import { ExportDialog } from "@/components/editor/ExportDialog";
@@ -21,6 +22,7 @@ export default function EditorPage() {
   const engine = useEditorEngine(1920, 1080);
   const importRef = useRef<HTMLInputElement>(null);
   const psdImportRef = useRef<HTMLInputElement>(null);
+  const [maskEditMode, setMaskEditMode] = useState<MaskEditMode>("paint");
 
   const handleImportImage = useCallback((file: File) => {
     const img = new Image();
@@ -92,6 +94,13 @@ export default function EditorPage() {
       // Mask mode
       if (e.key === "q" && !e.ctrlKey && !e.altKey && !e.metaKey) engine.toggleMaskMode();
       if (e.key === "\\" && !e.ctrlKey) engine.toggleMaskMode();
+
+      // Mask edit mode shortcuts (only when mask mode active)
+      if (engine.maskMode) {
+        if (e.key === "1" && !e.ctrlKey && !e.altKey) setMaskEditMode("paint");
+        if (e.key === "2" && !e.ctrlKey && !e.altKey) setMaskEditMode("erase");
+        if (e.key === "3" && !e.ctrlKey && !e.altKey) setMaskEditMode("fill");
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
@@ -280,6 +289,8 @@ export default function EditorPage() {
           onStrokeEnd={handleStrokeEnd}
           maskMode={engine.maskMode}
           onBrushChange={(patch) => engine.setBrush((prev) => ({ ...prev, ...patch }))}
+          maskEditMode={maskEditMode}
+          onMaskEditModeChange={setMaskEditMode}
         />
 
         {/* Right panels */}

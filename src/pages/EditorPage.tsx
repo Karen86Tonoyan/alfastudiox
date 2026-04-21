@@ -53,6 +53,16 @@ export default function EditorPage() {
       if (e.key === "m" && !e.ctrlKey) engine.setActiveTool("move");
       if (e.key === "p" && !e.ctrlKey) engine.setActiveTool("pen");
       if (e.key === "u" && !e.ctrlKey) engine.setActiveTool("shape");
+
+      // Layer shortcuts
+      if (e.altKey && e.key === "[") { e.preventDefault(); engine.selectLayerBelow(); }
+      if (e.altKey && e.key === "]") { e.preventDefault(); engine.selectLayerAbove(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === "[") { e.preventDefault(); engine.moveLayerDown(engine.activeLayerId); }
+      if ((e.ctrlKey || e.metaKey) && e.key === "]") { e.preventDefault(); engine.moveLayerUp(engine.activeLayerId); }
+      if ((e.ctrlKey || e.metaKey) && e.key === "j") { e.preventDefault(); engine.duplicateLayer(engine.activeLayerId); }
+      if (e.key === "Delete" && !e.ctrlKey && !e.altKey) engine.removeLayer(engine.activeLayerId);
+      if ((e.ctrlKey || e.metaKey) && e.key === "e") { e.preventDefault(); engine.mergeDown(engine.activeLayerId); }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "E") { e.preventDefault(); engine.flattenAll(); }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);

@@ -316,6 +316,7 @@ export default function EditorPage() {
             onToggleMaskMode={engine.toggleMaskMode}
             onAddMask={engine.addMask}
             onDeleteMask={engine.deleteMask}
+            onFitMask={engine.applyMaskFit}
           />
         </div>
       </div>

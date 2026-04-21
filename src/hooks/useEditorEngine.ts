@@ -5,8 +5,11 @@ import {
   type ToolType,
   type BrushSettings,
   type HistoryEntry,
+  type AdjustmentType,
+  type AdjustmentData,
   createLayer,
   createLayerFromImage,
+  createAdjustmentLayer,
   serializeLayer,
   deserializeLayer,
 } from "@/lib/editorEngine";
@@ -98,6 +101,23 @@ export function useEditorEngine(initialW = 1920, initialH = 1080) {
       setCanvasHeight(Math.max(canvasHeight, img.naturalHeight));
     }
   }, [canvasWidth, canvasHeight, pushHistory]);
+
+  const addAdjustment = useCallback((type: AdjustmentType) => {
+    const layer = createAdjustmentLayer(type, canvasWidth, canvasHeight);
+    setLayers((prev) => {
+      const next = [...prev, layer];
+      pushHistory("Warstwa dopasowania", next, layer.id);
+      return next;
+    });
+    setActiveLayerId(layer.id);
+  }, [canvasWidth, canvasHeight, pushHistory]);
+
+  const updateAdjustment = useCallback((id: string, patch: Partial<AdjustmentData>) => {
+    setLayers((prev) => prev.map((l) => {
+      if (l.id !== id || !l.adjustment) return l;
+      return { ...l, adjustment: { ...l.adjustment, ...patch } };
+    }));
+  }, []);
 
   const removeLayer = useCallback((id: string) => {
     setLayers((prev) => {
@@ -262,6 +282,8 @@ export function useEditorEngine(initialW = 1920, initialH = 1080) {
     setPan,
     addLayer,
     addImageLayer,
+    addAdjustment,
+    updateAdjustment,
     removeLayer,
     duplicateLayer,
     mergeDown,

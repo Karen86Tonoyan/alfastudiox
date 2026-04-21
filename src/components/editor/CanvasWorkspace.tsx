@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 export type MaskEditMode = "paint" | "erase" | "fill";
+export type MaskBlendMode = "absolute" | "additive" | "subtractive";
 
 interface MaskBrushPreset {
   name: string;
@@ -54,6 +55,8 @@ interface CanvasWorkspaceProps {
   onBrushChange?: (patch: Partial<BrushSettings>) => void;
   maskEditMode?: MaskEditMode;
   onMaskEditModeChange?: (mode: MaskEditMode) => void;
+  maskBlendMode?: MaskBlendMode;
+  onMaskBlendModeChange?: (mode: MaskBlendMode) => void;
 }
 
 export function CanvasWorkspace({
@@ -72,6 +75,8 @@ export function CanvasWorkspace({
   onBrushChange,
   maskEditMode = "paint",
   onMaskEditModeChange,
+  maskBlendMode = "absolute",
+  onMaskBlendModeChange,
 }: CanvasWorkspaceProps) {
   const displayRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -202,7 +207,7 @@ export function CanvasWorkspace({
     // Fill entire mask on click when in fill mode
     if (maskMode && activeLayer.maskCanvas && maskEditMode === "fill") {
       const mCtx = activeLayer.maskCanvas.getContext("2d")!;
-      mCtx.fillStyle = "#ffffff";
+      mCtx.fillStyle = maskEditMode === "fill" ? "#ffffff" : "#000000";
       mCtx.fillRect(0, 0, activeLayer.maskCanvas.width, activeLayer.maskCanvas.height);
       onStrokeEnd();
       return;
@@ -214,7 +219,14 @@ export function CanvasWorkspace({
     const ctx = targetCanvas.getContext("2d")!;
     const maskColor = maskEditMode === "erase" ? "#000000" : "#ffffff";
     const useBrush = maskMode ? { ...brush, color: activeTool === "eraser" ? "#ffffff" : maskColor } : brush;
+    if (maskMode && maskBlendMode !== "absolute") {
+      ctx.save();
+      ctx.globalCompositeOperation = maskBlendMode === "additive" ? "lighter" : "multiply";
+    }
     drawBrushStroke(ctx, pos.x - activeLayer.x, pos.y - activeLayer.y, useBrush, !maskMode && activeTool === "eraser");
+    if (maskMode && maskBlendMode !== "absolute") {
+      ctx.restore();
+    }
     lastPos.current = pos;
     (e.target as Element).setPointerCapture(e.pointerId);
   };
@@ -232,6 +244,10 @@ export function CanvasWorkspace({
     const ctx = targetCanvas.getContext("2d")!;
     const maskColor = maskEditMode === "erase" ? "#000000" : "#ffffff";
     const useBrush = maskMode ? { ...brush, color: activeTool === "eraser" ? "#ffffff" : maskColor } : brush;
+    if (maskMode && maskBlendMode !== "absolute") {
+      ctx.save();
+      ctx.globalCompositeOperation = maskBlendMode === "additive" ? "lighter" : "multiply";
+    }
     drawBrushLine(
       ctx,
       lastPos.current.x - activeLayer.x, lastPos.current.y - activeLayer.y,
@@ -239,6 +255,9 @@ export function CanvasWorkspace({
       useBrush,
       !maskMode && activeTool === "eraser"
     );
+    if (maskMode && maskBlendMode !== "absolute") {
+      ctx.restore();
+    }
     lastPos.current = pos;
   };
 
@@ -324,6 +343,28 @@ export function CanvasWorkspace({
               {maskEditMode === "erase" ? "Czarny" : maskEditMode === "fill" ? "Biały" : "Biały"}
             </span>
             <kbd className="text-[8px] font-mono bg-secondary/60 border border-border rounded px-1 py-0.5 text-muted-foreground">Q</kbd>
+          </div>
+
+          {/* Blend mode toggle */}
+          <div className="flex items-center gap-0.5 border border-border rounded-md p-0.5 shrink-0">
+            {([
+              { mode: "absolute" as MaskBlendMode, label: "Zastąp", shortcut: "4" },
+              { mode: "additive" as MaskBlendMode, label: "Dodaj", shortcut: "5" },
+              { mode: "subtractive" as MaskBlendMode, label: "Odejmij", shortcut: "6" },
+            ] as const).map(({ mode, label, shortcut }) => (
+              <button
+                key={mode}
+                onClick={() => onMaskBlendModeChange?.(mode)}
+                className={`px-1.5 py-0.5 rounded text-[9px] transition-all ${
+                  maskBlendMode === mode
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                }`}
+                title={`${label} (${shortcut})`}
+              >
+                {label} <kbd className="text-[7px] opacity-50 font-mono">{shortcut}</kbd>
+              </button>
+            ))}
           </div>
 
           {/* Mode buttons */}

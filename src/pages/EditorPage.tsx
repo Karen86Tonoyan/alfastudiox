@@ -10,7 +10,7 @@ import { FileUp } from "lucide-react";
 import { useEditorEngine } from "@/hooks/useEditorEngine";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { CanvasWorkspace } from "@/components/editor/CanvasWorkspace";
-import type { MaskEditMode } from "@/components/editor/CanvasWorkspace";
+import type { MaskEditMode, MaskBlendMode } from "@/components/editor/CanvasWorkspace";
 import { LayerPanel } from "@/components/editor/LayerPanel";
 import { PropertiesPanel } from "@/components/editor/PropertiesPanel";
 import { ExportDialog } from "@/components/editor/ExportDialog";
@@ -23,6 +23,7 @@ export default function EditorPage() {
   const importRef = useRef<HTMLInputElement>(null);
   const psdImportRef = useRef<HTMLInputElement>(null);
   const [maskEditMode, setMaskEditMode] = useState<MaskEditMode>("paint");
+  const [maskBlendMode, setMaskBlendMode] = useState<MaskBlendMode>("absolute");
   const [copiedAdj, setCopiedAdj] = useState<import("@/lib/editorEngine").AdjustmentData | null>(null);
 
   const copyAdjustment = useCallback(() => {
@@ -122,6 +123,9 @@ export default function EditorPage() {
         if (e.key === "1" && !e.ctrlKey && !e.altKey) setMaskEditMode("paint");
         if (e.key === "2" && !e.ctrlKey && !e.altKey) setMaskEditMode("erase");
         if (e.key === "3" && !e.ctrlKey && !e.altKey) setMaskEditMode("fill");
+        if (e.key === "4" && !e.ctrlKey && !e.altKey) setMaskBlendMode("absolute");
+        if (e.key === "5" && !e.ctrlKey && !e.altKey) setMaskBlendMode("additive");
+        if (e.key === "6" && !e.ctrlKey && !e.altKey) setMaskBlendMode("subtractive");
       }
     };
     window.addEventListener("keydown", handler);
@@ -313,6 +317,8 @@ export default function EditorPage() {
           onBrushChange={(patch) => engine.setBrush((prev) => ({ ...prev, ...patch }))}
           maskEditMode={maskEditMode}
           onMaskEditModeChange={setMaskEditMode}
+          maskBlendMode={maskBlendMode}
+          onMaskBlendModeChange={setMaskBlendMode}
         />
 
         {/* Right panels */}

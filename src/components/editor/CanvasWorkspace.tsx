@@ -351,7 +351,17 @@ export function CanvasWorkspace({
 
       {/* Brush cursor preview */}
       {maskMode && isBrushTool && cursorPos && (
-        <div
+        (() => {
+          const resolvedCursorColor = cursorColor === "auto"
+            ? (maskEditMode === "erase" ? "black" : "white")
+            : cursorColor;
+          const borderMain = resolvedCursorColor === "white" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)";
+          const shadowMain = resolvedCursorColor === "white" ? "0 0 0 1px rgba(0,0,0,0.4)" : "0 0 0 1px rgba(255,255,255,0.4)";
+          const borderInner = resolvedCursorColor === "white" ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)";
+          const shadowInner = resolvedCursorColor === "white" ? "0 0 0 1px rgba(0,0,0,0.2)" : "0 0 0 1px rgba(255,255,255,0.2)";
+          const dotBg = resolvedCursorColor === "white" ? "#fff" : "#000";
+          const dotShadow = resolvedCursorColor === "white" ? "0 0 0 1px rgba(0,0,0,0.5)" : "0 0 0 1px rgba(255,255,255,0.5)";
+          return <div
           className="pointer-events-none absolute z-20"
           style={{
             left: cursorPos.x,
@@ -361,25 +371,27 @@ export function CanvasWorkspace({
         >
           {/* Outer circle — full brush size */}
           <div
-            className="rounded-full border border-white/60 absolute"
+            className="rounded-full absolute"
             style={{
               width: Math.max(4, brushScreenSize),
               height: Math.max(4, brushScreenSize),
               left: -Math.max(4, brushScreenSize) / 2,
               top: -Math.max(4, brushScreenSize) / 2,
-              boxShadow: "0 0 0 1px rgba(0,0,0,0.4)",
+              border: `1px solid ${borderMain}`,
+              boxShadow: shadowMain,
             }}
           />
           {/* Inner circle — hardness core */}
           {!brushOutlineOnly && brush.hardness < 0.95 && brushScreenSize > 6 && (brushScreenSize * brush.hardness) > 3 && (
             <div
-              className="rounded-full border border-white/30 absolute"
+              className="rounded-full absolute"
               style={{
                 width: brushScreenSize * brush.hardness,
                 height: brushScreenSize * brush.hardness,
                 left: -(brushScreenSize * brush.hardness) / 2,
                 top: -(brushScreenSize * brush.hardness) / 2,
-                boxShadow: "0 0 0 1px rgba(0,0,0,0.2)",
+                border: `1px solid ${borderInner}`,
+                boxShadow: shadowInner,
               }}
             />
           )}
@@ -391,8 +403,8 @@ export function CanvasWorkspace({
               height: 3,
               left: -1.5,
               top: -1.5,
-              background: maskEditMode === "erase" ? "#000" : "#fff",
-              boxShadow: maskEditMode === "erase" ? "0 0 0 1px rgba(255,255,255,0.5)" : "0 0 0 1px rgba(0,0,0,0.5)",
+              background: dotBg,
+              boxShadow: dotShadow,
             }}
           />}
           {/* Blend mode label */}
@@ -419,7 +431,8 @@ export function CanvasWorkspace({
           >
             {brush.size}px · {Math.round(brush.hardness * 100)}%
           </div>
-        </div>
+        </div>;
+        })()
       )}
 
       {/* Mask mode HUD */}

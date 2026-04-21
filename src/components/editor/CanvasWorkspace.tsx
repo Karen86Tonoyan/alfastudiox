@@ -512,6 +512,13 @@ export function CanvasWorkspace({
             >
               ○
             </button>
+            <button
+              onClick={() => setCursorColor((v) => v === "auto" ? "white" : v === "white" ? "black" : "auto")}
+              className="px-1.5 py-0.5 rounded text-[9px] border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+              title={`Kolor kursora: ${cursorColor === "auto" ? "Auto" : cursorColor === "white" ? "Biały" : "Czarny"}`}
+            >
+              {cursorColor === "auto" ? "A" : cursorColor === "white" ? "◻" : "◼"}
+            </button>
             {maskPresets.map((p, i) => (
               <button
                 key={i}

@@ -462,14 +462,8 @@ export function exportToBlob(
       ctx.fillRect(0, 0, width, height);
     }
 
-    for (const layer of layers) {
-      if (!layer.visible || layer.opacity === 0) continue;
-      ctx.save();
-      ctx.globalAlpha = layer.opacity;
-      ctx.globalCompositeOperation = blendModeToComposite(layer.blendMode);
-      ctx.drawImage(layer.canvas, layer.x, layer.y, layer.canvas.width * layer.scaleX, layer.canvas.height * layer.scaleY);
-      ctx.restore();
-    }
+    // Use full compositing pipeline (adjustments, masks, blend modes)
+    composeLayersForExport(layers, canvas, width, height);
 
     canvas.toBlob(
       (blob) => (blob ? resolve(blob) : reject(new Error("Export failed"))),
@@ -477,6 +471,111 @@ export function exportToBlob(
       quality ?? 0.92
     );
   });
+}
+
+/** Compose without checkerboard — for export */
+function composeLayersForExport(
+  layers: EditorLayer[],
+  target: HTMLCanvasElement,
+  width: number,
+  height: number
+) {
+  const ctx = target.getContext("2d")!;
+
+  for (const layer of layers) {
+    if (!layer.visible || layer.opacity === 0) continue;
+
+    if (layer.adjustment) {
+      applyAdjustmentLayer(ctx, layer, width, height);
+    } else {
+      ctx.save();
+      ctx.globalAlpha = layer.opacity;
+      ctx.globalCompositeOperation = blendModeToComposite(layer.blendMode);
+
+      if (layer.maskCanvas) {
+        const tmp = document.createElement("canvas");
+        tmp.width = width;
+        tmp.height = height;
+        const tmpCtx = tmp.getContext("2d")!;
+        const lw = layer.canvas.width * layer.scaleX;
+        const lh = layer.canvas.height * layer.scaleY;
+        tmpCtx.drawImage(layer.canvas, layer.x, layer.y, lw, lh);
+        tmpCtx.globalCompositeOperation = "destination-in";
+        tmpCtx.drawImage(layer.maskCanvas, layer.x, layer.y, lw, lh);
+        ctx.drawImage(tmp, 0, 0);
+      } else {
+        const lw = layer.canvas.width * layer.scaleX;
+        const lh = layer.canvas.height * layer.scaleY;
+        ctx.drawImage(layer.canvas, layer.x, layer.y, lw, lh);
+      }
+
+      ctx.restore();
+    }
+  }
+}
+
+/** Export individual layer masks as blobs */
+export function exportMaskBlobs(
+  layers: EditorLayer[],
+  format: "png" | "jpeg" = "png",
+  quality?: number
+): Promise<{ name: string; blob: Blob }[]> {
+  const results: Promise<{ name: string; blob: Blob }>[] = [];
+  for (const layer of layers) {
+    if (!layer.maskCanvas) continue;
+    const mask = layer.maskCanvas;
+    results.push(
+      new Promise((resolve, reject) => {
+        mask.toBlob(
+          (blob) =>
+            blob
+              ? resolve({ name: `${layer.name}_mask`, blob })
+              : reject(new Error(`Mask export failed: ${layer.name}`)),
+          `image/${format}`,
+          quality ?? 1
+        );
+      })
+    );
+  }
+  return Promise.all(results);
+}
+
+/** Export each visible layer as a separate blob (with adjustments baked in up to that point) */
+export function exportLayerBlobs(
+  layers: EditorLayer[],
+  width: number,
+  height: number,
+  format: "png" | "jpeg" | "webp" = "png",
+  quality?: number
+): Promise<{ name: string; blob: Blob }[]> {
+  const results: Promise<{ name: string; blob: Blob }>[] = [];
+
+  for (let i = 0; i < layers.length; i++) {
+    const layer = layers[i];
+    if (!layer.visible || layer.opacity === 0) continue;
+
+    // Build composite up to and including this layer
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    composeLayersForExport(layers.slice(0, i + 1), canvas, width, height);
+
+    const idx = i;
+    results.push(
+      new Promise((resolve, reject) => {
+        canvas.toBlob(
+          (blob) =>
+            blob
+              ? resolve({ name: `frame_${String(idx).padStart(3, "0")}_${layer.name}`, blob })
+              : reject(new Error(`Layer export failed: ${layer.name}`)),
+          `image/${format}`,
+          quality ?? 0.92
+        );
+      })
+    );
+  }
+
+  return Promise.all(results);
 }
 
 // ── Fit mask to current layer transform ──

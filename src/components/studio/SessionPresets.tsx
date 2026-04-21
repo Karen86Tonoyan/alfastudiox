@@ -338,12 +338,23 @@ export function SessionPresets({ activePreset, gpu, currentConfig, onSelect }: S
           </Button>
         </div>
       ) : (
-        <button
-          onClick={() => setShowSave(true)}
-          className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors w-full justify-center py-1 rounded border border-dashed border-border hover:border-primary/30"
-        >
-          <Plus className="h-3 w-3" /> Zapisz bieżące jako preset
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setShowSave(true)}
+            className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-primary transition-colors flex-1 justify-center py-1 rounded border border-dashed border-border hover:border-primary/30"
+          >
+            <Plus className="h-3 w-3" /> Zapisz jako preset
+          </button>
+          {customPresets.length > 0 && (
+            <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px] text-muted-foreground" onClick={handleExportAll} title="Eksportuj presety do JSON">
+              <Download className="h-3 w-3" />
+            </Button>
+          )}
+          <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px] text-muted-foreground" onClick={() => importRef.current?.click()} title="Importuj presety z JSON">
+            <Upload className="h-3 w-3" />
+          </Button>
+          <input ref={importRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
+        </div>
       )}
 
       {tier !== "high" && (

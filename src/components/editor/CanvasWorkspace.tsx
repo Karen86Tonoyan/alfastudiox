@@ -14,6 +14,7 @@ interface CanvasWorkspaceProps {
   onZoomChange: (z: number) => void;
   onPanChange: (p: { x: number; y: number }) => void;
   onStrokeEnd: () => void;
+  maskMode?: boolean;
 }
 
 export function CanvasWorkspace({
@@ -28,6 +29,7 @@ export function CanvasWorkspace({
   onZoomChange,
   onPanChange,
   onStrokeEnd,
+  maskMode = false,
 }: CanvasWorkspaceProps) {
   const displayRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -41,7 +43,31 @@ export function CanvasWorkspace({
     const display = displayRef.current;
     if (!display) return;
     composeLayers(layers, display, canvasWidth, canvasHeight);
-  }, [layers, canvasWidth, canvasHeight]);
+
+    // Mask overlay: red tint where mask hides content
+    if (maskMode && activeLayer?.maskCanvas) {
+      const ctx = display.getContext("2d")!;
+      const mask = activeLayer.maskCanvas;
+      const mCtx = mask.getContext("2d")!;
+      const mData = mCtx.getImageData(0, 0, mask.width, mask.height);
+      const overlay = ctx.createImageData(mask.width, mask.height);
+      for (let i = 0; i < mData.data.length; i += 4) {
+        const brightness = mData.data[i];
+        if (brightness < 255) {
+          overlay.data[i] = 255;
+          overlay.data[i + 1] = 0;
+          overlay.data[i + 2] = 0;
+          overlay.data[i + 3] = Math.round((255 - brightness) * 0.5);
+        }
+      }
+      const tmp = document.createElement("canvas");
+      tmp.width = mask.width;
+      tmp.height = mask.height;
+      const tmpCtx = tmp.getContext("2d")!;
+      tmpCtx.putImageData(overlay, 0, 0);
+      ctx.drawImage(tmp, activeLayer.x, activeLayer.y);
+    }
+  }, [layers, canvasWidth, canvasHeight, maskMode, activeLayer]);
 
   useEffect(() => {
     const display = displayRef.current;
@@ -76,7 +102,7 @@ export function CanvasWorkspace({
     return { x: cx, y: cy };
   };
 
-  const isBrushTool = activeTool === "brush" || activeTool === "eraser";
+  const isBrushTool = activeTool === "brush" || activeTool === "eraser" || maskMode;
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.button === 1 || activeTool === "hand" || (e.button === 0 && e.altKey)) {
@@ -89,8 +115,10 @@ export function CanvasWorkspace({
 
     drawing.current = true;
     const pos = toCanvasCoords(e.clientX, e.clientY);
-    const ctx = activeLayer.canvas.getContext("2d")!;
-    drawBrushStroke(ctx, pos.x - activeLayer.x, pos.y - activeLayer.y, brush, activeTool === "eraser");
+    const targetCanvas = maskMode && activeLayer.maskCanvas ? activeLayer.maskCanvas : activeLayer.canvas;
+    const ctx = targetCanvas.getContext("2d")!;
+    const useBrush = maskMode ? { ...brush, color: activeTool === "eraser" ? "#ffffff" : "#000000" } : brush;
+    drawBrushStroke(ctx, pos.x - activeLayer.x, pos.y - activeLayer.y, useBrush, !maskMode && activeTool === "eraser");
     lastPos.current = pos;
     (e.target as Element).setPointerCapture(e.pointerId);
   };
@@ -104,13 +132,15 @@ export function CanvasWorkspace({
     if (!drawing.current || !activeLayer || !lastPos.current) return;
 
     const pos = toCanvasCoords(e.clientX, e.clientY);
-    const ctx = activeLayer.canvas.getContext("2d")!;
+    const targetCanvas = maskMode && activeLayer.maskCanvas ? activeLayer.maskCanvas : activeLayer.canvas;
+    const ctx = targetCanvas.getContext("2d")!;
+    const useBrush = maskMode ? { ...brush, color: activeTool === "eraser" ? "#ffffff" : "#000000" } : brush;
     drawBrushLine(
       ctx,
       lastPos.current.x - activeLayer.x, lastPos.current.y - activeLayer.y,
       pos.x - activeLayer.x, pos.y - activeLayer.y,
-      brush,
-      activeTool === "eraser"
+      useBrush,
+      !maskMode && activeTool === "eraser"
     );
     lastPos.current = pos;
   };

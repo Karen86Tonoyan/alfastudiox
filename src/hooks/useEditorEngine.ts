@@ -16,6 +16,7 @@ const MAX_HISTORY = 50;
 export function useEditorEngine(initialW = 1920, initialH = 1080) {
   const [canvasWidth, setCanvasWidth] = useState(initialW);
   const [canvasHeight, setCanvasHeight] = useState(initialH);
+  const [maskMode, setMaskMode] = useState(false);
   const [layers, setLayers] = useState<EditorLayer[]>(() => {
     const bg = createLayer(initialW, initialH, "Tło");
     const ctx = bg.canvas.getContext("2d")!;
@@ -207,6 +208,37 @@ export function useEditorEngine(initialW = 1920, initialH = 1080) {
     });
   }, [effectiveActiveId]);
 
+  const addMask = useCallback((id: string) => {
+    setLayers((prev) => prev.map((l) => {
+      if (l.id !== id || l.maskCanvas) return l;
+      const mask = document.createElement("canvas");
+      mask.width = l.canvas.width;
+      mask.height = l.canvas.height;
+      const ctx = mask.getContext("2d")!;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, mask.width, mask.height);
+      return { ...l, maskCanvas: mask };
+    }));
+  }, []);
+
+  const deleteMask = useCallback((id: string) => {
+    setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, maskCanvas: null } : l)));
+    setMaskMode(false);
+  }, []);
+
+  const toggleMaskMode = useCallback(() => {
+    setMaskMode((prev) => {
+      if (!prev) {
+        // Ensure active layer has a mask
+        const layer = layers.find((l) => l.id === effectiveActiveId);
+        if (layer && !layer.maskCanvas) {
+          addMask(effectiveActiveId);
+        }
+      }
+      return !prev;
+    });
+  }, [layers, effectiveActiveId, addMask]);
+
   const resizeCanvas = useCallback((w: number, h: number) => {
     setCanvasWidth(w);
     setCanvasHeight(h);
@@ -240,6 +272,11 @@ export function useEditorEngine(initialW = 1920, initialH = 1080) {
     moveLayerDown,
     selectLayerAbove,
     selectLayerBelow,
+    maskMode,
+    setMaskMode,
+    addMask,
+    deleteMask,
+    toggleMaskMode,
     resizeCanvas,
     undo,
     redo,

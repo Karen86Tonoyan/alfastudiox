@@ -140,6 +140,8 @@ export function useEditorEngine(initialW = 1920, initialH = 1080) {
       dup.blendMode = src.blendMode;
       dup.x = src.x;
       dup.y = src.y;
+      dup.scaleX = src.scaleX;
+      dup.scaleY = src.scaleY;
       const idx = prev.findIndex((l) => l.id === id);
       const next = [...prev.slice(0, idx + 1), dup, ...prev.slice(idx + 1)];
       pushHistory("Duplikuj warstwę", next, dup.id);

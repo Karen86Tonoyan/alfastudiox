@@ -83,7 +83,7 @@ export function createLayerFromImage(img: HTMLImageElement, name?: string): Edit
   ctx.drawImage(img, 0, 0);
   return {
     id: uid(),
-    name: name ?? img.alt || `Obraz ${_counter}`,
+    name: name ?? (img.alt || `Obraz ${_counter}`),
     visible: true,
     locked: false,
     opacity: 1,

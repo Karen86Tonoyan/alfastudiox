@@ -393,6 +393,18 @@ export function CanvasWorkspace({
               boxShadow: maskEditMode === "erase" ? "0 0 0 1px rgba(255,255,255,0.5)" : "0 0 0 1px rgba(0,0,0,0.5)",
             }}
           />
+          {/* Blend mode label */}
+          <div
+            className="absolute whitespace-nowrap text-[9px] font-mono leading-none select-none"
+            style={{
+              left: Math.max(4, brushScreenSize) / 2 + 6,
+              top: -5,
+              color: maskBlendMode === "subtractive" ? "#f87171" : maskBlendMode === "additive" ? "#4ade80" : "#e2e8f0",
+              textShadow: "0 0 3px rgba(0,0,0,0.8), 0 1px 2px rgba(0,0,0,0.6)",
+            }}
+          >
+            {maskBlendMode === "absolute" ? "ABS" : maskBlendMode === "additive" ? "ADD" : "SUB"}
+          </div>
         </div>
       )}
 

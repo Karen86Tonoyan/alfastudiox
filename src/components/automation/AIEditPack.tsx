@@ -194,7 +194,7 @@ export function AIEditPack() {
               <label className="text-[10px] text-muted-foreground uppercase tracking-wider">{p.label}</label>
               {p.type === "text" && (
                 <Input
-                  value={params[p.key] || ""}
+                  value={String(params[p.key] ?? "")}
                   onChange={(e) => setParams({ ...params, [p.key]: e.target.value })}
                   className="h-8 text-xs"
                   placeholder={`Wpisz ${p.label.toLowerCase()}...`}
@@ -203,7 +203,7 @@ export function AIEditPack() {
               {p.type === "number" && (
                 <Input
                   type="number"
-                  value={params[p.key] || p.default}
+                  value={String(params[p.key] ?? p.default)}
                   min={p.min}
                   max={p.max}
                   onChange={(e) => setParams({ ...params, [p.key]: Number(e.target.value) })}
@@ -213,7 +213,7 @@ export function AIEditPack() {
               {p.type === "slider" && (
                 <div className="flex items-center gap-2">
                   <Slider
-                    value={[params[p.key] ?? p.default]}
+                    value={[Number(params[p.key] ?? p.default)]}
                     onValueChange={([v]) => setParams({ ...params, [p.key]: v })}
                     min={p.min}
                     max={p.max}

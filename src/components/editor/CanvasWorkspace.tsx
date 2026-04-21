@@ -87,6 +87,7 @@ export function CanvasWorkspace({
   const [maskPresets, setMaskPresets] = useState<MaskBrushPreset[]>(loadPresets);
   const [newPresetName, setNewPresetName] = useState("");
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
+  const [brushOutlineOnly, setBrushOutlineOnly] = useState(false);
 
   // Compose & render
   const render = useCallback(() => {
@@ -369,7 +370,7 @@ export function CanvasWorkspace({
             }}
           />
           {/* Inner circle — hardness core */}
-          {brush.hardness < 0.95 && brushScreenSize > 6 && (brushScreenSize * brush.hardness) > 3 && (
+          {!brushOutlineOnly && brush.hardness < 0.95 && brushScreenSize > 6 && (brushScreenSize * brush.hardness) > 3 && (
             <div
               className="rounded-full border border-white/30 absolute"
               style={{
@@ -382,7 +383,7 @@ export function CanvasWorkspace({
             />
           )}
           {/* Center dot */}
-          <div
+          {!brushOutlineOnly && <div
             className="rounded-full absolute"
             style={{
               width: 3,
@@ -392,7 +393,7 @@ export function CanvasWorkspace({
               background: maskEditMode === "erase" ? "#000" : "#fff",
               boxShadow: maskEditMode === "erase" ? "0 0 0 1px rgba(255,255,255,0.5)" : "0 0 0 1px rgba(0,0,0,0.5)",
             }}
-          />
+          />}
           {/* Blend mode label */}
           <div
             className="absolute whitespace-nowrap text-[9px] font-mono leading-none select-none"
@@ -474,6 +475,17 @@ export function CanvasWorkspace({
 
           {/* Presets */}
           <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => setBrushOutlineOnly((v) => !v)}
+              className={`px-1.5 py-0.5 rounded text-[9px] border transition-all ${
+                brushOutlineOnly
+                  ? "bg-accent text-accent-foreground border-primary/40"
+                  : "border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
+              title="Tylko kontur pędzla (bez rdzenia)"
+            >
+              ○
+            </button>
             {maskPresets.map((p, i) => (
               <button
                 key={i}

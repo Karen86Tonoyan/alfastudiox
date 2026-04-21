@@ -65,6 +65,15 @@ export default function StudioPage() {
     }
   }, []);
 
+  // Track previous render for before/after comparison
+  const prevLastImage = useRef<string | null>(null);
+  useEffect(() => {
+    if (comfy.lastImage && comfy.lastImage !== prevLastImage.current) {
+      setPreviousRenderSrc(prevLastImage.current);
+      prevLastImage.current = comfy.lastImage;
+    }
+  }, [comfy.lastImage]);
+
   const updateLayer = useCallback((key: keyof PhotoSessionConfig["layers"], val: boolean) => {
     setConfig((prev) => ({ ...prev, layers: { ...prev.layers, [key]: val } }));
   }, []);
@@ -390,44 +399,81 @@ export default function StudioPage() {
       </div>
 
       {/* ── Right: Preview ── */}
-      <div className="flex-1 flex items-center justify-center bg-card/30 p-8">
-        {comfy.lastImage ? (
-          <div className="relative max-w-full max-h-full">
-            <img
-              src={comfy.lastImage}
-              alt="Result"
-              className="max-w-full max-h-[calc(100vh-8rem)] object-contain rounded-lg border border-border shadow-2xl"
+      <div className="flex-1 flex flex-col bg-card/30 p-8">
+        {/* Compare toggle */}
+        {comfy.lastImage && !compareActive && (
+          <div className="flex justify-end mb-2">
+            <BeforeAfterSlider
+              beforeSrc={null}
+              afterSrc={null}
+              onSelectBefore={() => {}}
+              onUploadBefore={() => {}}
+              onClearBefore={() => {}}
+              lastRenderSrc={null}
+              active={false}
+              onToggle={setCompareActive}
             />
-            <Badge className="absolute top-3 right-3 bg-black/60 text-white border-0 text-[10px]">
-              {config.width}×{config.height}
-            </Badge>
+          </div>
+        )}
+
+        {compareActive ? (
+          <BeforeAfterSlider
+            beforeSrc={beforeSrc}
+            afterSrc={comfy.lastImage}
+            onSelectBefore={(source) => {
+              if (source === "lastRender" && previousRenderSrc) {
+                setBeforeSrc(previousRenderSrc);
+              }
+            }}
+            onUploadBefore={(file) => {
+              setBeforeSrc(URL.createObjectURL(file));
+            }}
+            onClearBefore={() => setBeforeSrc(null)}
+            lastRenderSrc={previousRenderSrc}
+            active={true}
+            onToggle={setCompareActive}
+          />
+        ) : comfy.lastImage ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="relative max-w-full max-h-full">
+              <img
+                src={comfy.lastImage}
+                alt="Result"
+                className="max-w-full max-h-[calc(100vh-8rem)] object-contain rounded-lg border border-border shadow-2xl"
+              />
+              <Badge className="absolute top-3 right-3 bg-black/60 text-white border-0 text-[10px]">
+                {config.width}×{config.height}
+              </Badge>
+            </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-4 text-center">
-            <div className="rounded-full bg-muted p-6">
-              <Sparkles className="h-10 w-10 text-muted-foreground" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-foreground">Photo Studio</h2>
-              <p className="text-sm text-muted-foreground mt-1">
-                Dodaj zdjęcia, wybierz pozę, kliknij „Generuj Sesję"
-              </p>
-            </div>
-            <div className="flex gap-2 mt-2">
-              {["Miejsce", "Modelka", "Produkt"].map((label, i) => (
-                <Badge
-                  key={label}
-                  variant="outline"
-                  className={cn(
-                    "text-[10px]",
-                    [locationFile, modelFile, productFile][i]
-                      ? "border-primary/40 text-primary"
-                      : "border-border text-muted-foreground"
-                  )}
-                >
-                  {[locationFile, modelFile, productFile][i] ? "✓" : "○"} {label}
-                </Badge>
-              ))}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4 text-center">
+              <div className="rounded-full bg-muted p-6">
+                <Sparkles className="h-10 w-10 text-muted-foreground" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-foreground">Photo Studio</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Dodaj zdjęcia, wybierz pozę, kliknij „Generuj Sesję"
+                </p>
+              </div>
+              <div className="flex gap-2 mt-2">
+                {["Miejsce", "Modelka", "Produkt"].map((label, i) => (
+                  <Badge
+                    key={label}
+                    variant="outline"
+                    className={cn(
+                      "text-[10px]",
+                      [locationFile, modelFile, productFile][i]
+                        ? "border-primary/40 text-primary"
+                        : "border-border text-muted-foreground"
+                    )}
+                  >
+                    {[locationFile, modelFile, productFile][i] ? "✓" : "○"} {label}
+                  </Badge>
+                ))}
+              </div>
             </div>
           </div>
         )}

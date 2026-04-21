@@ -26,6 +26,7 @@ import { RenderTracker } from "@/components/studio/RenderTracker";
 import { useRenderTracker } from "@/hooks/useRenderTracker";
 import { CalibrationMode } from "@/components/studio/CalibrationMode";
 import { BeforeAfterSlider } from "@/components/studio/BeforeAfterSlider";
+import { EffectsChecklist } from "@/components/studio/EffectsChecklist";
 
 export default function StudioPage() {
   const comfy = useComfyUI();
@@ -240,6 +241,11 @@ export default function StudioPage() {
             isRendering={comfy.isRendering}
             hasImages={!!hasAnyImage}
           />
+
+          <div className="h-px bg-border" />
+
+          {/* ── Effects Checklist ── */}
+          <EffectsChecklist />
 
           <div className="h-px bg-border" />
 

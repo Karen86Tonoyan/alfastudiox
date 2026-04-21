@@ -12,6 +12,7 @@ import {
   createAdjustmentLayer,
   serializeLayer,
   deserializeLayer,
+  fitMaskToTransform,
 } from "@/lib/editorEngine";
 
 const MAX_HISTORY = 50;
@@ -259,6 +260,18 @@ export function useEditorEngine(initialW = 1920, initialH = 1080) {
     });
   }, [layers, effectiveActiveId, addMask]);
 
+  const scaleLayer = useCallback((id: string, scaleX: number, scaleY: number) => {
+    setLayers((prev) => prev.map((l) => (l.id === id ? { ...l, scaleX, scaleY } : l)));
+  }, []);
+
+  const applyMaskFit = useCallback((id: string) => {
+    setLayers((prev) => {
+      const next = prev.map((l) => (l.id === id ? fitMaskToTransform(l) : l));
+      pushHistory("Dopasuj maskę", next, id);
+      return next;
+    });
+  }, [pushHistory]);
+
   const resizeCanvas = useCallback((w: number, h: number) => {
     setCanvasWidth(w);
     setCanvasHeight(h);
@@ -299,6 +312,8 @@ export function useEditorEngine(initialW = 1920, initialH = 1080) {
     addMask,
     deleteMask,
     toggleMaskMode,
+    scaleLayer,
+    applyMaskFit,
     resizeCanvas,
     undo,
     redo,

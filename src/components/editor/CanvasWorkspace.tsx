@@ -87,6 +87,7 @@ export function CanvasWorkspace({
   const [maskPresets, setMaskPresets] = useState<MaskBrushPreset[]>(loadPresets);
   const [newPresetName, setNewPresetName] = useState("");
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
+  const [brushOutlineOnly, setBrushOutlineOnly] = useState(false);
 
   // Compose & render
   const render = useCallback(() => {

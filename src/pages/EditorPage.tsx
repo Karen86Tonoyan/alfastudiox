@@ -12,6 +12,7 @@ import { CanvasWorkspace } from "@/components/editor/CanvasWorkspace";
 import { LayerPanel } from "@/components/editor/LayerPanel";
 import { PropertiesPanel } from "@/components/editor/PropertiesPanel";
 import { ExportDialog } from "@/components/editor/ExportDialog";
+import { AdjustmentPanel } from "@/components/editor/AdjustmentPanel";
 
 export default function EditorPage() {
   const engine = useEditorEngine(1920, 1080);
@@ -221,8 +222,16 @@ export default function EditorPage() {
           maskMode={engine.maskMode}
         />
 
-        {/* Layer panel */}
-        <div className="w-56">
+        {/* Right panels */}
+        <div className="flex">
+          {/* Adjustment panel */}
+          <AdjustmentPanel
+            activeLayer={engine.activeLayer}
+            onUpdateAdjustment={engine.updateAdjustment}
+            onAddAdjustment={engine.addAdjustment}
+          />
+
+          {/* Layer panel */}
           <LayerPanel
             layers={engine.layers}
             activeLayerId={engine.activeLayerId}

@@ -475,6 +475,17 @@ export function CanvasWorkspace({
 
           {/* Presets */}
           <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => setBrushOutlineOnly((v) => !v)}
+              className={`px-1.5 py-0.5 rounded text-[9px] border transition-all ${
+                brushOutlineOnly
+                  ? "bg-accent text-accent-foreground border-primary/40"
+                  : "border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
+              title="Tylko kontur pędzla (bez rdzenia)"
+            >
+              ○
+            </button>
             {maskPresets.map((p, i) => (
               <button
                 key={i}

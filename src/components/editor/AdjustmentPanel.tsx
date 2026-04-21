@@ -2,7 +2,7 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { SlidersHorizontal, Sun, Contrast, Palette, TrendingUp, Plus } from "lucide-react";
+import { SlidersHorizontal, Sun, Contrast, Palette, TrendingUp, Plus, ClipboardCopy, ClipboardPaste } from "lucide-react";
 import type { AdjustmentData, AdjustmentType } from "@/lib/editorEngine";
 import type { EditorLayer } from "@/lib/editorEngine";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,9 @@ interface AdjustmentPanelProps {
   activeLayer: EditorLayer | null;
   onUpdateAdjustment: (id: string, patch: Partial<AdjustmentData>) => void;
   onAddAdjustment: (type: AdjustmentType) => void;
+  copiedAdjustment?: AdjustmentData | null;
+  onCopyAdjustment?: () => void;
+  onPasteAdjustment?: () => void;
 }
 
 const ADJ_TYPES: { type: AdjustmentType; label: string; icon: React.ElementType }[] = [
@@ -19,7 +22,7 @@ const ADJ_TYPES: { type: AdjustmentType; label: string; icon: React.ElementType 
   { type: "curves", label: "Krzywe", icon: TrendingUp },
 ];
 
-export function AdjustmentPanel({ activeLayer, onUpdateAdjustment, onAddAdjustment }: AdjustmentPanelProps) {
+export function AdjustmentPanel({ activeLayer, onUpdateAdjustment, onAddAdjustment, copiedAdjustment, onCopyAdjustment, onPasteAdjustment }: AdjustmentPanelProps) {
   const adj = activeLayer?.adjustment;
   const isAdj = !!adj;
 
@@ -63,6 +66,29 @@ export function AdjustmentPanel({ activeLayer, onUpdateAdjustment, onAddAdjustme
                   {adj.type === "curves" && "Krzywe"}
                 </Badge>
                 <span className="text-[9px] text-muted-foreground truncate">{activeLayer.name}</span>
+              </div>
+
+              {/* Copy / Paste buttons */}
+              <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-5 gap-1 text-[8px] px-1.5"
+                  onClick={onCopyAdjustment}
+                  title="Kopiuj ustawienia (Ctrl+Shift+C)"
+                >
+                  <ClipboardCopy className="h-2.5 w-2.5" /> Kopiuj
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-5 gap-1 text-[8px] px-1.5"
+                  onClick={onPasteAdjustment}
+                  disabled={!copiedAdjustment}
+                  title="Wklej ustawienia (Ctrl+Shift+V)"
+                >
+                  <ClipboardPaste className="h-2.5 w-2.5" /> Wklej
+                </Button>
               </div>
 
               {adj.type === "brightness-contrast" && (

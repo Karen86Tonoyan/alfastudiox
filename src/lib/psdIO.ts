@@ -1,29 +1,5 @@
-import { readPsd, writePsd, type Psd, type Layer } from "ag-psd";
-import { initializeCanvas } from "ag-psd/dist/helpers";
+import { readPsd, writePsd, type Psd, type Layer, type BlendMode as PsdBlendMode } from "ag-psd";
 import type { EditorLayer, BlendMode } from "./editorEngine";
-
-// ag-psd needs a canvas factory for browser usage
-initializeCanvas(
-  (w, h) => {
-    const c = document.createElement("canvas");
-    c.width = w;
-    c.height = h;
-    return c;
-  },
-  (src) => {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      if (typeof src === "string") {
-        img.src = src;
-      } else {
-        const blob = new Blob([src]);
-        img.src = URL.createObjectURL(blob);
-      }
-    });
-  }
-);
 
 // ── Blend mode mapping ──
 const BLEND_TO_PSD: Record<BlendMode, string> = {
@@ -91,7 +67,8 @@ export async function importPSD(buffer: ArrayBuffer): Promise<{
       mCtx.drawImage(child.mask.canvas as unknown as HTMLCanvasElement, maskLeft, maskTop);
     }
 
-    const blendMode = PSD_TO_BLEND[child.blendMode || "normal"] || "normal";
+    const rawBlend = child.blendMode || "normal";
+    const blendMode: BlendMode = PSD_TO_BLEND[rawBlend] || "normal";
 
     layers.push({
       id: uid(),
@@ -158,7 +135,7 @@ export function exportPSD(
       name: layer.name,
       hidden: !layer.visible,
       opacity: layer.opacity,
-      blendMode: BLEND_TO_PSD[layer.blendMode] || "normal",
+      blendMode: (BLEND_TO_PSD[layer.blendMode] || "normal") as PsdBlendMode,
       transparencyProtected: layer.locked,
       left: layer.x,
       top: layer.y,

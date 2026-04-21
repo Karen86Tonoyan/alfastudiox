@@ -171,6 +171,42 @@ export function useEditorEngine(initialW = 1920, initialH = 1080) {
     });
   }, []);
 
+  const moveLayerUp = useCallback((id: string) => {
+    setLayers((prev) => {
+      const idx = prev.findIndex((l) => l.id === id);
+      if (idx < 0 || idx >= prev.length - 1) return prev;
+      const next = [...prev];
+      [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+      return next;
+    });
+  }, []);
+
+  const moveLayerDown = useCallback((id: string) => {
+    setLayers((prev) => {
+      const idx = prev.findIndex((l) => l.id === id);
+      if (idx <= 0) return prev;
+      const next = [...prev];
+      [next[idx], next[idx - 1]] = [next[idx - 1], next[idx]];
+      return next;
+    });
+  }, []);
+
+  const selectLayerAbove = useCallback(() => {
+    setLayers((prev) => {
+      const idx = prev.findIndex((l) => l.id === effectiveActiveId);
+      if (idx < prev.length - 1) setActiveLayerId(prev[idx + 1].id);
+      return prev;
+    });
+  }, [effectiveActiveId]);
+
+  const selectLayerBelow = useCallback(() => {
+    setLayers((prev) => {
+      const idx = prev.findIndex((l) => l.id === effectiveActiveId);
+      if (idx > 0) setActiveLayerId(prev[idx - 1].id);
+      return prev;
+    });
+  }, [effectiveActiveId]);
+
   const resizeCanvas = useCallback((w: number, h: number) => {
     setCanvasWidth(w);
     setCanvasHeight(h);
@@ -200,6 +236,10 @@ export function useEditorEngine(initialW = 1920, initialH = 1080) {
     flattenAll,
     updateLayer,
     reorderLayers,
+    moveLayerUp,
+    moveLayerDown,
+    selectLayerAbove,
+    selectLayerBelow,
     resizeCanvas,
     undo,
     redo,

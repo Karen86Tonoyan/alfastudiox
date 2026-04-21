@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Eye, EyeOff, Lock, Unlock, Plus, Trash2, Copy,
-  ChevronDown, Layers, Merge, CircleDot, CircleOff
+  ChevronDown, Layers, Merge, CircleDot, CircleOff, SlidersHorizontal
 } from "lucide-react";
 import type { EditorLayer, BlendMode } from "@/lib/editorEngine";
 
@@ -133,7 +133,13 @@ export function LayerPanel({
                 )}
               >
                 {/* Thumbnail */}
-                <LayerThumb canvas={layer.canvas} />
+                {layer.adjustment ? (
+                  <div className="w-8 h-6 rounded-sm border border-primary/30 bg-primary/10 flex items-center justify-center shrink-0">
+                    <SlidersHorizontal className="h-3 w-3 text-primary" />
+                  </div>
+                ) : (
+                  <LayerThumb canvas={layer.canvas} />
+                )}
 
                 {/* Name */}
                 <input

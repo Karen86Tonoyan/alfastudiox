@@ -2,7 +2,7 @@ import { useRef, useEffect, useCallback, useState } from "react";
 import type { EditorLayer, ToolType, BrushSettings } from "@/lib/editorEngine";
 import { composeLayers, drawBrushLine, drawBrushStroke } from "@/lib/editorEngine";
 import { Slider } from "@/components/ui/slider";
-import { Paintbrush, Eraser, PaintBucket, Save, Star } from "lucide-react";
+import { Paintbrush, Eraser, PaintBucket, Save, Star, Download, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
@@ -640,6 +640,72 @@ export function CanvasWorkspace({
                 >
                   Przywróć domyślne
                 </Button>
+                <div className="flex gap-1 pt-1 border-t border-border">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="flex-1 h-5 text-[8px] text-muted-foreground gap-1"
+                    onClick={() => {
+                      const data = {
+                        brushOutlineOnly,
+                        cursorColor,
+                        presets: maskPresets,
+                      };
+                      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = "hud-settings.json";
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      toast.success("Wyeksportowano ustawienia HUD");
+                    }}
+                  >
+                    <Download className="h-3 w-3" /> Eksport
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="flex-1 h-5 text-[8px] text-muted-foreground gap-1 relative"
+                    asChild
+                  >
+                    <label>
+                      <Upload className="h-3 w-3" /> Import
+                      <input
+                        type="file"
+                        accept=".json"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const reader = new FileReader();
+                          reader.onload = () => {
+                            try {
+                              const data = JSON.parse(reader.result as string);
+                              if (typeof data.brushOutlineOnly === "boolean") {
+                                setBrushOutlineOnly(data.brushOutlineOnly);
+                                localStorage.setItem("maskBrushOutlineOnly", String(data.brushOutlineOnly));
+                              }
+                              if (data.cursorColor) {
+                                setCursorColor(data.cursorColor);
+                                localStorage.setItem("maskCursorColor", data.cursorColor);
+                              }
+                              if (Array.isArray(data.presets)) {
+                                setMaskPresets(data.presets);
+                                savePresets(data.presets);
+                              }
+                              toast.success("Zaimportowano ustawienia HUD");
+                            } catch {
+                              toast.error("Nieprawidłowy plik JSON");
+                            }
+                          };
+                          reader.readAsText(file);
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  </Button>
+                </div>
               </PopoverContent>
             </Popover>
           </div>

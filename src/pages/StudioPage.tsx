@@ -20,6 +20,7 @@ import { ImageUploadZone } from "@/components/studio/ImageUploadZone";
 import { PoseSelector } from "@/components/studio/PoseSelector";
 import { LayerToggles } from "@/components/studio/LayerToggles";
 import { ModelSelectors } from "@/components/studio/ModelSelectors";
+import { QuickModelPicker } from "@/components/studio/QuickModelPicker";
 import { SessionPresets, type SessionPreset } from "@/components/studio/SessionPresets";
 import { RenderTracker } from "@/components/studio/RenderTracker";
 import { useRenderTracker } from "@/hooks/useRenderTracker";
@@ -187,13 +188,11 @@ export default function StudioPage() {
 
           <div className="h-px bg-border" />
 
-          {/* ── Model Selectors (from ComfyUI) ── */}
-          <ModelSelectors
+          {/* ── Quick Model / LoRA / Workflow Picker ── */}
+          <QuickModelPicker
             models={models}
-            loading={modelsLoading}
             config={config}
             onConfigChange={setConfig}
-            onRefetch={refetchModels}
           />
 
           <div className="h-px bg-border" />

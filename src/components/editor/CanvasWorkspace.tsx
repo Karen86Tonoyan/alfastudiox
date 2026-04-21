@@ -88,9 +88,11 @@ export function CanvasWorkspace({
   const [newPresetName, setNewPresetName] = useState("");
   const [cursorPos, setCursorPos] = useState<{ x: number; y: number } | null>(null);
   const [brushOutlineOnly, setBrushOutlineOnly] = useState(false);
-  const [cursorColor, setCursorColor] = useState<"auto" | "white" | "black">(() => {
+  const [cursorColor, setCursorColor] = useState<"auto" | "white" | "black" | string>(() => {
     const saved = localStorage.getItem("maskCursorColor");
-    return saved === "white" || saved === "black" ? saved : "auto";
+    if (saved === "white" || saved === "black" || saved === "auto") return saved;
+    if (saved && saved.startsWith("#")) return saved;
+    return "auto";
   });
 
   // Compose & render
@@ -355,15 +357,18 @@ export function CanvasWorkspace({
       {/* Brush cursor preview */}
       {maskMode && isBrushTool && cursorPos && (
         (() => {
-          const resolvedCursorColor = cursorColor === "auto"
+          const isCustom = cursorColor !== "auto" && cursorColor !== "white" && cursorColor !== "black";
+          const resolvedCursorColor = isCustom ? cursorColor : cursorColor === "auto"
             ? (maskEditMode === "erase" ? "black" : "white")
             : cursorColor;
-          const borderMain = resolvedCursorColor === "white" ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)";
-          const shadowMain = resolvedCursorColor === "white" ? "0 0 0 1px rgba(0,0,0,0.4)" : "0 0 0 1px rgba(255,255,255,0.4)";
-          const borderInner = resolvedCursorColor === "white" ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)";
-          const shadowInner = resolvedCursorColor === "white" ? "0 0 0 1px rgba(0,0,0,0.2)" : "0 0 0 1px rgba(255,255,255,0.2)";
-          const dotBg = resolvedCursorColor === "white" ? "#fff" : "#000";
-          const dotShadow = resolvedCursorColor === "white" ? "0 0 0 1px rgba(0,0,0,0.5)" : "0 0 0 1px rgba(255,255,255,0.5)";
+          const useLight = isCustom ? true : resolvedCursorColor === "white";
+          const cColor = isCustom ? resolvedCursorColor : (useLight ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)");
+          const borderMain = isCustom ? resolvedCursorColor : (useLight ? "rgba(255,255,255,0.6)" : "rgba(0,0,0,0.6)");
+          const shadowMain = useLight ? "0 0 0 1px rgba(0,0,0,0.4)" : "0 0 0 1px rgba(255,255,255,0.4)";
+          const borderInner = isCustom ? (resolvedCursorColor + "4d") : (useLight ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)");
+          const shadowInner = useLight ? "0 0 0 1px rgba(0,0,0,0.2)" : "0 0 0 1px rgba(255,255,255,0.2)";
+          const dotBg = isCustom ? resolvedCursorColor : (useLight ? "#fff" : "#000");
+          const dotShadow = useLight ? "0 0 0 1px rgba(0,0,0,0.5)" : "0 0 0 1px rgba(255,255,255,0.5)";
           return <div
           className="pointer-events-none absolute z-20"
           style={{
@@ -522,6 +527,21 @@ export function CanvasWorkspace({
             >
               {cursorColor === "auto" ? "A" : cursorColor === "white" ? "◻" : "◼"}
             </button>
+            <label
+              className="relative flex items-center justify-center w-5 h-5 rounded border border-border cursor-pointer hover:border-primary/40 transition-all"
+              title="Własny kolor kursora"
+            >
+              <span
+                className="w-3 h-3 rounded-sm"
+                style={{ background: cursorColor !== "auto" && cursorColor !== "white" && cursorColor !== "black" ? cursorColor : "conic-gradient(red,yellow,lime,cyan,blue,magenta,red)" }}
+              />
+              <input
+                type="color"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                value={cursorColor !== "auto" && cursorColor !== "white" && cursorColor !== "black" ? cursorColor : "#ff0000"}
+                onChange={(e) => { const c = e.target.value; setCursorColor(c); localStorage.setItem("maskCursorColor", c); }}
+              />
+            </label>
             {maskPresets.map((p, i) => (
               <button
                 key={i}

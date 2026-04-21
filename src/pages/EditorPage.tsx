@@ -23,6 +23,24 @@ export default function EditorPage() {
   const importRef = useRef<HTMLInputElement>(null);
   const psdImportRef = useRef<HTMLInputElement>(null);
   const [maskEditMode, setMaskEditMode] = useState<MaskEditMode>("paint");
+  const [copiedAdj, setCopiedAdj] = useState<import("@/lib/editorEngine").AdjustmentData | null>(null);
+
+  const copyAdjustment = useCallback(() => {
+    const adj = engine.activeLayer?.adjustment;
+    if (!adj) return;
+    setCopiedAdj(JSON.parse(JSON.stringify(adj)));
+    toast.success("Skopiowano ustawienia dopasowania");
+  }, [engine.activeLayer]);
+
+  const pasteAdjustment = useCallback(() => {
+    if (!copiedAdj || !engine.activeLayer?.adjustment) return;
+    if (engine.activeLayer.adjustment.type !== copiedAdj.type) {
+      toast.error(`Typ nie pasuje — warstwa: ${engine.activeLayer.adjustment.type}, schowek: ${copiedAdj.type}`);
+      return;
+    }
+    engine.updateAdjustment(engine.activeLayer.id, { ...copiedAdj });
+    toast.success("Wklejono ustawienia dopasowania");
+  }, [copiedAdj, engine]);
 
   const handleImportImage = useCallback((file: File) => {
     const img = new Image();
@@ -94,6 +112,10 @@ export default function EditorPage() {
       // Mask mode
       if (e.key === "q" && !e.ctrlKey && !e.altKey && !e.metaKey) engine.toggleMaskMode();
       if (e.key === "\\" && !e.ctrlKey) engine.toggleMaskMode();
+
+      // Copy/paste adjustment settings
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "C") { e.preventDefault(); copyAdjustment(); }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "V") { e.preventDefault(); pasteAdjustment(); }
 
       // Mask edit mode shortcuts (only when mask mode active)
       if (engine.maskMode) {
@@ -300,6 +322,9 @@ export default function EditorPage() {
             activeLayer={engine.activeLayer}
             onUpdateAdjustment={engine.updateAdjustment}
             onAddAdjustment={engine.addAdjustment}
+            copiedAdjustment={copiedAdj}
+            onCopyAdjustment={copyAdjustment}
+            onPasteAdjustment={pasteAdjustment}
           />
 
           {/* Layer panel */}

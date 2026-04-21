@@ -38,8 +38,8 @@ const MIGRATIONS: Migration[] = [
         localStorage.removeItem("maskCursorColor");
       }
 
-      // --- maskBrushPresets → alfa_maskBrushPresets ---
-      const presets = localStorage.getItem("maskBrushPresets");
+      // --- alfa-mask-brush-presets → alfa_maskBrushPresets ---
+      const presets = localStorage.getItem("alfa-mask-brush-presets");
       if (presets !== null) {
         try {
           const parsed = JSON.parse(presets);
@@ -49,7 +49,7 @@ const MIGRATIONS: Migration[] = [
         } catch {
           // discard corrupted data
         }
-        localStorage.removeItem("maskBrushPresets");
+        localStorage.removeItem("alfa-mask-brush-presets");
       }
 
       // --- custom_session_presets → alfa_custom_session_presets ---

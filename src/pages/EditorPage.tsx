@@ -6,6 +6,7 @@ import {
   Undo2, Redo2, Upload, FilePlus, ZoomIn, ZoomOut,
   Maximize, ImagePlus, CircleDot
 } from "lucide-react";
+import { FileUp } from "lucide-react";
 import { useEditorEngine } from "@/hooks/useEditorEngine";
 import { EditorToolbar } from "@/components/editor/EditorToolbar";
 import { CanvasWorkspace } from "@/components/editor/CanvasWorkspace";
@@ -14,10 +15,12 @@ import { PropertiesPanel } from "@/components/editor/PropertiesPanel";
 import { ExportDialog } from "@/components/editor/ExportDialog";
 import { AdjustmentPanel } from "@/components/editor/AdjustmentPanel";
 import { AIGenerateDialog } from "@/components/editor/AIGenerateDialog";
+import { importPSD } from "@/lib/psdIO";
 
 export default function EditorPage() {
   const engine = useEditorEngine(1920, 1080);
   const importRef = useRef<HTMLInputElement>(null);
+  const psdImportRef = useRef<HTMLInputElement>(null);
 
   const handleImportImage = useCallback((file: File) => {
     const img = new Image();
@@ -26,6 +29,26 @@ export default function EditorPage() {
       toast.success(`Dodano warstwę: ${file.name}`);
     };
     img.src = URL.createObjectURL(file);
+  }, [engine]);
+
+  const handleImportPSD = useCallback(async (file: File) => {
+    try {
+      toast.info("Importowanie PSD...");
+      const buffer = await file.arrayBuffer();
+      const { layers, width, height } = await importPSD(buffer);
+      engine.resizeCanvas(width, height);
+      engine.setLayers((_prev: any) => {
+        engine.pushHistory("Import PSD", layers, layers[layers.length - 1]?.id ?? "");
+        return layers;
+      });
+      if (layers.length > 0) {
+        engine.setActiveLayerId(layers[layers.length - 1].id);
+      }
+      toast.success(`PSD zaimportowany: ${layers.length} warstw, ${width}×${height}`);
+    } catch (e) {
+      console.error("PSD import error:", e);
+      toast.error("Błąd importu PSD");
+    }
   }, [engine]);
 
   const handleStrokeEnd = useCallback(() => {
@@ -93,9 +116,15 @@ export default function EditorPage() {
   // Drop
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    const files = Array.from(e.dataTransfer.files).filter((f) => f.type.startsWith("image/"));
-    files.forEach(handleImportImage);
-  }, [handleImportImage]);
+    const files = Array.from(e.dataTransfer.files);
+    for (const f of files) {
+      if (f.name.toLowerCase().endsWith(".psd")) {
+        handleImportPSD(f);
+      } else if (f.type.startsWith("image/")) {
+        handleImportImage(f);
+      }
+    }
+  }, [handleImportImage, handleImportPSD]);
 
   return (
     <div
@@ -151,6 +180,27 @@ export default function EditorPage() {
           className="hidden"
           onChange={(e) => {
             Array.from(e.target.files ?? []).forEach(handleImportImage);
+            e.target.value = "";
+          }}
+        />
+
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-6 gap-1 text-[10px] px-2"
+          onClick={() => psdImportRef.current?.click()}
+          title="Import pliku PSD"
+        >
+          <FileUp className="h-3 w-3" /> PSD
+        </Button>
+        <input
+          ref={psdImportRef}
+          type="file"
+          accept=".psd"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleImportPSD(f);
             e.target.value = "";
           }}
         />

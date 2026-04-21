@@ -6,6 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Download, FileImage } from "lucide-react";
 import { exportToBlob, type EditorLayer } from "@/lib/editorEngine";
+import { exportPSD } from "@/lib/psdIO";
 
 interface ExportDialogProps {
   layers: EditorLayer[];
@@ -14,7 +15,7 @@ interface ExportDialogProps {
 }
 
 export function ExportDialog({ layers, canvasWidth, canvasHeight }: ExportDialogProps) {
-  const [format, setFormat] = useState<"png" | "jpeg" | "webp">("png");
+  const [format, setFormat] = useState<"png" | "jpeg" | "webp" | "psd">("png");
   const [quality, setQuality] = useState(92);
   const [filename, setFilename] = useState("export");
   const [exporting, setExporting] = useState(false);
@@ -22,7 +23,13 @@ export function ExportDialog({ layers, canvasWidth, canvasHeight }: ExportDialog
   const handleExport = async () => {
     setExporting(true);
     try {
-      const blob = await exportToBlob(layers, canvasWidth, canvasHeight, format, quality / 100);
+      let blob: Blob;
+      if (format === "psd") {
+        const buffer = exportPSD(layers, canvasWidth, canvasHeight);
+        blob = new Blob([buffer], { type: "application/octet-stream" });
+      } else {
+        blob = await exportToBlob(layers, canvasWidth, canvasHeight, format, quality / 100);
+      }
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -67,10 +74,11 @@ export function ExportDialog({ layers, canvasWidth, canvasHeight }: ExportDialog
                 <SelectItem value="png" className="text-xs">PNG (bezstratny, przezroczystość)</SelectItem>
                 <SelectItem value="jpeg" className="text-xs">JPEG (zdjęcia, mały plik)</SelectItem>
                 <SelectItem value="webp" className="text-xs">WebP (nowoczesny, web)</SelectItem>
+                <SelectItem value="psd" className="text-xs">PSD (Photoshop, warstwy + maski)</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          {format !== "png" && (
+          {format !== "png" && format !== "psd" && (
             <div className="space-y-1">
               <div className="flex justify-between">
                 <label className="text-[10px] text-muted-foreground uppercase">Jakość</label>

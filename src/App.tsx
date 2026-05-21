@@ -34,6 +34,9 @@ import SubscribePage from "./pages/SubscribePage";
 import EditorPage from "./pages/EditorPage";
 import ClusterPage from "./pages/ClusterPage";
 import NotFound from "./pages/NotFound";
+import { MigrationToaster } from "./components/system/MigrationToaster";
+
+
 
 const queryClient = new QueryClient();
 
@@ -69,6 +72,8 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <MigrationToaster />
+
       <BrowserRouter basename={basename}>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />

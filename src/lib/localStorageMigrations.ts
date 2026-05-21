@@ -7,21 +7,34 @@
 
 const VERSION_KEY = "alfa_ls_version";
 
+export interface MigrationReport {
+  version: number;
+  description: string;
+  status: "ok" | "failed";
+  discarded: string[]; // keys with corrupted data that was dropped
+  error?: string;
+}
+
+interface MigrationContext {
+  discarded: string[];
+}
+
 interface Migration {
   version: number;
   description: string;
-  migrate: () => void;
+  migrate: (ctx: MigrationContext) => void;
 }
 
 const MIGRATIONS: Migration[] = [
   {
     version: 1,
     description: "Namespace HUD keys under alfa_ prefix and validate values",
-    migrate: () => {
+    migrate: (ctx) => {
       // --- maskBrushOutlineOnly → alfa_maskBrushOutlineOnly ---
       const outline = localStorage.getItem("maskBrushOutlineOnly");
       if (outline !== null) {
         const valid = outline === "true" || outline === "false";
+        if (!valid) ctx.discarded.push("maskBrushOutlineOnly");
         localStorage.setItem("alfa_maskBrushOutlineOnly", valid ? outline : "false");
         localStorage.removeItem("maskBrushOutlineOnly");
       }
@@ -34,6 +47,7 @@ const MIGRATIONS: Migration[] = [
           cursor === "white" ||
           cursor === "black" ||
           /^#[0-9a-fA-F]{6}$/.test(cursor);
+        if (!isValid) ctx.discarded.push("maskCursorColor");
         localStorage.setItem("alfa_maskCursorColor", isValid ? cursor : "auto");
         localStorage.removeItem("maskCursorColor");
       }
@@ -45,9 +59,11 @@ const MIGRATIONS: Migration[] = [
           const parsed = JSON.parse(presets);
           if (Array.isArray(parsed)) {
             localStorage.setItem("alfa_maskBrushPresets", JSON.stringify(parsed));
+          } else {
+            ctx.discarded.push("alfa-mask-brush-presets");
           }
         } catch {
-          // discard corrupted data
+          ctx.discarded.push("alfa-mask-brush-presets");
         }
         localStorage.removeItem("alfa-mask-brush-presets");
       }
@@ -59,9 +75,11 @@ const MIGRATIONS: Migration[] = [
           const parsed = JSON.parse(session);
           if (Array.isArray(parsed)) {
             localStorage.setItem("alfa_custom_session_presets", JSON.stringify(parsed));
+          } else {
+            ctx.discarded.push("custom_session_presets");
           }
         } catch {
-          // discard corrupted data
+          ctx.discarded.push("custom_session_presets");
         }
         localStorage.removeItem("custom_session_presets");
       }
@@ -89,20 +107,49 @@ const MIGRATIONS: Migration[] = [
   },
 ];
 
+const REPORTS_KEY = "__alfa_migration_reports__";
+
+/** Reports from the most recent run, so React components can toast them after mount. */
+export function consumeMigrationReports(): MigrationReport[] {
+  const g = window as unknown as Record<string, unknown>;
+  const reports = (g[REPORTS_KEY] as MigrationReport[] | undefined) || [];
+  delete g[REPORTS_KEY];
+  return reports;
+}
+
 export function runLocalStorageMigrations() {
   const current = parseInt(localStorage.getItem(VERSION_KEY) || "0", 10);
   const pending = MIGRATIONS.filter((m) => m.version > current);
   if (pending.length === 0) return;
 
+  const reports: MigrationReport[] = [];
+
   for (const m of pending) {
+    const ctx: MigrationContext = { discarded: [] };
     try {
-      m.migrate();
+      m.migrate(ctx);
+      reports.push({
+        version: m.version,
+        description: m.description,
+        status: "ok",
+        discarded: ctx.discarded,
+      });
       console.info(`[LS Migration] v${m.version}: ${m.description}`);
     } catch (e) {
+      reports.push({
+        version: m.version,
+        description: m.description,
+        status: "failed",
+        discarded: ctx.discarded,
+        error: e instanceof Error ? e.message : String(e),
+      });
       console.warn(`[LS Migration] v${m.version} failed:`, e);
     }
   }
 
   const latest = MIGRATIONS[MIGRATIONS.length - 1].version;
   localStorage.setItem(VERSION_KEY, String(latest));
+
+  // Stash reports on window so a React component can toast them after mount.
+  (window as unknown as Record<string, unknown>)[REPORTS_KEY] = reports;
 }

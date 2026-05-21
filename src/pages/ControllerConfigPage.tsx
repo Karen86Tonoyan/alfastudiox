@@ -372,6 +372,71 @@ export default function ControllerConfigPage() {
             <Field label="Shared input path"><Input value={cfg.network.shared_input_path} onChange={(e) => patchSection("network", { shared_input_path: e.target.value })} /></Field>
             <Field label="Shared output path"><Input value={cfg.network.shared_output_path} onChange={(e) => patchSection("network", { shared_output_path: e.target.value })} /></Field>
           </CardContent></Card>
+
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Cable className="h-4 w-4" /> Test linków (Ethernet vs Thunderbolt)
+              </CardTitle>
+              <CardDescription>
+                Sprawdza osiągalność każdego node'a osobno po linku kontrolnym (API URL) i danych (Data URL).
+                Wymaga, by hosty ComfyUI miały otwarte CORS dla tej domeny.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button onClick={runProbe} disabled={probing} className="gap-2">
+                {probing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                Uruchom test
+              </Button>
+
+              {probeResults && probeResults.length === 0 && (
+                <p className="text-sm text-muted-foreground">Brak włączonych nodów do przetestowania.</p>
+              )}
+
+              {probeResults && probeResults.length > 0 && (
+                <div className="space-y-2">
+                  {probeResults.map((r) => {
+                    const ctrlOk = r.control.latencyMs !== null;
+                    const dataOk = r.data.latencyMs !== null;
+                    const dataFaster =
+                      ctrlOk && dataOk && r.data.url !== r.control.url &&
+                      (r.data.latencyMs as number) < (r.control.latencyMs as number);
+                    return (
+                      <div key={r.nodeId} className="rounded border p-3 text-sm">
+                        <div className="font-medium">{r.nodeName}</div>
+                        <div className="mt-2 grid gap-2 md:grid-cols-2">
+                          <div className="rounded bg-muted/50 p-2">
+                            <div className="flex items-center justify-between">
+                              <span className="flex items-center gap-1">
+                                <Cable className="h-3 w-3" /> Control · {r.control.link}
+                              </span>
+                              <Badge variant={ctrlOk ? "default" : "destructive"}>
+                                {ctrlOk ? `${r.control.latencyMs} ms` : "offline"}
+                              </Badge>
+                            </div>
+                            <div className="mt-1 truncate text-xs text-muted-foreground">{r.control.url}</div>
+                          </div>
+                          <div className="rounded bg-muted/50 p-2">
+                            <div className="flex items-center justify-between">
+                              <span className="flex items-center gap-1">
+                                <Zap className="h-3 w-3" /> Data · {r.data.link}
+                                {dataFaster && <Badge variant="outline" className="ml-1">faster</Badge>}
+                                {r.data.usedFallback && <Badge variant="outline" className="ml-1">fallback → control</Badge>}
+                              </span>
+                              <Badge variant={dataOk ? "default" : "destructive"}>
+                                {dataOk ? `${r.data.latencyMs} ms` : "offline"}
+                              </Badge>
+                            </div>
+                            <div className="mt-1 truncate text-xs text-muted-foreground">{r.data.url}</div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* EXECUTION */}

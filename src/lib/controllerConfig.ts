@@ -196,7 +196,8 @@ function sanitizeNode(raw: unknown, idx: number): NodeConfig {
   const tags = Array.isArray(r.tags)
     ? r.tags.filter((t): t is string => typeof t === "string").slice(0, 32)
     : [];
-  return {
+  const linkAllowed = ["ethernet", "thunderbolt", "wifi", "auto"] as const;
+  const node: NodeConfig = {
     id: str(r.id, `node${idx + 1}`, 64),
     name: str(r.name, `node-${idx + 1}`, 120),
     api_url: str(r.api_url, "http://localhost:8188", 512),
@@ -206,6 +207,16 @@ function sanitizeNode(raw: unknown, idx: number): NodeConfig {
     max_parallel_jobs: num(r.max_parallel_jobs, 1, 1, 32),
     tags,
   };
+  if (typeof r.data_url === "string" && r.data_url.trim().length > 0) {
+    node.data_url = str(r.data_url, "", 512);
+  }
+  if (typeof r.control_link === "string") {
+    node.control_link = oneOf(r.control_link, linkAllowed, "auto");
+  }
+  if (typeof r.data_link === "string") {
+    node.data_link = oneOf(r.data_link, linkAllowed, "auto");
+  }
+  return node;
 }
 
 export function sanitizeConfig(raw: unknown): ControllerConfig {

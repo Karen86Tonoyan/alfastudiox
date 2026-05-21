@@ -67,6 +67,26 @@ const MIGRATIONS: Migration[] = [
       }
     },
   },
+  {
+    version: 2,
+    description: "Seed cluster nodes from legacy single ComfyUI URL",
+    migrate: () => {
+      const existing = localStorage.getItem("alfa_cluster_nodes");
+      if (existing) return;
+      const legacyUrl = localStorage.getItem("comfy_server_url") || "localhost:8188";
+      const master = {
+        id: crypto.randomUUID(),
+        name: "Master (local)",
+        url: legacyUrl,
+        role: "master",
+        priority: 1,
+        maxVramGB: 16,
+        tags: ["flux", "wan", "upscale"],
+        enabled: true,
+      };
+      localStorage.setItem("alfa_cluster_nodes", JSON.stringify([master]));
+    },
+  },
 ];
 
 export function runLocalStorageMigrations() {

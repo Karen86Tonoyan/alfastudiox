@@ -33,6 +33,7 @@ import AutomationPage from "./pages/AutomationPage";
 import SubscribePage from "./pages/SubscribePage";
 import EditorPage from "./pages/EditorPage";
 import ClusterPage from "./pages/ClusterPage";
+import MigrationDebugPage from "./pages/MigrationDebugPage";
 import NotFound from "./pages/NotFound";
 import { MigrationToaster } from "./components/system/MigrationToaster";
 
@@ -103,6 +104,7 @@ const App = () => (
             <Route path="/subscribe" element={<SubscribePage />} />
             <Route path="/editor" element={<EditorPage />} />
             <Route path="/cluster" element={<ClusterPage />} />
+            <Route path="/debug/migrations" element={<MigrationDebugPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

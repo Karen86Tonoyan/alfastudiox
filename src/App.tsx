@@ -36,6 +36,7 @@ import ClusterPage from "./pages/ClusterPage";
 import MigrationDebugPage from "./pages/MigrationDebugPage";
 import ControllerConfigPage from "./pages/ControllerConfigPage";
 import WorkflowSplitPage from "./pages/WorkflowSplitPage";
+import DualComputePage from "./pages/DualComputePage";
 import NotFound from "./pages/NotFound";
 import { MigrationToaster } from "./components/system/MigrationToaster";
 
@@ -108,6 +109,7 @@ const App = () => (
             <Route path="/cluster" element={<ClusterPage />} />
             <Route path="/controller-config" element={<ControllerConfigPage />} />
             <Route path="/workflow-split" element={<WorkflowSplitPage />} />
+            <Route path="/dual-compute" element={<DualComputePage />} />
             <Route path="/debug/migrations" element={<MigrationDebugPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />

@@ -32,6 +32,7 @@ import PromptMemoryPage from "./pages/PromptMemoryPage";
 import AutomationPage from "./pages/AutomationPage";
 import SubscribePage from "./pages/SubscribePage";
 import EditorPage from "./pages/EditorPage";
+import ClusterPage from "./pages/ClusterPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -96,6 +97,7 @@ const App = () => (
             <Route path="/automation" element={<AutomationPage />} />
             <Route path="/subscribe" element={<SubscribePage />} />
             <Route path="/editor" element={<EditorPage />} />
+            <Route path="/cluster" element={<ClusterPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

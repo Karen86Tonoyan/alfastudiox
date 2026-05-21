@@ -9,9 +9,10 @@ export function useCluster() {
   const [policy, setPolicyState] = useState<ClusterPolicy>(clusterManager.getPolicy());
 
   useEffect(() => {
-    return clusterManager.subscribe(() => {
+    const unsub = clusterManager.subscribe(() => {
       setPolicyState({ ...clusterManager.getPolicy() });
     });
+    return () => { unsub; };
   }, []);
 
   return {

@@ -105,7 +105,7 @@ class ClusterManager {
   // ---- subscriptions ----
   subscribe(fn: Listener) {
     this.listeners.add(fn);
-    return () => this.listeners.delete(fn);
+    return () => { this.listeners.delete(fn); };
   }
 
   private notify() {

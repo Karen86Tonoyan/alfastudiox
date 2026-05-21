@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { User, Trash2, Save, Loader2, Camera, KeyRound, Shield, Mail } from "lucide-react";
+import { User, Trash2, Save, Loader2, Camera, KeyRound, Shield, Mail, RotateCcw } from "lucide-react";
+import { ResetSettingsButton } from "@/components/system/ResetSettingsButton";
+
 import { useUserRole } from "@/hooks/useUserRole";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -277,6 +279,21 @@ const ProfilePage = () => {
           </a>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <RotateCcw className="h-4 w-4 text-primary" /> Ustawienia lokalne
+          </CardTitle>
+          <CardDescription>
+            Przywróć domyślne wartości HUD, presetów pędzla i sesji. Operacja czyści klucze <code className="font-mono text-xs">alfa_*</code> w przeglądarce bez przeładowania strony.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResetSettingsButton />
+        </CardContent>
+      </Card>
+
 
       <Card className="border-destructive/30">
         <CardHeader>

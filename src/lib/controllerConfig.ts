@@ -22,11 +22,18 @@ export interface NodeConfig {
   id: string;
   name: string;
   api_url: string;
+  /** Optional dedicated link for bulk data transfer (e.g. Thunderbolt host).
+   *  Empty / unset → use api_url for both control and data. */
+  data_url?: string;
   enabled: boolean;
   role: "master" | "worker";
   priority: number;            // 1 = highest
   max_parallel_jobs: number;
   tags: string[];
+  /** Per-node override for which physical link carries control vs data.
+   *  If unset, controller-level network section defaults apply. */
+  control_link?: NetLink;
+  data_link?: NetLink;
 }
 
 export interface ControllerSection {

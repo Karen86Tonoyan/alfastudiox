@@ -60,7 +60,7 @@ export default function ControllerConfigPage() {
   function handleReset() {
     setCfg(DEFAULT_CONFIG);
     setDirty(true);
-    toast.info("Przywrócono domyślne wartości — kliknij „Zapisz", aby utrwalić.");
+    toast.info('Przywrócono domyślne wartości — kliknij "Zapisz", aby utrwalić.');
   }
 
   function handleExport() {
@@ -75,7 +75,7 @@ export default function ControllerConfigPage() {
       const clean = sanitizeConfig(parsed);
       setCfg(clean);
       setDirty(true);
-      toast.success("Zaimportowano — przejrzyj i kliknij „Zapisz".");
+      toast.success('Zaimportowano — przejrzyj i kliknij "Zapisz".');
     } catch (e) {
       toast.error(`Import nieudany: ${e instanceof Error ? e.message : String(e)}`);
     }

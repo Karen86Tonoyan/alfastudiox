@@ -9,6 +9,7 @@ import { xaiProvider } from "./xai";
 import { qwenProvider } from "./qwen";
 import { kimiProvider } from "./kimi";
 import { agnesProvider } from "./agnes";
+import { exoProvider } from "./exo";
 
 const allProviders: AIProvider[] = [
   openaiProvider,
@@ -21,6 +22,7 @@ const allProviders: AIProvider[] = [
   qwenProvider,
   kimiProvider,
   agnesProvider,
+  exoProvider,
 ];
 
 /** Get all registered providers */

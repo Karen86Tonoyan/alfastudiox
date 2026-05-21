@@ -95,6 +95,84 @@ export type Database = {
         }
         Relationships: []
       }
+      controller_jobs: {
+        Row: {
+          attempts: number
+          comfy_prompt_id: string | null
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          name: string
+          node_id: string | null
+          node_name: string | null
+          params: Json | null
+          priority: number
+          progress: number
+          prompt: string | null
+          queued_at: string
+          required_vram_gb: number | null
+          result_urls: Json | null
+          started_at: string | null
+          status: string
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+          workflow: Json | null
+        }
+        Insert: {
+          attempts?: number
+          comfy_prompt_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          name: string
+          node_id?: string | null
+          node_name?: string | null
+          params?: Json | null
+          priority?: number
+          progress?: number
+          prompt?: string | null
+          queued_at?: string
+          required_vram_gb?: number | null
+          result_urls?: Json | null
+          started_at?: string | null
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+          workflow?: Json | null
+        }
+        Update: {
+          attempts?: number
+          comfy_prompt_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          name?: string
+          node_id?: string | null
+          node_name?: string | null
+          params?: Json | null
+          priority?: number
+          progress?: number
+          prompt?: string | null
+          queued_at?: string
+          required_vram_gb?: number | null
+          result_urls?: Json | null
+          started_at?: string | null
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+          workflow?: Json | null
+        }
+        Relationships: []
+      }
       credit_transactions: {
         Row: {
           amount: number

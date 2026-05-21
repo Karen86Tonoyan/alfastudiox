@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Download, Upload, RotateCcw, Save, Plus, Trash2, Settings2 } from "lucide-react";
+import { Download, Upload, RotateCcw, Save, Plus, Trash2, Settings2, Cable, Zap, Loader2 } from "lucide-react";
 import {
   DEFAULT_CONFIG,
   exportControllerConfig,
@@ -20,6 +20,7 @@ import {
   type ControllerConfig,
   type NodeConfig,
 } from "@/lib/controllerConfig";
+import { probeAllNodes, type LinkProbeResult } from "@/lib/networkLinks";
 
 function newNode(idx: number): NodeConfig {
   return {
@@ -38,6 +39,8 @@ export default function ControllerConfigPage() {
   const [cfg, setCfg] = useState<ControllerConfig>(() => loadControllerConfig());
   const [dirty, setDirty] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [probing, setProbing] = useState(false);
+  const [probeResults, setProbeResults] = useState<LinkProbeResult[] | null>(null);
 
   function update<K extends keyof ControllerConfig>(key: K, value: ControllerConfig[K]) {
     setCfg((c) => ({ ...c, [key]: value }));
@@ -96,6 +99,19 @@ export default function ControllerConfigPage() {
   function setMaster(idx: number) {
     const next = cfg.nodes.map((n, i) => ({ ...n, role: i === idx ? "master" : "worker" } as NodeConfig));
     update("nodes", next);
+  }
+
+  async function runProbe() {
+    setProbing(true);
+    try {
+      const results = await probeAllNodes(sanitizeConfig(cfg));
+      setProbeResults(results);
+      const failed = results.filter((r) => r.control.latencyMs === null).length;
+      if (failed === 0) toast.success(`Test linków OK — ${results.length} nodów`);
+      else toast.warning(`${failed}/${results.length} nodów nieosiągalnych po linku kontrolnym`);
+    } finally {
+      setProbing(false);
+    }
   }
 
   return (
@@ -178,6 +194,43 @@ export default function ControllerConfigPage() {
                 <div className="md:col-span-2">
                   <Label>API URL</Label>
                   <Input value={n.api_url} onChange={(e) => updateNode(i, { api_url: e.target.value })} placeholder="http://host:8188" />
+                  <p className="mt-1 text-xs text-muted-foreground">Link kontrolny (Ethernet) — queue, status, healthcheck.</p>
+                </div>
+                <div className="md:col-span-2">
+                  <Label className="flex items-center gap-2"><Zap className="h-3.5 w-3.5" />Data URL (opcjonalny — Thunderbolt)</Label>
+                  <Input
+                    value={n.data_url ?? ""}
+                    onChange={(e) => updateNode(i, { data_url: e.target.value || undefined })}
+                    placeholder="http://thunderbolt-host:8188"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Używany do uploadu inputów i pobierania outputów gdy „Preferuj data link" jest włączony.
+                    Puste = ten sam endpoint co API URL.
+                  </p>
+                </div>
+                <div>
+                  <Label>Control link override</Label>
+                  <Select
+                    value={n.control_link ?? "auto"}
+                    onValueChange={(v) => updateNode(i, { control_link: v === "auto" ? undefined : (v as NodeConfig["control_link"]) })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {(["auto","ethernet","thunderbolt","wifi"] as const).map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Data link override</Label>
+                  <Select
+                    value={n.data_link ?? "auto"}
+                    onValueChange={(v) => updateNode(i, { data_link: v === "auto" ? undefined : (v as NodeConfig["data_link"]) })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {(["auto","ethernet","thunderbolt","wifi"] as const).map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label>Priority (1 = najwyższy)</Label>

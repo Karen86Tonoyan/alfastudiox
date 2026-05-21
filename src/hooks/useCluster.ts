@@ -12,7 +12,7 @@ export function useCluster() {
     const unsub = clusterManager.subscribe(() => {
       setPolicyState({ ...clusterManager.getPolicy() });
     });
-    return () => { unsub; };
+    return () => { unsub(); };
   }, []);
 
   return {

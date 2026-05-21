@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
   Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog, Shield, Key,
-  Lightbulb, Users, Clapperboard, Brain, Workflow, PenTool, Network, Settings2
+  Lightbulb, Users, Clapperboard, Brain, Workflow, PenTool, Network, Settings2, Cpu
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +27,7 @@ const navItems = [
   { title: "Cluster (PC)", path: "/cluster", icon: Network, highlight: true, adminOnly: false },
   { title: "Controller Config", path: "/controller-config", icon: Settings2, highlight: false, adminOnly: false },
   { title: "Workflow Split (2 PC)", path: "/workflow-split", icon: GitBranch, highlight: true, adminOnly: false },
+  { title: "Dual Compute AI", path: "/dual-compute", icon: Cpu, highlight: true, adminOnly: false },
   { title: "Models", path: "/models", icon: Box, highlight: false, adminOnly: false },
   { title: "Monitor", path: "/monitor", icon: Activity, highlight: false, adminOnly: false },
   { title: "Error Log", path: "/errors", icon: AlertTriangle, highlight: false, adminOnly: false },

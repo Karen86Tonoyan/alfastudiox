@@ -25,7 +25,7 @@ interface Migration {
   migrate: (ctx: MigrationContext) => void;
 }
 
-const MIGRATIONS: Migration[] = [
+export const MIGRATIONS: Migration[] = [
   {
     version: 1,
     description: "Namespace HUD keys under alfa_ prefix and validate values",
@@ -121,10 +121,16 @@ export function runLocalStorageMigrations() {
   const current = parseInt(localStorage.getItem(VERSION_KEY) || "0", 10);
   const pending = MIGRATIONS.filter((m) => m.version > current);
   if (pending.length === 0) return;
+  const reports = executeMigrations(pending);
+  // Stash reports on window so a React component can toast them after mount.
+  (window as unknown as Record<string, unknown>)[REPORTS_KEY] = reports;
+}
 
+/** Run a given set of migrations now and return their reports.
+ *  Also bumps the alfa_ls_version key to the latest migration's version. */
+export function executeMigrations(migrations: Migration[] = MIGRATIONS): MigrationReport[] {
   const reports: MigrationReport[] = [];
-
-  for (const m of pending) {
+  for (const m of migrations) {
     const ctx: MigrationContext = { discarded: [] };
     try {
       m.migrate(ctx);
@@ -146,10 +152,11 @@ export function runLocalStorageMigrations() {
       console.warn(`[LS Migration] v${m.version} failed:`, e);
     }
   }
-
-  const latest = MIGRATIONS[MIGRATIONS.length - 1].version;
-  localStorage.setItem(VERSION_KEY, String(latest));
-
-  // Stash reports on window so a React component can toast them after mount.
-  (window as unknown as Record<string, unknown>)[REPORTS_KEY] = reports;
+  if (migrations.length > 0) {
+    const latest = migrations[migrations.length - 1].version;
+    localStorage.setItem(VERSION_KEY, String(latest));
+  }
+  return reports;
 }
+
+export const LS_VERSION_KEY = VERSION_KEY;

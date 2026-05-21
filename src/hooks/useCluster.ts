@@ -1,10 +1,11 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { clusterManager, type ClusterNodeRuntime, type ClusterPolicy } from "@/lib/clusterManager";
 
 export function useCluster() {
+  const snapshotRef = useRef<ClusterNodeRuntime[]>(clusterManager.getNodes());
   const nodes = useSyncExternalStore(
-    (cb) => clusterManager.subscribe(cb),
-    () => clusterManager.getNodes()
+    (cb) => clusterManager.subscribe(() => { snapshotRef.current = clusterManager.getNodes(); cb(); }),
+    () => snapshotRef.current
   );
   const [policy, setPolicyState] = useState<ClusterPolicy>(clusterManager.getPolicy());
 
@@ -12,7 +13,7 @@ export function useCluster() {
     const unsub = clusterManager.subscribe(() => {
       setPolicyState({ ...clusterManager.getPolicy() });
     });
-    return () => { unsub(); };
+    return unsub;
   }, []);
 
   return {

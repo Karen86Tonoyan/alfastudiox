@@ -26,6 +26,7 @@ const navItems = [
   { title: "Orchestrator", path: "/orchestrator", icon: Layers, highlight: false, adminOnly: false },
   { title: "Cluster (PC)", path: "/cluster", icon: Network, highlight: true, adminOnly: false },
   { title: "Controller Config", path: "/controller-config", icon: Settings2, highlight: false, adminOnly: false },
+  { title: "Workflow Split (2 PC)", path: "/workflow-split", icon: GitBranch, highlight: true, adminOnly: false },
   { title: "Models", path: "/models", icon: Box, highlight: false, adminOnly: false },
   { title: "Monitor", path: "/monitor", icon: Activity, highlight: false, adminOnly: false },
   { title: "Error Log", path: "/errors", icon: AlertTriangle, highlight: false, adminOnly: false },

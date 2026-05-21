@@ -64,17 +64,17 @@ export async function enqueueJob(input: EnqueueInput): Promise<ControllerJob> {
   const user_id = await getUserId();
   const { data, error } = await supabase
     .from(TABLE)
-    .insert({
+    .insert([{
       user_id,
       name: input.name,
       prompt: input.prompt ?? null,
-      workflow: input.workflow as object,
+      workflow: input.workflow as never,
       priority: input.priority ?? 5,
       required_vram_gb: input.requiredVramGB ?? null,
       tags: input.tags ?? null,
-      params: { forceNodeId: input.forceNodeId, ...(input.params || {}) },
+      params: { forceNodeId: input.forceNodeId, ...(input.params || {}) } as never,
       status: "queued",
-    })
+    }])
     .select()
     .single();
   if (error) throw error;
@@ -98,7 +98,7 @@ export async function getJob(id: string): Promise<ControllerJob | null> {
 }
 
 export async function updateJob(id: string, patch: Partial<ControllerJob>): Promise<void> {
-  const { error } = await supabase.from(TABLE).update(patch).eq("id", id);
+  const { error } = await supabase.from(TABLE).update(patch as never).eq("id", id);
   if (error) throw error;
 }
 

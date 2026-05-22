@@ -11,7 +11,14 @@ import { useCluster } from "@/hooks/useCluster";
 import { clusterManager } from "@/lib/clusterManager";
 import { toast } from "sonner";
 
-type Msg = { role: "user" | "assistant" | "tool"; content: string; name?: string };
+type ToolCall = { id: string; type: "function"; function: { name: string; arguments: string } };
+type Msg = {
+  role: "user" | "assistant" | "tool";
+  content: string;
+  name?: string;
+  tool_calls?: ToolCall[];
+  tool_call_id?: string;
+};
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dual-ai-orchestrator`;
 const MCP_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/mcp-server`;
@@ -110,7 +117,22 @@ export default function DualComputePage() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ model, messages: history.map(({ role, content, name }) => ({ role, content, ...(name ? { name } : {}) })) }),
+      body: JSON.stringify({
+        model,
+        messages: history.map((m) => {
+          if (m.role === "tool") {
+            return { role: "tool", content: m.content, tool_call_id: m.tool_call_id, name: m.name };
+          }
+          if (m.role === "assistant") {
+            return {
+              role: "assistant",
+              content: m.content,
+              ...(m.tool_calls && m.tool_calls.length ? { tool_calls: m.tool_calls } : {}),
+            };
+          }
+          return { role: m.role, content: m.content };
+        }),
+      }),
     });
     if (!resp.ok || !resp.body) {
       const err = await resp.json().catch(() => ({ error: "Błąd połączenia" }));
@@ -177,13 +199,26 @@ export default function DualComputePage() {
     try {
       for (let i = 0; i < 4; i++) {
         const { content, toolCalls } = await streamOnce(history);
-        history = [...history, { role: "assistant", content }];
+        const assistantMsg: Msg = {
+          role: "assistant",
+          content,
+          ...(toolCalls.length
+            ? {
+                tool_calls: toolCalls.map((tc) => ({
+                  id: tc.id,
+                  type: "function" as const,
+                  function: { name: tc.name, arguments: tc.args || "{}" },
+                })),
+              }
+            : {}),
+        };
+        history = [...history, assistantMsg];
         if (toolCalls.length === 0) break;
         for (const tc of toolCalls) {
           let args: Record<string, unknown> = {};
           try { args = JSON.parse(tc.args || "{}"); } catch { /* ignore */ }
           const result = await runTool(tc.name, args);
-          const toolMsg: Msg = { role: "tool", name: tc.name, content: result };
+          const toolMsg: Msg = { role: "tool", name: tc.name, content: result, tool_call_id: tc.id };
           history = [...history, toolMsg];
           setMessages((prev) => [...prev, toolMsg]);
         }

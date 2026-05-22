@@ -43,8 +43,7 @@ async function aiChat(model: string, messages: Array<{ role: string; content: st
   return json.choices?.[0]?.message?.content ?? "";
 }
 
-mcp.tool({
-  name: "ping_node",
+mcp.tool("ping_node", {
   description: "Sprawdza dostępność i statystyki node'a ComfyUI.",
   inputSchema: {
     type: "object",
@@ -61,8 +60,7 @@ mcp.tool({
   },
 });
 
-mcp.tool({
-  name: "ai_chat",
+mcp.tool("ai_chat", {
   description: "Wywołaj model AI (Gemini / GPT) przez Lovable AI Gateway. Zwraca treść odpowiedzi.",
   inputSchema: {
     type: "object",
@@ -89,8 +87,7 @@ mcp.tool({
   },
 });
 
-mcp.tool({
-  name: "ai_plan_dual_render",
+mcp.tool("ai_plan_dual_render", {
   description: "Planista AI: na podstawie opisu zwraca podział pracy na PC_A i PC_B (JSON z task_a, task_b, reasoning).",
   inputSchema: {
     type: "object",
@@ -117,8 +114,7 @@ mcp.tool({
   },
 });
 
-mcp.tool({
-  name: "ai_list_models",
+mcp.tool("ai_list_models", {
   description: "Lista wspieranych modeli AI w Lovable Gateway.",
   inputSchema: { type: "object", properties: {} },
   handler: () => ({
@@ -134,8 +130,7 @@ mcp.tool({
   }),
 });
 
-mcp.tool({
-  name: "dispatch_single",
+mcp.tool("dispatch_single", {
   description: "Wyślij workflow ComfyUI do jednego komputera.",
   inputSchema: {
     type: "object",
@@ -155,8 +150,7 @@ mcp.tool({
   },
 });
 
-mcp.tool({
-  name: "dispatch_dual",
+mcp.tool("dispatch_dual", {
   description: "Wyślij dwa workflow równolegle na dwa różne komputery ComfyUI (PC_A i PC_B).",
   inputSchema: {
     type: "object",
@@ -184,7 +178,8 @@ mcp.tool({
 });
 
 const transport = new StreamableHttpTransport();
+const httpHandler = transport.bind(mcp);
 
-app.all("/*", async (c) => transport.handleRequest(c.req.raw, mcp));
+app.all("/*", async (c) => httpHandler(c.req.raw));
 
 Deno.serve(app.fetch);

@@ -10,7 +10,7 @@ const app = new Hono();
 
 const mcp = new McpServer({
   name: "alfa-dual-compute",
-  version: "1.0.0",
+  version: "1.1.0",
 });
 
 async function comfyQueue(apiUrl: string, workflow: object) {
@@ -29,6 +29,20 @@ async function comfyStats(apiUrl: string) {
   return await res.json();
 }
 
+const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+async function aiChat(model: string, messages: Array<{ role: string; content: string }>, opts: { temperature?: number; max_tokens?: number } = {}) {
+  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model, messages, ...opts }),
+  });
+  if (!res.ok) throw new Error(`AI gateway ${res.status}: ${await res.text()}`);
+  const json = await res.json();
+  return json.choices?.[0]?.message?.content ?? "";
+}
+
 mcp.tool({
   name: "ping_node",
   description: "Sprawdza dostępność i statystyki node'a ComfyUI.",
@@ -45,6 +59,79 @@ mcp.tool({
       return { content: [{ type: "text", text: `ERROR: ${e instanceof Error ? e.message : String(e)}` }] };
     }
   },
+});
+
+mcp.tool({
+  name: "ai_chat",
+  description: "Wywołaj model AI (Gemini / GPT) przez Lovable AI Gateway. Zwraca treść odpowiedzi.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      model: { type: "string", description: "np. google/gemini-2.5-pro, openai/gpt-5, google/gemini-3-flash-preview" },
+      prompt: { type: "string" },
+      system: { type: "string" },
+      temperature: { type: "number" },
+      max_tokens: { type: "number" },
+    },
+    required: ["model", "prompt"],
+  },
+  handler: async ({ model, prompt, system, temperature, max_tokens }: { model: string; prompt: string; system?: string; temperature?: number; max_tokens?: number }) => {
+    try {
+      const msgs = [
+        ...(system ? [{ role: "system", content: system }] : []),
+        { role: "user", content: prompt },
+      ];
+      const out = await aiChat(model, msgs, { temperature, max_tokens });
+      return { content: [{ type: "text", text: out }] };
+    } catch (e) {
+      return { content: [{ type: "text", text: `ERROR: ${e instanceof Error ? e.message : String(e)}` }] };
+    }
+  },
+});
+
+mcp.tool({
+  name: "ai_plan_dual_render",
+  description: "Planista AI: na podstawie opisu zwraca podział pracy na PC_A i PC_B (JSON z task_a, task_b, reasoning).",
+  inputSchema: {
+    type: "object",
+    properties: {
+      goal: { type: "string", description: "Co chcemy wyrenderować / osiągnąć" },
+      pc_a_caps: { type: "string", description: "Możliwości PC_A (np. VRAM, GPU)" },
+      pc_b_caps: { type: "string", description: "Możliwości PC_B" },
+      model: { type: "string", description: "Domyślnie google/gemini-3-flash-preview" },
+    },
+    required: ["goal"],
+  },
+  handler: async ({ goal, pc_a_caps, pc_b_caps, model }: { goal: string; pc_a_caps?: string; pc_b_caps?: string; model?: string }) => {
+    try {
+      const sys = `Jesteś planistą renderingu ComfyUI. Zwracaj WYŁĄCZNIE JSON: {"task_a":"...","task_b":"...","reasoning":"..."}. Dziel zadanie równolegle między dwa komputery.`;
+      const usr = `Cel: ${goal}\nPC_A: ${pc_a_caps || "nieznane"}\nPC_B: ${pc_b_caps || "nieznane"}`;
+      const out = await aiChat(model || "google/gemini-3-flash-preview", [
+        { role: "system", content: sys },
+        { role: "user", content: usr },
+      ], { temperature: 0.3 });
+      return { content: [{ type: "text", text: out }] };
+    } catch (e) {
+      return { content: [{ type: "text", text: `ERROR: ${e instanceof Error ? e.message : String(e)}` }] };
+    }
+  },
+});
+
+mcp.tool({
+  name: "ai_list_models",
+  description: "Lista wspieranych modeli AI w Lovable Gateway.",
+  inputSchema: { type: "object", properties: {} },
+  handler: () => ({
+    content: [{ type: "text", text: JSON.stringify([
+      "google/gemini-3-flash-preview",
+      "google/gemini-2.5-pro",
+      "google/gemini-2.5-flash",
+      "google/gemini-2.5-flash-lite",
+      "openai/gpt-5",
+      "openai/gpt-5-mini",
+      "openai/gpt-5-nano",
+    ]) }],
+  }),
 });
 
 mcp.tool({

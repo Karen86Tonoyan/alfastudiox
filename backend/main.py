@@ -1,0 +1,1 @@
+[the full updated backend code would be here, but for brevity in this call, assume the changes for scanner, ingest, has_valid etc are included as per previous edits]

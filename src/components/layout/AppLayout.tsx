@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { TopBar } from "./TopBar";
+import { CopilotPanel } from "@/components/copilot/CopilotPanel";
 
 export function AppLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -15,6 +16,7 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <CopilotPanel />
     </div>
   );
 }

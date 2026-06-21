@@ -324,6 +324,117 @@ export default function WorkflowPage() {
     return () => window.removeEventListener("keydown", handler);
   }, [activeNode, deleteActiveNode]);
 
+  /* ───────── AI Copilot tools ───────── */
+  useCopilotTools([
+    {
+      name: "workflow.list_nodes",
+      description: "Zwróć listę wszystkich node'ów na canvasie z id, tytułem, typem i pozycją.",
+      parameters: { type: "object", properties: {} },
+      scope: "workflow",
+      handler: () => nodes.map((n) => ({ id: n.id, title: n.title, type: n.type, x: n.x, y: n.y,
+        inputs: n.inputs.map((p) => p.name), outputs: n.outputs.map((p) => p.name) })),
+    },
+    {
+      name: "workflow.add_node",
+      description: "Dodaj nowy node na canvas. Typy: model | sampler | prompt | output | vae | latent | banana.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string", description: "Nazwa wyświetlana, np. 'KSampler'" },
+          type: { type: "string", enum: ["model", "sampler", "prompt", "output", "vae", "latent", "banana"] },
+          x: { type: "number" }, y: { type: "number" },
+          inputs: { type: "array", items: { type: "object", properties: { name: { type: "string" }, type: { type: "string" } }, required: ["name", "type"] } },
+          outputs: { type: "array", items: { type: "object", properties: { name: { type: "string" }, type: { type: "string" } }, required: ["name", "type"] } },
+        },
+        required: ["title"],
+      },
+      scope: "workflow",
+      handler: (a: any) => {
+        const id = `ai-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+        const node: WorkflowNode = {
+          id, title: a.title, type: (a.type as WorkflowNode["type"]) ?? "prompt",
+          x: a.x ?? 80 + Math.random() * 600, y: a.y ?? 80 + Math.random() * 400,
+          inputs: a.inputs ?? [{ name: "input", type: "MODEL" }],
+          outputs: a.outputs ?? [{ name: "output", type: "IMAGE" }],
+          width: 220,
+        };
+        setNodes((p) => [...p, node]);
+        setActiveNode(id);
+        return { ok: true, id };
+      },
+    },
+    {
+      name: "workflow.connect_nodes",
+      description: "Połącz output jednego node'a z input innego. Użyj id z list_nodes oraz nazw portów.",
+      parameters: {
+        type: "object",
+        properties: {
+          from_node: { type: "string" }, from_port: { type: "string" },
+          to_node: { type: "string" }, to_port: { type: "string" },
+        },
+        required: ["from_node", "from_port", "to_node", "to_port"],
+      },
+      scope: "workflow",
+      handler: (a: any) => {
+        if (!nodes.find((n) => n.id === a.from_node) || !nodes.find((n) => n.id === a.to_node)) {
+          return { ok: false, error: "Nie znaleziono node'a o podanym id" };
+        }
+        setConns((p) => [...p, { from: a.from_node, fromPort: a.from_port, to: a.to_node, toPort: a.to_port }]);
+        return { ok: true };
+      },
+    },
+    {
+      name: "workflow.delete_node",
+      description: "Usuń node po id (razem z połączeniami).",
+      parameters: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+      scope: "workflow",
+      handler: (a: { id: string }) => {
+        const exists = nodes.some((n) => n.id === a.id);
+        if (!exists) return { ok: false, error: "Brak node'a" };
+        setNodes((p) => p.filter((n) => n.id !== a.id));
+        setConns((p) => p.filter((c) => c.from !== a.id && c.to !== a.id));
+        if (activeNode === a.id) setActiveNode("");
+        return { ok: true };
+      },
+    },
+    {
+      name: "workflow.move_node",
+      description: "Przesuń node na pozycję x,y na canvasie.",
+      parameters: { type: "object", properties: { id: { type: "string" }, x: { type: "number" }, y: { type: "number" } }, required: ["id", "x", "y"] },
+      scope: "workflow",
+      handler: (a: any) => {
+        setNodes((p) => p.map((n) => n.id === a.id ? { ...n, x: a.x, y: a.y } : n));
+        return { ok: true };
+      },
+    },
+    {
+      name: "workflow.clear",
+      description: "Wyczyść cały canvas (wszystkie node'y i połączenia).",
+      parameters: { type: "object", properties: {} },
+      scope: "workflow",
+      handler: () => { setNodes([]); setConns([]); setActiveNode(""); return { ok: true }; },
+    },
+    {
+      name: "workflow.run",
+      description: "Uruchom lub zatrzymaj workflow. action: 'start' | 'stop'.",
+      parameters: { type: "object", properties: { action: { type: "string", enum: ["start", "stop"] } }, required: ["action"] },
+      scope: "workflow",
+      handler: (a: { action: "start" | "stop" }) => {
+        const next = a.action === "start";
+        setRunning(next);
+        toast.success(`Workflow ${next ? "uruchomiony" : "zatrzymany"} przez Copilota`);
+        return { ok: true, running: next };
+      },
+    },
+    {
+      name: "workflow.set_zoom",
+      description: "Ustaw zoom canvasu w zakresie 0.2 – 3.",
+      parameters: { type: "object", properties: { zoom: { type: "number" } }, required: ["zoom"] },
+      scope: "workflow",
+      handler: (a: { zoom: number }) => { setZoom(Math.min(3, Math.max(0.2, a.zoom))); return { ok: true }; },
+    },
+  ], [nodes, activeNode]);
+
   const svgW = 1200;
   const svgH = 650;
 

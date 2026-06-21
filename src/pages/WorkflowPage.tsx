@@ -1,6 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Square, MessageSquare } from "lucide-react";
+import { Play, Square, MessageSquare, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { NodeLibrary } from "@/components/workflow/NodeLibrary";
 import { WorkflowContextMenu } from "@/components/workflow/ContextMenu";
 import { WorkflowToolbar } from "@/components/workflow/WorkflowToolbar";
@@ -311,6 +314,30 @@ export default function WorkflowPage() {
     setActiveNode("");
   }, [activeNode]);
 
+  const updateNodeField = useCallback((nodeId: string, idx: number, value: string) => {
+    setNodes((prev) => prev.map((n) => {
+      if (n.id !== nodeId || !n.fields) return n;
+      const fields = n.fields.map((f, i) => i === idx ? { ...f, value } : f);
+      return { ...n, fields };
+    }));
+  }, []);
+
+  const updateNodeMeta = useCallback((nodeId: string, patch: Partial<WorkflowNode>) => {
+    setNodes((prev) => prev.map((n) => n.id === nodeId ? { ...n, ...patch } : n));
+  }, []);
+
+  const addFieldToNode = useCallback((nodeId: string) => {
+    setNodes((prev) => prev.map((n) => n.id === nodeId
+      ? { ...n, fields: [...(n.fields ?? []), { label: "new_field", value: "" }] }
+      : n));
+  }, []);
+
+  const removeFieldFromNode = useCallback((nodeId: string, idx: number) => {
+    setNodes((prev) => prev.map((n) => n.id === nodeId && n.fields
+      ? { ...n, fields: n.fields.filter((_, i) => i !== idx) }
+      : n));
+  }, []);
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.key === "Delete" || e.key === "Backspace") && activeNode) {
@@ -601,8 +628,12 @@ export default function WorkflowPage() {
                 {node.fields?.map((field, i) => {
                   const fy = node.y + TITLE_H + Math.max(node.inputs.length, node.outputs.length) * PORT_SPACING + 8 + i * FIELD_H;
                   return (
-                    <g key={`f-${i}`}>
-                      <rect x={node.x + 6} y={fy - 10} width={w - 12} height={FIELD_H - 3} rx={3} fill="hsl(228,10%,18%)" />
+                    <g
+                      key={`f-${i}`}
+                      style={{ cursor: "text" }}
+                      onMouseDown={(e) => { e.stopPropagation(); setActiveNode(node.id); }}
+                    >
+                      <rect x={node.x + 6} y={fy - 10} width={w - 12} height={FIELD_H - 3} rx={3} fill={isActive ? "hsl(228,10%,22%)" : "hsl(228,10%,18%)"} stroke={isActive ? color : "transparent"} strokeWidth={0.5} strokeOpacity={0.4} />
                       <text x={node.x + 12} y={fy} fill="hsl(210,15%,50%)" fontSize={8}>
                         {field.label}
                       </text>
@@ -679,6 +710,105 @@ export default function WorkflowPage() {
         {contextMenu && (
           <WorkflowContextMenu x={contextMenu.x} y={contextMenu.y} onClose={() => setContextMenu(null)} onDelete={deleteActiveNode} />
         )}
+
+        {/* Node Inspector */}
+        {(() => {
+          const sel = nodes.find((n) => n.id === activeNode);
+          if (!sel) return null;
+          return (
+            <div className="absolute right-3 top-16 z-20 w-72 max-h-[80%] overflow-y-auto rounded-lg border border-border bg-card/95 p-3 shadow-xl backdrop-blur-sm">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full" style={{ background: typeColor[sel.type] }} />
+                  <span className="text-xs font-semibold text-foreground">Właściwości node'a</span>
+                </div>
+                <button onClick={() => setActiveNode("")} className="text-muted-foreground hover:text-foreground" aria-label="Zamknij inspector">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-[10px] uppercase text-muted-foreground">Tytuł</Label>
+                  <Input
+                    className="mt-1 h-8 text-xs"
+                    value={sel.title}
+                    onChange={(e) => updateNodeMeta(sel.id, { title: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label className="text-[10px] uppercase text-muted-foreground">Podtytuł</Label>
+                  <Input
+                    className="mt-1 h-8 text-xs"
+                    value={sel.subtitle ?? ""}
+                    placeholder="opcjonalnie"
+                    onChange={(e) => updateNodeMeta(sel.id, { subtitle: e.target.value })}
+                  />
+                </div>
+
+                <div className="border-t border-border pt-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <Label className="text-[10px] uppercase text-muted-foreground">Pola</Label>
+                    <button
+                      onClick={() => addFieldToNode(sel.id)}
+                      className="rounded border border-border px-2 py-0.5 text-[10px] text-muted-foreground hover:text-foreground"
+                    >
+                      + Dodaj
+                    </button>
+                  </div>
+                  {(!sel.fields || sel.fields.length === 0) && (
+                    <p className="text-[10px] text-muted-foreground">Brak pól. Dodaj, by konfigurować node.</p>
+                  )}
+                  <div className="space-y-2">
+                    {sel.fields?.map((f, i) => {
+                      const isLong = f.value.length > 40 || /prompt|text|description/i.test(f.label);
+                      return (
+                        <div key={i} className="rounded-md border border-border/60 bg-background/40 p-2">
+                          <div className="mb-1 flex items-center gap-1">
+                            <Input
+                              className="h-6 flex-1 text-[10px]"
+                              value={f.label}
+                              onChange={(e) => {
+                                setNodes((prev) => prev.map((n) => n.id === sel.id && n.fields
+                                  ? { ...n, fields: n.fields.map((ff, ii) => ii === i ? { ...ff, label: e.target.value } : ff) }
+                                  : n));
+                              }}
+                            />
+                            <button
+                              onClick={() => removeFieldFromNode(sel.id, i)}
+                              className="rounded p-1 text-muted-foreground hover:bg-destructive/20 hover:text-destructive"
+                              aria-label="Usuń pole"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                          {isLong ? (
+                            <Textarea
+                              className="min-h-[64px] text-xs"
+                              value={f.value}
+                              onChange={(e) => updateNodeField(sel.id, i, e.target.value)}
+                            />
+                          ) : (
+                            <Input
+                              className="h-7 text-xs"
+                              value={f.value}
+                              onChange={(e) => updateNodeField(sel.id, i, e.target.value)}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="border-t border-border pt-2 text-[10px] text-muted-foreground">
+                  <div>id: <span className="font-mono">{sel.id}</span></div>
+                  <div>typ: <span className="font-mono">{sel.type}</span></div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* AI Scenario Manager */}

@@ -101,7 +101,10 @@ export function CopilotPanel() {
   const [showTools, setShowTools] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => copilotRegistry.subscribe(() => setToolCount(copilotRegistry.list().length)), []);
+  useEffect(() => {
+    const off = copilotRegistry.subscribe(() => setToolCount(copilotRegistry.list().length));
+    return () => { off; };
+  }, []);
   useEffect(() => { scrollRef.current?.scrollTo({ top: 1e9, behavior: "smooth" }); }, [messages, busy]);
 
   const runLoop = useCallback(async (history: Msg[]) => {

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import {
   GitBranch, Box, Activity, Clock, Image, ChevronLeft, ChevronRight,
   Layers, AlertTriangle, Sparkles, Crown, Cloud, ShieldCheck, Camera, LayoutDashboard, LogOut, CreditCard, UserCog, Shield, Key,
-  Lightbulb, Users, Clapperboard, Brain, Workflow, PenTool, Network, Settings2, Cpu, Boxes, ListChecks, Terminal
+  Lightbulb, Users, Clapperboard, Brain, Workflow, PenTool, Network, Settings2, Cpu, Boxes, ListChecks, Terminal, Wand2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +31,7 @@ const navItems = [
   { title: "Exo AI Cluster", path: "/exo-cluster", icon: Boxes, highlight: true, adminOnly: false },
   { title: "Job Queue (trwała)", path: "/job-queue", icon: ListChecks, highlight: true, adminOnly: false },
   { title: "MCP Test Panel", path: "/mcp-test", icon: Terminal, highlight: true, adminOnly: false },
+  { title: "AI Studio Chat", path: "/ai-studio-chat", icon: Wand2, highlight: true, adminOnly: false },
   { title: "Models", path: "/models", icon: Box, highlight: false, adminOnly: false },
   { title: "Monitor", path: "/monitor", icon: Activity, highlight: false, adminOnly: false },
   { title: "Error Log", path: "/errors", icon: AlertTriangle, highlight: false, adminOnly: false },

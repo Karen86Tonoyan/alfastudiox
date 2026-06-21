@@ -39,6 +39,8 @@ import WorkflowSplitPage from "./pages/WorkflowSplitPage";
 import DualComputePage from "./pages/DualComputePage";
 import ExoClusterPage from "./pages/ExoClusterPage";
 import MCPTestPage from "./pages/MCPTestPage";
+import AIStudioChatPage from "./pages/AIStudioChatPage";
+import JobQueuePage from "./pages/JobQueuePage";
 import NotFound from "./pages/NotFound";
 import { MigrationToaster } from "./components/system/MigrationToaster";
 
@@ -114,6 +116,8 @@ const App = () => (
             <Route path="/dual-compute" element={<DualComputePage />} />
             <Route path="/exo-cluster" element={<ExoClusterPage />} />
             <Route path="/mcp-test" element={<MCPTestPage />} />
+            <Route path="/ai-studio-chat" element={<AIStudioChatPage />} />
+            <Route path="/job-queue" element={<JobQueuePage />} />
             <Route path="/debug/migrations" element={<MigrationDebugPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />

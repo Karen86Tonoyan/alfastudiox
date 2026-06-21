@@ -5,6 +5,8 @@ import { NodeLibrary } from "@/components/workflow/NodeLibrary";
 import { WorkflowContextMenu } from "@/components/workflow/ContextMenu";
 import { WorkflowToolbar } from "@/components/workflow/WorkflowToolbar";
 import { ScenarioManager } from "@/components/workflow/ScenarioManager";
+import { useCopilotTools } from "@/lib/aiCopilot/useCopilotTool";
+import { toast } from "sonner";
 
 interface WorkflowNode {
   id: string;

@@ -628,8 +628,12 @@ export default function WorkflowPage() {
                 {node.fields?.map((field, i) => {
                   const fy = node.y + TITLE_H + Math.max(node.inputs.length, node.outputs.length) * PORT_SPACING + 8 + i * FIELD_H;
                   return (
-                    <g key={`f-${i}`}>
-                      <rect x={node.x + 6} y={fy - 10} width={w - 12} height={FIELD_H - 3} rx={3} fill="hsl(228,10%,18%)" />
+                    <g
+                      key={`f-${i}`}
+                      style={{ cursor: "text" }}
+                      onMouseDown={(e) => { e.stopPropagation(); setActiveNode(node.id); }}
+                    >
+                      <rect x={node.x + 6} y={fy - 10} width={w - 12} height={FIELD_H - 3} rx={3} fill={isActive ? "hsl(228,10%,22%)" : "hsl(228,10%,18%)"} stroke={isActive ? color : "transparent"} strokeWidth={0.5} strokeOpacity={0.4} />
                       <text x={node.x + 12} y={fy} fill="hsl(210,15%,50%)" fontSize={8}>
                         {field.label}
                       </text>

@@ -32,6 +32,7 @@ const navItems = [
   { title: "Job Queue (trwała)", path: "/job-queue", icon: ListChecks, highlight: true, adminOnly: false },
   { title: "MCP Test Panel", path: "/mcp-test", icon: Terminal, highlight: true, adminOnly: false },
   { title: "AI Studio Chat", path: "/ai-studio-chat", icon: Wand2, highlight: true, adminOnly: false },
+  { title: "Agent Swarm", path: "/multi-agent", icon: Users, highlight: true, adminOnly: false },
   { title: "Models", path: "/models", icon: Box, highlight: false, adminOnly: false },
   { title: "Monitor", path: "/monitor", icon: Activity, highlight: false, adminOnly: false },
   { title: "Error Log", path: "/errors", icon: AlertTriangle, highlight: false, adminOnly: false },

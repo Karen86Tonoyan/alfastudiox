@@ -1,6 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Square, MessageSquare } from "lucide-react";
+import { Play, Square, MessageSquare, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { NodeLibrary } from "@/components/workflow/NodeLibrary";
 import { WorkflowContextMenu } from "@/components/workflow/ContextMenu";
 import { WorkflowToolbar } from "@/components/workflow/WorkflowToolbar";
@@ -310,6 +313,30 @@ export default function WorkflowPage() {
     setConns((prev) => prev.filter((c) => c.from !== activeNode && c.to !== activeNode));
     setActiveNode("");
   }, [activeNode]);
+
+  const updateNodeField = useCallback((nodeId: string, idx: number, value: string) => {
+    setNodes((prev) => prev.map((n) => {
+      if (n.id !== nodeId || !n.fields) return n;
+      const fields = n.fields.map((f, i) => i === idx ? { ...f, value } : f);
+      return { ...n, fields };
+    }));
+  }, []);
+
+  const updateNodeMeta = useCallback((nodeId: string, patch: Partial<WorkflowNode>) => {
+    setNodes((prev) => prev.map((n) => n.id === nodeId ? { ...n, ...patch } : n));
+  }, []);
+
+  const addFieldToNode = useCallback((nodeId: string) => {
+    setNodes((prev) => prev.map((n) => n.id === nodeId
+      ? { ...n, fields: [...(n.fields ?? []), { label: "new_field", value: "" }] }
+      : n));
+  }, []);
+
+  const removeFieldFromNode = useCallback((nodeId: string, idx: number) => {
+    setNodes((prev) => prev.map((n) => n.id === nodeId && n.fields
+      ? { ...n, fields: n.fields.filter((_, i) => i !== idx) }
+      : n));
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {

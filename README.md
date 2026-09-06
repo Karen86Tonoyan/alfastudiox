@@ -1,73 +1,64 @@
-# Welcome to your Lovable project
+# ALFA Studio X
 
-## Project info
+> **Experimental Vite workspace for AI-assisted creative, workflow and model-management interfaces**
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+ALFA Studio X is a TypeScript/React front end built with Vite and Tailwind. The
+codebase presents screens for image editing, rendering, workflows, providers,
+clusters, model settings, automation, prompt memory and project administration.
+It also contains Supabase Edge Function and migration sources.
 
-## How can I edit this code?
+## Implemented areas
 
-There are several ways of editing your application.
+```text
+src/components/editor/       canvas, layers, toolbar and export UI
+src/components/render/       queue, presets, parameters and history UI
+src/components/workflow/     node/workflow controls and monitoring UI
+src/lib/providers/           provider definitions and registry
+src/integrations/supabase/   browser client and generated types
+supabase/functions/          Edge Function source
+supabase/migrations/         database migrations
+```
 
-**Use Lovable**
+Several provider and rendering integrations are represented by UI and client
+code. Their presence does not mean that an account, model, API key or hosted
+backend is supplied by this repository.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Requirements
 
-Changes made via Lovable will be committed automatically to this repo.
+- current Node.js and npm;
+- a Supabase project only for flows that use the Supabase functions or data
+  layer;
+- accounts and credentials for any optional external AI or rendering service.
 
-**Use your preferred IDE**
+## Local development
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+npm ci
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The project defines build, lint and Vitest commands:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm run build
+npm run lint
+npm run test
+```
 
-**Use GitHub Codespaces**
+## Configuration
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+The application includes `src/integrations/supabase/client.ts` and Edge
+Functions under `supabase/functions/`. Supply environment values through local
+development configuration or the deployment platform; do not commit project
+keys, provider keys, payment credentials or user data. Review each function's
+required variables before deploying it.
 
-## What technologies are used for this project?
+## Status and limits
 
-This project is built with:
+This is an experimental UI and integration workspace. It has no declared
+end-to-end deployment procedure, and visual controls do not independently
+verify remote job execution, content rights, billing or output quality.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Licence
 
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+No root licence file is tracked. Contact the repository owner before reuse.
